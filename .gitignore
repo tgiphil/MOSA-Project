@@ -44,6 +44,13 @@ build.force
 
 # except build/, which is used as an MSBuild target.
 !**/packages/build/
+# Uncomment if necessary however generally it will be regenerated when needed
+#!**/packages/repositories.config
+/Source/*.sdf
+/.vs/ProjectSettings.json
+/.vs/slnx.sqlite
+/.vs/VSWorkspaceState.json
+/.vs
 
 # exclude test directory
 .test/
