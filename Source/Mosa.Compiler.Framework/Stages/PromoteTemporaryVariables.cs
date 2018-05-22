@@ -8,9 +8,9 @@ using System.Diagnostics;
 namespace Mosa.Compiler.Framework.Stages
 {
 	/// <summary>
-	/// Promote Struct To Register
+	/// Promotes Temporary Variables to Virtual Registers
 	/// </summary>
-	public class PromoteStructToRegister : EmptyBlockRemovalStage
+	public class PromoteTemporaryVariables : EmptyBlockRemovalStage
 	{
 		private TraceLog trace;
 
@@ -141,11 +141,6 @@ namespace Mosa.Compiler.Framework.Stages
 
 			if (trace.Active) trace.Log("VR: " + virtualRegister);
 
-			// IR.AddressOf  v12 <= unresolved (t0) - find uses of result
-			//		IR.StoreInt32  v12, 0, v23 {t:System.Void*} ===> IR.Move x <= v23
-			//		IR.MemorySet  v12[Mosa.TestWorld.x86.Tests.NotBoxedStruct &], const= 0[U4], const= 4[I4]} ===> IR.StoreInt32 v12, [constant]
-			// IR.LoadInt32  v5 <= EBP, unresolved (t0)   ===> IR.Move v5 <= x
-
 			foreach (var node in operand.Uses.ToArray())
 			{
 				if (node.Instruction == IRInstruction.AddressOf)
@@ -167,7 +162,6 @@ namespace Mosa.Compiler.Framework.Stages
 					node.SetInstruction(IRInstruction.MoveInt64, node.Result, virtualRegister);
 					if (trace.Active) trace.Log("AFTER: \t" + node);
 				}
-				// IR.StoreInt32 EBP, (t0), v3 ********** X <= v3
 				else if (node.Instruction == IRInstruction.StoreInt32)
 				{
 					if (trace.Active) trace.Log("BEFORE:\t" + node);
@@ -219,7 +213,6 @@ namespace Mosa.Compiler.Framework.Stages
 					if (trace.Active) trace.Log("AFTER: \t" + node);
 				}
 			}
-			// IR.LoadInt32 v7 <= v6, 0  <========== v7 <= X, where v6 was from AddressOf definition
 			else if (node.Instruction == IRInstruction.LoadInt32)
 			{
 				if (trace.Active) trace.Log("BEFORE:\t" + node);
@@ -232,7 +225,6 @@ namespace Mosa.Compiler.Framework.Stages
 				node.SetInstruction(IRInstruction.MoveInt64, node.Result, virtualRegister);
 				if (trace.Active) trace.Log("AFTER: \t" + node);
 			}
-
 		}
 	}
 }
