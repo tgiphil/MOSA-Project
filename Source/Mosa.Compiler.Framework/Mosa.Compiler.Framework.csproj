@@ -753,6 +753,7 @@
     <Compile Include="Stages\InlineStage.cs" />
     <Compile Include="Stages\InlineEvaluationStage.cs" />
     <Compile Include="Stages\IRCleanupStage.cs" />
+    <Compile Include="Stages\PromoteTemporaryVariables.cs" />
     <Compile Include="Stages\SparseConditionalConstantPropagationStage.cs" />
     <Compile Include="CompilerStages\MethodExceptionLookupTableStage.cs" />
     <Compile Include="CompilerStages\MethodLookupTableStage.cs" />
