@@ -121,7 +121,7 @@ namespace Mosa.Kernel.x86
 		{
 			while (true)
 			{
-				var entry = Internal.GetStackTraceEntry(depth, EBP, EIP);
+				var entry = Internal.GetStackTraceEntry(depth, new UIntPtr(EBP), new UIntPtr(EIP));
 
 				if (!entry.Valid)
 					return;

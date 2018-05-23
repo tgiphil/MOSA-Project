@@ -1,6 +1,5 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Runtime;
 using Mosa.Runtime.Metadata;
 using Mosa.Runtime.Plug;
 using System;
@@ -293,24 +292,25 @@ namespace Mosa.Runtime.x86
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static uint GetPreviousStackFrame(uint ebp)
+		public static UIntPtr GetPreviousStackFrame(UIntPtr ebp)
 		{
-			if (ebp < 0x1000)
-				return 0;
-			return Intrinsic.Load32(ebp);
+			if (ebp.ToUInt32() < 0x1000)
+				return UIntPtr.Zero;
+
+			return Intrinsic.LoadPointer(ebp);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static uint GetStackFrame(uint depth)
+		public static UIntPtr GetStackFrame(uint depth)
 		{
-			return GetStackFrame(depth, 0);
+			return GetStackFrame(depth, UIntPtr.Zero);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static uint GetStackFrame(uint depth, uint ebp)
+		public static UIntPtr GetStackFrame(uint depth, UIntPtr ebp)
 		{
-			if (ebp == 0)
-				ebp = Native.GetEBP().ToUInt32();
+			if (ebp == UIntPtr.Zero)
+				ebp = Native.GetEBP();
 
 			while (depth > 0)
 			{
@@ -318,8 +318,8 @@ namespace Mosa.Runtime.x86
 
 				ebp = GetPreviousStackFrame(ebp);
 
-				if (ebp == 0)
-					return 0;
+				if (ebp == UIntPtr.Zero)
+					return UIntPtr.Zero;
 			}
 
 			return ebp;
@@ -342,48 +342,51 @@ namespace Mosa.Runtime.x86
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		public static MethodDefinition GetMethodDefinitionFromStackFrameDepth(uint depth)
 		{
-			return GetMethodDefinitionFromStackFrameDepth(depth, 0);
+			return GetMethodDefinitionFromStackFrameDepth(depth, UIntPtr.Zero);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static MethodDefinition GetMethodDefinitionFromStackFrameDepth(uint depth, uint ebp)
+		public static MethodDefinition GetMethodDefinitionFromStackFrameDepth(uint depth, UIntPtr ebp)
 		{
-			if (ebp == 0)
-				ebp = Native.GetEBP().ToUInt32();
+			if (ebp == UIntPtr.Zero)
+				ebp = Native.GetEBP();
 
 			ebp = GetStackFrame(depth + 0, ebp);
 
-			uint address = GetReturnAddressFromStackFrame(ebp);
+			uint address = GetReturnAddressFromStackFrame(ebp.ToUInt32());
 			return GetMethodDefinition(new UIntPtr(address));
 		}
 
-		public static SimpleStackTraceEntry GetStackTraceEntry(uint depth, uint ebp, uint eip)
+		public static SimpleStackTraceEntry GetStackTraceEntry(uint depth, UIntPtr ebp, UIntPtr eip)
 		{
 			var entry = new SimpleStackTraceEntry();
 
-			uint address;
-			if (depth == 0 && eip != 0)
+			UIntPtr address;
+
+			if (depth == 0 && eip != UIntPtr.Zero)
+			{
 				address = eip;
+			}
 			else
 			{
-				if (ebp == 0)
-					ebp = Native.GetEBP().ToUInt32();
+				if (ebp == UIntPtr.Zero)
+					ebp = Native.GetEBP();
 
-				if (eip != 0)
+				if (eip != UIntPtr.Zero)
 					depth--;
 
 				ebp = GetStackFrame(depth, ebp);
 
-				address = GetReturnAddressFromStackFrame(ebp);
+				address = new UIntPtr(GetReturnAddressFromStackFrame(ebp.ToUInt32()));
 			}
 
-			var methodDef = GetMethodDefinition(new UIntPtr(address));
+			var methodDef = GetMethodDefinition(address);
 
 			if (methodDef.IsNull)
 				return entry;
 
 			entry.MethodDefinition = methodDef;
-			entry.Offset = address - (uint)(methodDef.Method);
+			entry.Offset = address.ToUInt32() - methodDef.Method.ToUInt32();
 
 			return entry;
 		}
@@ -394,11 +397,11 @@ namespace Mosa.Runtime.x86
 			// capture this register immediately
 			uint exceptionObject = Native.GetExceptionRegister();
 
-			uint stackFrame = GetStackFrame(1);
+			var stackFrame = GetStackFrame(1);
 
 			for (uint i = 0; ; i++)
 			{
-				uint returnAddress = GetReturnAddressFromStackFrame(stackFrame);
+				uint returnAddress = GetReturnAddressFromStackFrame(stackFrame.ToUInt32());
 
 				if (returnAddress == 0)
 				{
@@ -418,15 +421,15 @@ namespace Mosa.Runtime.x86
 					{
 						// found handler for current method, call it
 
-						uint methodStart = (uint)methodDef->Method;
+						var methodStart = methodDef->Method;
 						uint handlerOffset = protectedRegion->HandlerOffset;
-						uint jumpTarget = methodStart + handlerOffset;
+						var jumpTarget = methodStart + (int)handlerOffset;
 
 						uint stackSize = methodDef->StackSize & 0xFFFF; // lower 16-bits only
-						uint previousFrame = GetPreviousStackFrame(stackFrame);
-						uint newStack = previousFrame - stackSize;
+						var previousFrame = GetPreviousStackFrame(stackFrame);
+						var newStack = previousFrame - (int)stackSize;
 
-						Native.FrameJump(new UIntPtr(jumpTarget), new UIntPtr(newStack), new UIntPtr(previousFrame), exceptionObject);
+						Native.FrameJump(jumpTarget, newStack, previousFrame, exceptionObject);
 					}
 				}
 
