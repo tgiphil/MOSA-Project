@@ -1,6 +1,7 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Runtime;
+using Mosa.Runtime.Metadata;
 using Mosa.Runtime.Plug;
 using System;
 using System.Runtime.CompilerServices;
@@ -188,29 +189,29 @@ namespace Mosa.Runtime.x86
 			System.Diagnostics.Debug.Fail("Fault: " + ((int)code).ToString("hex") + " , Extra: " + ((int)extra).ToString("hex"));
 		}
 
-		public static MDMethodDefinition* GetMethodDefinition(uint address)
+		public static MethodDefinition GetMethodDefinition(UIntPtr address)
 		{
-			uint table = Native.GetMethodLookupTable().ToUInt32();
+			var table = Native.GetMethodLookupTable();
 			uint entries = Intrinsic.Load32(table);
 
-			table += 4;
+			table += 4; // skip count
 
 			while (entries > 0)
 			{
-				uint addr = Intrinsic.Load32(table);
-				uint size = Intrinsic.Load32(table, NativeIntSize);
+				var addr = Intrinsic.LoadPointer(table);
+				uint size = Intrinsic.Load32(table, UIntPtr.Size);
 
-				if (address >= addr && address < addr + size)
+				if (address.ToUInt64() >= addr.ToUInt64() && (address.ToUInt64() < (addr.ToUInt64() + size)))
 				{
-					return (MDMethodDefinition*)Intrinsic.Load32(table, NativeIntSize * 2);
+					return new MethodDefinition(Intrinsic.LoadPointer(table, UIntPtr.Size + 4));
 				}
 
-				table += (NativeIntSize * 3);
+				table += (UIntPtr.Size * 2 + 4);
 
 				entries--;
 			}
 
-			return null;
+			return new MethodDefinition(UIntPtr.Zero);
 		}
 
 		public static MDMethodDefinition* GetMethodDefinitionViaMethodExceptionLookup(uint address)
@@ -339,13 +340,13 @@ namespace Mosa.Runtime.x86
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static MDMethodDefinition* GetMethodDefinitionFromStackFrameDepth(uint depth)
+		public static MethodDefinition GetMethodDefinitionFromStackFrameDepth(uint depth)
 		{
 			return GetMethodDefinitionFromStackFrameDepth(depth, 0);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static MDMethodDefinition* GetMethodDefinitionFromStackFrameDepth(uint depth, uint ebp)
+		public static MethodDefinition GetMethodDefinitionFromStackFrameDepth(uint depth, uint ebp)
 		{
 			if (ebp == 0)
 				ebp = Native.GetEBP().ToUInt32();
@@ -353,7 +354,7 @@ namespace Mosa.Runtime.x86
 			ebp = GetStackFrame(depth + 0, ebp);
 
 			uint address = GetReturnAddressFromStackFrame(ebp);
-			return GetMethodDefinition(address);
+			return GetMethodDefinition(new UIntPtr(address));
 		}
 
 		public static SimpleStackTraceEntry GetStackTraceEntry(uint depth, uint ebp, uint eip)
@@ -376,13 +377,13 @@ namespace Mosa.Runtime.x86
 				address = GetReturnAddressFromStackFrame(ebp);
 			}
 
-			var methodDef = GetMethodDefinition(address);
+			var methodDef = GetMethodDefinition(new UIntPtr(address));
 
-			if (methodDef == null)
+			if (methodDef.IsNull)
 				return entry;
 
-			entry.MDMethodDefinition = methodDef;
-			entry.Offset = address - (uint)(methodDef->Method);
+			entry.MethodDefinition = methodDef;
+			entry.Offset = address - (uint)(methodDef.Method);
 
 			return entry;
 		}
