@@ -175,10 +175,10 @@ namespace Mosa.TestWorld.x86
 			{
 				var methodDef = Mosa.Runtime.x86.Internal.GetMethodDefinitionFromStackFrameDepth(depth);
 
-				if (methodDef.IsNull)
+				if (methodDef == null)
 					return;
 
-				string caller = methodDef.Name;
+				string caller = methodDef->Name;
 
 				if (caller == null)
 					return;
@@ -264,7 +264,7 @@ namespace Mosa.TestWorld.x86
 		{
 			var o = new object();
 
-			lock(o)
+			lock (o)
 			{
 				var i = o.GetHashCode();
 			}

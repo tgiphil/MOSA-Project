@@ -34,7 +34,7 @@ namespace Mosa.Runtime.Metadata
 
 		public UIntPtr Method => Intrinsic.LoadPointer(Ptr, (UIntPtr.Size * 2) + 8);
 
-		public uint StackSize => Intrinsic.Load16(Ptr, UIntPtr.Size * 3);
+		public uint StackSize => Intrinsic.Load32(Ptr, UIntPtr.Size * 3);
 
 		public ProtectedRegionTable ProtectedRegionTable => new ProtectedRegionTable(Ptr + (UIntPtr.Size * 4) + 8);
 	}

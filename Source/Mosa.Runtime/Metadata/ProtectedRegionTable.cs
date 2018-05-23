@@ -29,7 +29,7 @@ namespace Mosa.Runtime
 
 		public ProtectedRegionDefinition GetProtectedRegionDefinition(uint slot)
 		{
-			return new ProtectedRegionDefinition(Intrinsic.LoadPointer(Ptr, UIntPtr.Size + (UIntPtr.Size * (int)slot)));
+			return new ProtectedRegionDefinition(Intrinsic.LoadPointer(Ptr, 4 + (UIntPtr.Size * (int)slot)));
 		}
 	}
 }

@@ -121,14 +121,14 @@ namespace Mosa.Kernel.x86
 		{
 			while (true)
 			{
-				var entry = Internal.GetStackTraceEntry(depth, new UIntPtr(EBP), new UIntPtr(EIP));
+				var entry = Internal.GetStackTraceEntry(depth, EBP, EIP);
 
 				if (!entry.Valid)
 					return;
 
 				if (!entry.Skip)
 				{
-					Screen.Write(entry.ToStringBuffer());
+					Screen.Write(entry.ToString());
 					Screen.Row++;
 					Screen.Column = 0;
 				}

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Runtime;
-using Mosa.Runtime.Metadata;
 using Mosa.Runtime.Plug;
 using System;
 using System.Runtime.CompilerServices;
@@ -189,96 +188,96 @@ namespace Mosa.Runtime.x86
 			System.Diagnostics.Debug.Fail("Fault: " + ((int)code).ToString("hex") + " , Extra: " + ((int)extra).ToString("hex"));
 		}
 
-		public static MethodDefinition GetMethodDefinition(UIntPtr address)
+		public static MDMethodDefinition* GetMethodDefinition(uint address)
 		{
-			var table = Native.GetMethodLookupTable();
-			uint entries = Intrinsic.Load32(table);
-
-			table += 4; // skip count
-
-			while (entries > 0)
-			{
-				var addr = Intrinsic.LoadPointer(table);
-				uint size = Intrinsic.Load32(table, UIntPtr.Size);
-
-				if (address.ToUInt64() >= addr.ToUInt64() && (address.ToUInt64() < (addr.ToUInt64() + size)))
-				{
-					return new MethodDefinition(Intrinsic.LoadPointer(table, UIntPtr.Size + 4));
-				}
-
-				table += (UIntPtr.Size * 2 + 4);
-
-				entries--;
-			}
-
-			return new MethodDefinition(UIntPtr.Zero);
-		}
-
-		public static MethodDefinition GetMethodDefinitionViaMethodExceptionLookup(UIntPtr address)
-		{
-			var table = Native.GetMethodExceptionLookupTable();
-
-			if (table == UIntPtr.Zero)
-				return new MethodDefinition(UIntPtr.Zero);
-
+			uint table = Native.GetMethodLookupTable().ToUInt32();
 			uint entries = Intrinsic.Load32(table);
 
 			table += 4;
 
 			while (entries > 0)
 			{
-				var addr = Intrinsic.LoadPointer(table);
-				uint size = Intrinsic.Load32(table, UIntPtr.Size);
+				uint addr = Intrinsic.Load32(table);
+				uint size = Intrinsic.Load32(table, NativeIntSize);
 
-				if (address.ToUInt64() >= addr.ToUInt64() && (address.ToUInt64() < (addr.ToUInt64() + size)))
+				if (address >= addr && address < addr + size)
 				{
-					return new MethodDefinition(Intrinsic.LoadPointer(table, UIntPtr.Size + 4));
+					return (MDMethodDefinition*)Intrinsic.Load32(table, NativeIntSize * 2);
 				}
 
-				table += (UIntPtr.Size * 2 + 4);
+				table += (NativeIntSize * 3);
 
 				entries--;
 			}
 
-			return new MethodDefinition(UIntPtr.Zero);
+			return null;
 		}
 
-		public static ProtectedRegionDefinition GetProtectedRegionEntryByAddress(UIntPtr address, MDTypeDefinition* exceptionType, MethodDefinition methodDef)
+		public static MDMethodDefinition* GetMethodDefinitionViaMethodExceptionLookup(uint address)
 		{
-			var protectedRegionTable = methodDef.ProtectedRegionTable;
+			uint table = Native.GetMethodExceptionLookupTable().ToUInt32();
 
-			if (protectedRegionTable.IsNull)
-				return new ProtectedRegionDefinition(UIntPtr.Zero);
+			if (table == 0)
+				return null;
 
-			var method = methodDef.Method;
+			uint entries = Intrinsic.Load32(table);
 
-			if (method == UIntPtr.Zero)
-				return new ProtectedRegionDefinition(UIntPtr.Zero);
+			table += NativeIntSize;
 
-			uint offset = (uint)(address.ToUInt64() - method.ToUInt64());
-			uint entries = protectedRegionTable.NumberOfRegions;
+			while (entries > 0)
+			{
+				uint addr = Intrinsic.Load32(table);
+				uint size = Intrinsic.Load32(table, NativeIntSize);
+
+				if (address >= addr && address < addr + size)
+				{
+					return (MDMethodDefinition*)Intrinsic.Load32(table, NativeIntSize * 2);
+				}
+
+				table += (NativeIntSize * 3);
+
+				entries--;
+			}
+
+			return null;
+		}
+
+		public static MDProtectedRegionDefinition* GetProtectedRegionEntryByAddress(uint address, MDTypeDefinition* exceptionType, MDMethodDefinition* methodDef)
+		{
+			var protectedRegionTable = methodDef->ProtectedRegionTable;
+
+			if (protectedRegionTable == null)
+				return null;
+
+			uint method = (uint)methodDef->Method;
+
+			if (method == 0)
+				return null;
+
+			uint offset = address - method;
+			uint entries = protectedRegionTable->NumberOfRegions;
 
 			uint entry = 0;
-			var protectedRegionDef = new ProtectedRegionDefinition(UIntPtr.Zero);
+			MDProtectedRegionDefinition* protectedRegionDef = null;
 			uint currentStart = uint.MinValue;
 			uint currentEnd = uint.MaxValue;
 
 			while (entry < entries)
 			{
-				var prDef = protectedRegionTable.GetProtectedRegionDefinition(entry);
+				var prDef = protectedRegionTable->GetProtectedRegionDefinition(entry);
 
-				uint start = prDef.StartOffset;
-				uint end = prDef.EndOffset;
+				uint start = prDef->StartOffset;
+				uint end = prDef->EndOffset;
 
 				if ((offset >= start) && (offset < end) && (start >= currentStart) && (end < currentEnd))
 				{
-					var handlerType = prDef.HandlerType;
-					var exType = prDef.ExceptionType;
+					var handlerType = prDef->HandlerType;
+					var exType = prDef->ExceptionType;
 
 					// If the handler is a finally clause, accept without testing
 					// If the handler is a exception clause, accept if the exception type is in the is within the inheritance chain of the exception object
-					if ((handlerType == ExceptionHandlerType.Finally)
-						|| (handlerType == ExceptionHandlerType.Exception && IsTypeInInheritanceChain((MDTypeDefinition*)exType.ToPointer(), exceptionType)))
+					if ((handlerType == ExceptionHandlerType.Finally) ||
+						(handlerType == ExceptionHandlerType.Exception && IsTypeInInheritanceChain(exType, exceptionType)))
 					{
 						protectedRegionDef = prDef;
 						currentStart = start;
@@ -293,25 +292,24 @@ namespace Mosa.Runtime.x86
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static UIntPtr GetPreviousStackFrame(UIntPtr ebp)
+		public static uint GetPreviousStackFrame(uint ebp)
 		{
-			if (ebp.ToUInt64() < 0x1000)
-				return UIntPtr.Zero;
-
-			return Intrinsic.LoadPointer(ebp);
+			if (ebp < 0x1000)
+				return 0;
+			return Intrinsic.Load32(ebp);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static UIntPtr GetStackFrame(uint depth)
+		public static uint GetStackFrame(uint depth)
 		{
-			return GetStackFrame(depth, UIntPtr.Zero);
+			return GetStackFrame(depth, 0);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static UIntPtr GetStackFrame(uint depth, UIntPtr ebp)
+		public static uint GetStackFrame(uint depth, uint ebp)
 		{
-			if (ebp == UIntPtr.Zero)
-				ebp = Native.GetEBP();
+			if (ebp == 0)
+				ebp = Native.GetEBP().ToUInt32();
 
 			while (depth > 0)
 			{
@@ -319,20 +317,19 @@ namespace Mosa.Runtime.x86
 
 				ebp = GetPreviousStackFrame(ebp);
 
-				if (ebp == UIntPtr.Zero)
-					return UIntPtr.Zero;
+				if (ebp == 0)
+					return 0;
 			}
 
 			return ebp;
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static UIntPtr GetReturnAddressFromStackFrame(UIntPtr stackframe)
+		public static uint GetReturnAddressFromStackFrame(uint stackframe)
 		{
-			if (stackframe.ToUInt64() < 0x1000)
-				return UIntPtr.Zero;
-
-			return Intrinsic.LoadPointer(stackframe, UIntPtr.Size);
+			if (stackframe < 0x1000)
+				return 0;
+			return Intrinsic.Load32(stackframe, NativeIntSize);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
@@ -342,40 +339,36 @@ namespace Mosa.Runtime.x86
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static MethodDefinition GetMethodDefinitionFromStackFrameDepth(uint depth)
+		public static MDMethodDefinition* GetMethodDefinitionFromStackFrameDepth(uint depth)
 		{
-			return GetMethodDefinitionFromStackFrameDepth(depth, UIntPtr.Zero);
+			return GetMethodDefinitionFromStackFrameDepth(depth, 0);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static MethodDefinition GetMethodDefinitionFromStackFrameDepth(uint depth, UIntPtr ebp)
+		public static MDMethodDefinition* GetMethodDefinitionFromStackFrameDepth(uint depth, uint ebp)
 		{
-			if (ebp == UIntPtr.Zero)
-				ebp = Native.GetEBP();
+			if (ebp == 0)
+				ebp = Native.GetEBP().ToUInt32();
 
 			ebp = GetStackFrame(depth + 0, ebp);
 
-			var address = GetReturnAddressFromStackFrame(ebp);
-
+			uint address = GetReturnAddressFromStackFrame(ebp);
 			return GetMethodDefinition(address);
 		}
 
-		public static SimpleStackTraceEntry GetStackTraceEntry(uint depth, UIntPtr ebp, UIntPtr eip)
+		public static SimpleStackTraceEntry GetStackTraceEntry(uint depth, uint ebp, uint eip)
 		{
 			var entry = new SimpleStackTraceEntry();
 
-			UIntPtr address;
-
-			if (depth == 0 && eip != UIntPtr.Zero)
-			{
+			uint address;
+			if (depth == 0 && eip != 0)
 				address = eip;
-			}
 			else
 			{
-				if (ebp == UIntPtr.Zero)
-					ebp = Native.GetEBP();
+				if (ebp == 0)
+					ebp = Native.GetEBP().ToUInt32();
 
-				if (eip != UIntPtr.Zero)
+				if (eip != 0)
 					depth--;
 
 				ebp = GetStackFrame(depth, ebp);
@@ -385,11 +378,11 @@ namespace Mosa.Runtime.x86
 
 			var methodDef = GetMethodDefinition(address);
 
-			if (methodDef.IsNull)
+			if (methodDef == null)
 				return entry;
 
-			entry.MethodDefinition = methodDef;
-			entry.Offset = (uint)(address.ToUInt64() - methodDef.Method.ToUInt64());
+			entry.MDMethodDefinition = methodDef;
+			entry.Offset = address - (uint)(methodDef->Method);
 
 			return entry;
 		}
@@ -400,13 +393,13 @@ namespace Mosa.Runtime.x86
 			// capture this register immediately
 			uint exceptionObject = Native.GetExceptionRegister();
 
-			var stackFrame = GetStackFrame(1);
+			uint stackFrame = GetStackFrame(1);
 
 			for (uint i = 0; ; i++)
 			{
-				var returnAddress = GetReturnAddressFromStackFrame(stackFrame);
+				uint returnAddress = GetReturnAddressFromStackFrame(stackFrame);
 
-				if (returnAddress == UIntPtr.Zero)
+				if (returnAddress == 0)
 				{
 					// hit the top of stack!
 					Fault(0XBAD00002, i);
@@ -416,23 +409,23 @@ namespace Mosa.Runtime.x86
 
 				var methodDef = GetMethodDefinitionViaMethodExceptionLookup(returnAddress);
 
-				if (!methodDef.IsNull)
+				if (methodDef != null)
 				{
 					var protectedRegion = GetProtectedRegionEntryByAddress(returnAddress - 1, exceptionType, methodDef);
 
-					if (!protectedRegion.IsNull)
+					if (protectedRegion != null)
 					{
 						// found handler for current method, call it
 
-						var methodStart = methodDef.Method;
-						uint handlerOffset = protectedRegion.HandlerOffset;
-						var jumpTarget = methodStart + (int)handlerOffset;
+						uint methodStart = (uint)methodDef->Method;
+						uint handlerOffset = protectedRegion->HandlerOffset;
+						uint jumpTarget = methodStart + handlerOffset;
 
-						int stackSize = (int)methodDef.StackSize & 0xFFFF; // lower 16-bits only
-						var previousFrame = GetPreviousStackFrame(stackFrame);
-						var newStack = previousFrame - stackSize;
+						uint stackSize = methodDef->StackSize & 0xFFFF; // lower 16-bits only
+						uint previousFrame = GetPreviousStackFrame(stackFrame);
+						uint newStack = previousFrame - stackSize;
 
-						Native.FrameJump(jumpTarget, newStack, previousFrame, exceptionObject);
+						Native.FrameJump(new UIntPtr(jumpTarget), new UIntPtr(newStack), new UIntPtr(previousFrame), exceptionObject);
 					}
 				}
 
