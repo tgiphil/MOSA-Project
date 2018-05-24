@@ -151,40 +151,8 @@ namespace Mosa.Runtime.x86
 			}
 		}
 
-		public static void DebugOutput(byte code)
-		{
-			Native.Out8(0xEA, code);
-		}
-
-		public static void DebugOutput(uint code)
-		{
-			Native.Out8(0xEB, (byte)((code >> 24) & 0xFF));
-			Native.Out8(0xEB, (byte)((code >> 16) & 0xFF));
-			Native.Out8(0xEB, (byte)((code >> 8) & 0xFF));
-			Native.Out8(0xEB, (byte)(code & 0xFF));
-		}
-
-		public static void DebugOutput(string msg)
-		{
-			for (int i = 0; i < msg.Length; i++)
-			{
-				var c = msg[i];
-				Native.Out8(0xEC, (byte)c);
-			}
-
-			Native.Out8(0xEC, 0);
-		}
-
-		public static void DebugOutput(string msg, uint code)
-		{
-			DebugOutput(msg);
-			DebugOutput(code);
-		}
-
 		public static void Fault(uint code, uint extra = 0)
 		{
-			DebugOutput(code);
-			DebugOutput(extra);
 			System.Diagnostics.Debug.Fail("Fault: " + ((int)code).ToString("hex") + " , Extra: " + ((int)extra).ToString("hex"));
 		}
 
@@ -213,12 +181,12 @@ namespace Mosa.Runtime.x86
 			return new MethodDefinition(UIntPtr.Zero);
 		}
 
-		public static MDMethodDefinition* GetMethodDefinitionViaMethodExceptionLookup(UIntPtr address)
+		public static MethodDefinition GetMethodDefinitionViaMethodExceptionLookup(UIntPtr address)
 		{
 			var table = Native.GetMethodExceptionLookupTable();
 
 			if (table == UIntPtr.Zero)
-				return null;
+				return new MethodDefinition(UIntPtr.Zero);
 
 			uint entries = Intrinsic.Load32(table);
 
@@ -231,7 +199,7 @@ namespace Mosa.Runtime.x86
 
 				if (address.ToUInt64() >= addr.ToUInt64() && address.ToUInt64() < addr.ToUInt64() + size)
 				{
-					return (MDMethodDefinition*)Intrinsic.Load32(table, NativeIntSize * 2);
+					return new MethodDefinition(Intrinsic.LoadPointer(table, UIntPtr.Size * 2));
 				}
 
 				table += (UIntPtr.Size * 3);
@@ -239,32 +207,32 @@ namespace Mosa.Runtime.x86
 				entries--;
 			}
 
-			return null;
+			return new MethodDefinition(UIntPtr.Zero);
 		}
 
-		public static MDProtectedRegionDefinition* GetProtectedRegionEntryByAddress(UIntPtr address, MDTypeDefinition* exceptionType, MDMethodDefinition* methodDef)
+		public static ProtectedRegionDefinition GetProtectedRegionEntryByAddress(UIntPtr address, MDTypeDefinition* exceptionType, MDMethodDefinition* methodDef)
 		{
 			var protectedRegionTable = methodDef->ProtectedRegionTable;
 
 			if (protectedRegionTable == null)
-				return null;
+				return new ProtectedRegionDefinition(UIntPtr.Zero);
 
 			uint method = (uint)methodDef->Method;
 
 			if (method == 0)
-				return null;
+				return new ProtectedRegionDefinition(UIntPtr.Zero);
 
 			uint offset = address.ToUInt32() - method;
 			uint entries = protectedRegionTable->NumberOfRegions;
 
 			uint entry = 0;
-			MDProtectedRegionDefinition* protectedRegionDef = null;
+			MDProtectedRegionDefinition* protectedRegionDefinition = null;
 			uint currentStart = uint.MinValue;
 			uint currentEnd = uint.MaxValue;
 
 			while (entry < entries)
 			{
-				var prDef = protectedRegionTable->GetProtectedRegionDefinition(entry);
+				MDProtectedRegionDefinition* prDef = protectedRegionTable->GetProtectedRegionDefinition(entry);
 
 				uint start = prDef->StartOffset;
 				uint end = prDef->EndOffset;
@@ -279,7 +247,7 @@ namespace Mosa.Runtime.x86
 					if ((handlerType == ExceptionHandlerType.Finally) ||
 						(handlerType == ExceptionHandlerType.Exception && IsTypeInInheritanceChain(exType, exceptionType)))
 					{
-						protectedRegionDef = prDef;
+						protectedRegionDefinition = prDef;
 						currentStart = start;
 						currentEnd = end;
 					}
@@ -288,7 +256,7 @@ namespace Mosa.Runtime.x86
 				entry++;
 			}
 
-			return protectedRegionDef;
+			return new ProtectedRegionDefinition(new UIntPtr(protectedRegionDefinition));
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
@@ -422,19 +390,19 @@ namespace Mosa.Runtime.x86
 
 				var methodDef = GetMethodDefinitionViaMethodExceptionLookup(returnAddress);
 
-				if (methodDef != null)
+				if (!methodDef.IsNull)
 				{
-					var protectedRegion = GetProtectedRegionEntryByAddress(returnAddress - 1, exceptionType, methodDef);
+					var protectedRegion = GetProtectedRegionEntryByAddress(returnAddress - 1, exceptionType, (MDMethodDefinition*)methodDef.Ptr.ToPointer());
 
-					if (protectedRegion != null)
+					if (!protectedRegion.IsNull)
 					{
 						// found handler for current method, call it
 
-						var methodStart = methodDef->Method;
-						uint handlerOffset = protectedRegion->HandlerOffset;
+						var methodStart = methodDef.Method;
+						uint handlerOffset = protectedRegion.HandlerOffset;
 						var jumpTarget = methodStart + (int)handlerOffset;
 
-						uint stackSize = methodDef->StackSize & 0xFFFF; // lower 16-bits only
+						uint stackSize = methodDef.StackSize & 0xFFFF; // lower 16-bits only
 						var previousFrame = GetPreviousStackFrame(stackFrame);
 						var newStack = previousFrame - (int)stackSize;
 
