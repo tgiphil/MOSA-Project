@@ -205,7 +205,7 @@ namespace Mosa.Runtime.x86
 					return new MethodDefinition(Intrinsic.LoadPointer(table, UIntPtr.Size + 4));
 				}
 
-				table += (UIntPtr.Size * 2 + 4);
+				table += ((UIntPtr.Size * 2) + 4);
 
 				entries--;
 			}
@@ -332,7 +332,7 @@ namespace Mosa.Runtime.x86
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		public static UIntPtr GetReturnAddressFromStackFrame(UIntPtr stackframe)
 		{
-			if (stackframe.ToUInt32() < 0x1000)
+			if (stackframe.ToUInt64() < 0x1000)
 			{
 				return UIntPtr.Zero;
 			}
@@ -341,9 +341,9 @@ namespace Mosa.Runtime.x86
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static void SetReturnAddressForStackFrame(uint stackframe, uint value)
+		public static void SetReturnAddressForStackFrame(UIntPtr stackframe, uint value)
 		{
-			Intrinsic.Store32(stackframe, NativeIntSize, value);
+			Intrinsic.Store(stackframe, UIntPtr.Size, value);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
@@ -356,7 +356,9 @@ namespace Mosa.Runtime.x86
 		public static MethodDefinition GetMethodDefinitionFromStackFrameDepth(uint depth, UIntPtr ebp)
 		{
 			if (ebp == UIntPtr.Zero)
+			{
 				ebp = Native.GetEBP();
+			}
 
 			ebp = GetStackFrame(depth + 0, ebp);
 
@@ -393,7 +395,7 @@ namespace Mosa.Runtime.x86
 				return entry;
 
 			entry.MethodDefinition = methodDef;
-			entry.Offset = address.ToUInt32() - methodDef.Method.ToUInt32();
+			entry.Offset = (uint)(address.ToUInt64() - methodDef.Method.ToUInt64());
 
 			return entry;
 		}

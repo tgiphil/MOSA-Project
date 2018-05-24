@@ -10,9 +10,10 @@ namespace Mosa.Runtime
 	/// </summary>
 	public struct SimpleStackTraceEntry
 	{
-		public unsafe string MethodName { get { return MDMethodDefinition->Name; } }
+		public unsafe string MethodName { get { return MethodDefinition.Name; } }
+
 		public MethodDefinition MethodDefinition;
-		public unsafe MDMethodDefinition* MDMethodDefinition;
+
 		public uint Offset;
 
 		/// <summary>
