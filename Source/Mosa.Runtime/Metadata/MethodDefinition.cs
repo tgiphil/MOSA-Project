@@ -4,7 +4,7 @@ using System;
 
 namespace Mosa.Runtime.Metadata
 {
-	public unsafe struct MethodDefinition
+	public struct MethodDefinition
 	{
 		#region layout
 
@@ -31,10 +31,10 @@ namespace Mosa.Runtime.Metadata
 
 		public string Name => (string)Intrinsic.GetObjectFromAddress(Intrinsic.LoadPointer(Ptr));
 
-		public UIntPtr Method => Intrinsic.LoadPointer(Ptr, (UIntPtr.Size * 2) + 8);
-
 		public uint StackSize => Intrinsic.Load32(Ptr, UIntPtr.Size * 3);
 
-		public ProtectedRegionTable ProtectedRegionTable => new ProtectedRegionTable(Ptr + (UIntPtr.Size * 4) + 8);
+		public UIntPtr Method => Intrinsic.LoadPointer(Ptr, UIntPtr.Size * 4);
+
+		public ProtectedRegionTable ProtectedRegionTable => new ProtectedRegionTable(Ptr + (UIntPtr.Size * 6));
 	}
 }

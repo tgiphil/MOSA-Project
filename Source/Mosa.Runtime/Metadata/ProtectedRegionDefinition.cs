@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Mosa.Runtime
+namespace Mosa.Runtime.Metadata
 {
 	public struct ProtectedRegionDefinition
 	{
@@ -27,12 +27,12 @@ namespace Mosa.Runtime
 
 		public uint StartOffset => Intrinsic.Load32(Ptr);
 
-		public uint EndOffset => Intrinsic.Load32(Ptr, 4);
+		public uint EndOffset => Intrinsic.Load32(Ptr, UIntPtr.Size);
 
-		public uint HandlerOffset => Intrinsic.Load32(Ptr, 4 * 2);
+		public uint HandlerOffset => Intrinsic.Load32(Ptr, UIntPtr.Size * 2);
 
-		public ExceptionHandlerType HandlerType => (ExceptionHandlerType)Intrinsic.Load32(Ptr, 4 * 3);
+		public ExceptionHandlerType HandlerType => (ExceptionHandlerType)Intrinsic.Load32(Ptr, UIntPtr.Size * 3);
 
-		public UIntPtr ExceptionType => Intrinsic.LoadPointer(Ptr, 4 * 4); // MDTypeDefinition
+		public TypeDefinition ExceptionType => new TypeDefinition(Ptr + (UIntPtr.Size * 4));
 	}
 }
