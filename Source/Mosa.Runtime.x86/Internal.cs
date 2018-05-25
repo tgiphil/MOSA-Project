@@ -161,7 +161,7 @@ namespace Mosa.Runtime.x86
 			var table = Native.GetMethodLookupTable();
 			uint entries = Intrinsic.Load32(table);
 
-			table += 4; // skip count
+			table += UIntPtr.Size; // skip count
 
 			while (entries > 0)
 			{
@@ -170,10 +170,10 @@ namespace Mosa.Runtime.x86
 
 				if (address.ToUInt64() >= addr.ToUInt64() && (address.ToUInt64() < (addr.ToUInt64() + size)))
 				{
-					return new MethodDefinition(Intrinsic.LoadPointer(table, UIntPtr.Size + 4));
+					return new MethodDefinition(Intrinsic.LoadPointer(table, UIntPtr.Size * 2));
 				}
 
-				table += ((UIntPtr.Size * 2) + 4);
+				table += (UIntPtr.Size * 3);
 
 				entries--;
 			}
@@ -190,7 +190,7 @@ namespace Mosa.Runtime.x86
 
 			uint entries = Intrinsic.Load32(table);
 
-			table += 4;
+			table += UIntPtr.Size;
 
 			while (entries > 0)
 			{
@@ -262,8 +262,10 @@ namespace Mosa.Runtime.x86
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		public static UIntPtr GetPreviousStackFrame(UIntPtr ebp)
 		{
-			if (ebp.ToUInt32() < 0x1000)
+			if (ebp.ToUInt64() < 0x1000)
+			{
 				return UIntPtr.Zero;
+			}
 
 			return Intrinsic.LoadPointer(ebp);
 		}
@@ -347,10 +349,14 @@ namespace Mosa.Runtime.x86
 			else
 			{
 				if (ebp == UIntPtr.Zero)
+				{
 					ebp = Native.GetEBP();
+				}
 
 				if (eip != UIntPtr.Zero)
+				{
 					depth--;
+				}
 
 				ebp = GetStackFrame(depth, ebp);
 
