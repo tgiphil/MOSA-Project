@@ -16,7 +16,7 @@ namespace Mosa.Runtime.Metadata
 
 		#endregion layout
 
-		private UIntPtr Ptr;
+		public UIntPtr Ptr;
 
 		public ProtectedRegionTable(UIntPtr ptr)
 		{

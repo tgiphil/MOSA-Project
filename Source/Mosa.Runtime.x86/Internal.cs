@@ -210,8 +210,11 @@ namespace Mosa.Runtime.x86
 			return new MethodDefinition(UIntPtr.Zero);
 		}
 
-		public static ProtectedRegionDefinition GetProtectedRegionEntryByAddress(UIntPtr address, TypeDefinition exceptionType, MDMethodDefinition* methodDef)
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		public static ProtectedRegionDefinition GetProtectedRegionEntryByAddress(UIntPtr address, TypeDefinition exceptionType, MethodDefinition methodDef2)
 		{
+			var methodDef = (MDMethodDefinition*)(methodDef2.Ptr.ToPointer());
+
 			var protectedRegionTable = methodDef->ProtectedRegionTable;
 
 			if (protectedRegionTable == null)
@@ -225,6 +228,12 @@ namespace Mosa.Runtime.x86
 			uint offset = address.ToUInt32() - method;
 			uint entries = protectedRegionTable->NumberOfRegions;
 
+			return Part2(exceptionType, protectedRegionTable, offset, entries);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static ProtectedRegionDefinition Part2(TypeDefinition exceptionType, MDProtectedRegionTable* protectedRegionTable, uint offset, uint entries)
+		{
 			uint entry = 0;
 			MDProtectedRegionDefinition* protectedRegionDefinition = null;
 			uint currentStart = uint.MinValue;
@@ -232,7 +241,7 @@ namespace Mosa.Runtime.x86
 
 			while (entry < entries)
 			{
-				MDProtectedRegionDefinition* prDef = protectedRegionTable->GetProtectedRegionDefinition(entry);
+				var prDef = protectedRegionTable->GetProtectedRegionDefinition(entry);
 
 				uint start = prDef->StartOffset;
 				uint end = prDef->EndOffset;
@@ -398,7 +407,7 @@ namespace Mosa.Runtime.x86
 
 				if (!methodDef.IsNull)
 				{
-					var protectedRegion = GetProtectedRegionEntryByAddress(returnAddress - 1, exceptionType, (MDMethodDefinition*)(methodDef.Ptr.ToPointer()));
+					var protectedRegion = GetProtectedRegionEntryByAddress(returnAddress - 1, exceptionType, methodDef);
 
 					if (!protectedRegion.IsNull)
 					{
