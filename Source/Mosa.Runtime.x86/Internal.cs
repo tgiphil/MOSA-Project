@@ -210,7 +210,7 @@ namespace Mosa.Runtime.x86
 			return new MethodDefinition(UIntPtr.Zero);
 		}
 
-		public static ProtectedRegionDefinition GetProtectedRegionEntryByAddress(UIntPtr address, MDTypeDefinition* exceptionType, MDMethodDefinition* methodDef)
+		public static ProtectedRegionDefinition GetProtectedRegionEntryByAddress(UIntPtr address, TypeDefinition exceptionType, MDMethodDefinition* methodDef)
 		{
 			var protectedRegionTable = methodDef->ProtectedRegionTable;
 
@@ -245,7 +245,7 @@ namespace Mosa.Runtime.x86
 					// If the handler is a finally clause, accept without testing
 					// If the handler is a exception clause, accept if the exception type is in the is within the inheritance chain of the exception object
 					if ((handlerType == ExceptionHandlerType.Finally) ||
-						(handlerType == ExceptionHandlerType.Exception && IsTypeInInheritanceChain(exType, exceptionType)))
+						(handlerType == ExceptionHandlerType.Exception && IsTypeInInheritanceChain(exType, (MDTypeDefinition*)exceptionType.Ptr.ToPointer())))
 					{
 						protectedRegionDefinition = prDef;
 						currentStart = start;
@@ -378,7 +378,7 @@ namespace Mosa.Runtime.x86
 		public static void ExceptionHandler()
 		{
 			// capture this register immediately
-			uint exceptionObject = Native.GetExceptionRegister();
+			var exceptionObject = new UIntPtr(Native.GetExceptionRegister());
 
 			var stackFrame = GetStackFrame(1);
 
@@ -392,13 +392,13 @@ namespace Mosa.Runtime.x86
 					Fault(0XBAD00002, i);
 				}
 
-				var exceptionType = (MDTypeDefinition*)Intrinsic.Load32(exceptionObject);
+				var exceptionType = new TypeDefinition(Intrinsic.LoadPointer(exceptionObject));
 
 				var methodDef = GetMethodDefinitionViaMethodExceptionLookup(returnAddress);
 
 				if (!methodDef.IsNull)
 				{
-					var protectedRegion = GetProtectedRegionEntryByAddress(returnAddress - 1, exceptionType, (MDMethodDefinition*)methodDef.Ptr.ToPointer());
+					var protectedRegion = GetProtectedRegionEntryByAddress(returnAddress - 1, exceptionType, (MDMethodDefinition*)(methodDef.Ptr.ToPointer()));
 
 					if (!protectedRegion.IsNull)
 					{
@@ -412,7 +412,7 @@ namespace Mosa.Runtime.x86
 						var previousFrame = GetPreviousStackFrame(stackFrame);
 						var newStack = previousFrame - (int)stackSize;
 
-						Native.FrameJump(jumpTarget, newStack, previousFrame, exceptionObject);
+						Native.FrameJump(jumpTarget, newStack, previousFrame, exceptionObject.ToUInt32());
 					}
 				}
 
