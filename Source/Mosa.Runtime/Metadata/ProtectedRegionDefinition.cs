@@ -33,6 +33,6 @@ namespace Mosa.Runtime.Metadata
 
 		public ExceptionHandlerType HandlerType => (ExceptionHandlerType)Intrinsic.Load32(Ptr, UIntPtr.Size * 3);
 
-		public TypeDefinition ExceptionType => new TypeDefinition(Ptr + (UIntPtr.Size * 4));
+		public TypeDefinition ExceptionType => new TypeDefinition(Intrinsic.LoadPointer(Ptr, UIntPtr.Size * 4));
 	}
 }

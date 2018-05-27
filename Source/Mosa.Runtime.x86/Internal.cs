@@ -211,50 +211,42 @@ namespace Mosa.Runtime.x86
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static ProtectedRegionDefinition GetProtectedRegionEntryByAddress(UIntPtr address, TypeDefinition exceptionType, MethodDefinition methodDef2)
+		public static ProtectedRegionDefinition GetProtectedRegionEntryByAddress(UIntPtr address, TypeDefinition exceptionType, MethodDefinition methodDef)
 		{
-			var methodDef = (MDMethodDefinition*)(methodDef2.Ptr.ToPointer());
+			var protectedRegionTable = methodDef.ProtectedRegionTable;
 
-			var protectedRegionTable = methodDef->ProtectedRegionTable;
-
-			if (protectedRegionTable == null)
+			if (protectedRegionTable.IsNull)
 				return new ProtectedRegionDefinition(UIntPtr.Zero);
 
-			uint method = (uint)methodDef->Method;
+			var method = methodDef.Method;
 
-			if (method == 0)
+			if (method == UIntPtr.Zero)
 				return new ProtectedRegionDefinition(UIntPtr.Zero);
 
-			uint offset = address.ToUInt32() - method;
-			uint entries = protectedRegionTable->NumberOfRegions;
+			uint offset = (uint)(address.ToUInt64() - method.ToUInt64());
+			uint entries = protectedRegionTable.NumberOfRegions;
 
-			return Part2(exceptionType, protectedRegionTable, offset, entries);
-		}
-
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		private static ProtectedRegionDefinition Part2(TypeDefinition exceptionType, MDProtectedRegionTable* protectedRegionTable, uint offset, uint entries)
-		{
-			uint entry = 0;
-			MDProtectedRegionDefinition* protectedRegionDefinition = null;
+			var protectedRegionDefinition = new ProtectedRegionDefinition(UIntPtr.Zero);
 			uint currentStart = uint.MinValue;
 			uint currentEnd = uint.MaxValue;
+			uint entry = 0;
 
 			while (entry < entries)
 			{
-				var prDef = protectedRegionTable->GetProtectedRegionDefinition(entry);
+				var prDef = protectedRegionTable.GetProtectedRegionDefinition(entry);
 
-				uint start = prDef->StartOffset;
-				uint end = prDef->EndOffset;
+				uint start = prDef.StartOffset;
+				uint end = prDef.EndOffset;
 
 				if ((offset >= start) && (offset < end) && (start >= currentStart) && (end < currentEnd))
 				{
-					var handlerType = prDef->HandlerType;
-					var exType = prDef->ExceptionType;
+					var handlerType = prDef.HandlerType;
+					var exType = prDef.ExceptionType;
 
 					// If the handler is a finally clause, accept without testing
 					// If the handler is a exception clause, accept if the exception type is in the is within the inheritance chain of the exception object
 					if ((handlerType == ExceptionHandlerType.Finally) ||
-						(handlerType == ExceptionHandlerType.Exception && IsTypeInInheritanceChain(exType, (MDTypeDefinition*)exceptionType.Ptr.ToPointer())))
+						(handlerType == ExceptionHandlerType.Exception && IsTypeInInheritanceChain((MDTypeDefinition*)exType.Ptr.ToPointer(), (MDTypeDefinition*)exceptionType.Ptr.ToPointer())))
 					{
 						protectedRegionDefinition = prDef;
 						currentStart = start;
@@ -265,7 +257,7 @@ namespace Mosa.Runtime.x86
 				entry++;
 			}
 
-			return new ProtectedRegionDefinition(new UIntPtr(protectedRegionDefinition));
+			return protectedRegionDefinition;
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
