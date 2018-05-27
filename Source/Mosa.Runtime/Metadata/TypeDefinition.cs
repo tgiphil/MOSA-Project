@@ -26,7 +26,7 @@ namespace Mosa.Runtime.Metadata
 
 		#endregion layout
 
-		public UIntPtr Ptr;
+		public readonly UIntPtr Ptr;
 
 		public TypeDefinition(UIntPtr ptr)
 		{
@@ -34,6 +34,8 @@ namespace Mosa.Runtime.Metadata
 		}
 
 		public bool IsNull => Ptr == UIntPtr.Zero;
+
+		public ulong Handle => Ptr.ToUInt64();
 
 		public string Name => (string)Intrinsic.GetObjectFromAddress(Intrinsic.LoadPointer(Ptr));
 
@@ -67,5 +69,33 @@ namespace Mosa.Runtime.Metadata
 		{
 			return new MethodDefinition(Intrinsic.LoadPointer(Ptr, (UIntPtr.Size * 14) + (UIntPtr.Size * (int)slot)));
 		}
+
+		//public static bool operator ==(TypeDefinition a, TypeDefinition b)
+		//{
+		//	return a.Ptr == b.Ptr;
+		//}
+
+		//public static bool operator !=(TypeDefinition a, TypeDefinition b)
+		//{
+		//	return a.Ptr != b.Ptr;
+		//}
+
+		//public override bool Equals(object obj)
+		//{
+		//	if (obj == null)
+		//	{
+		//		return false;
+		//	}
+
+		//	if (!(obj is TypeDefinition))
+		//		return false;
+
+		//	return ((TypeDefinition)obj).Ptr == this.Ptr;
+		//}
+
+		//public override int GetHashCode()
+		//{
+		//	return Ptr.GetHashCode();
+		//}
 	}
 }

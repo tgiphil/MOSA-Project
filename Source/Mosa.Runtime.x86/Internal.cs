@@ -11,14 +11,14 @@ namespace Mosa.Runtime.x86
 	{
 		internal const uint NativeIntSize = 4;
 
-		public static bool IsTypeInInheritanceChain(MDTypeDefinition* typeDefinition, MDTypeDefinition* chain)
+		public static bool IsTypeInInheritanceChain(TypeDefinition typeDefinition, TypeDefinition chain)
 		{
-			while (chain != null)
+			while (!chain.IsNull)
 			{
-				if (chain == typeDefinition)
+				if (chain.Handle == typeDefinition.Handle)
 					return true;
 
-				chain = chain->ParentType;
+				chain = chain.ParentType;
 			}
 
 			return false;
@@ -33,7 +33,7 @@ namespace Mosa.Runtime.x86
 
 			MDTypeDefinition* objTypeDefinition = (MDTypeDefinition*)((uint*)obj)[0];
 
-			if (IsTypeInInheritanceChain(typeDefinition, objTypeDefinition))
+			if (IsTypeInInheritanceChain(new TypeDefinition(new UIntPtr(typeDefinition)), new TypeDefinition(new UIntPtr(objTypeDefinition))))
 				return obj;
 
 			return null;
@@ -246,7 +246,7 @@ namespace Mosa.Runtime.x86
 					// If the handler is a finally clause, accept without testing
 					// If the handler is a exception clause, accept if the exception type is in the is within the inheritance chain of the exception object
 					if ((handlerType == ExceptionHandlerType.Finally) ||
-						(handlerType == ExceptionHandlerType.Exception && IsTypeInInheritanceChain((MDTypeDefinition*)exType.Ptr.ToPointer(), (MDTypeDefinition*)exceptionType.Ptr.ToPointer())))
+						(handlerType == ExceptionHandlerType.Exception && IsTypeInInheritanceChain(exType, exceptionType)))
 					{
 						protectedRegionDefinition = prDef;
 						currentStart = start;
