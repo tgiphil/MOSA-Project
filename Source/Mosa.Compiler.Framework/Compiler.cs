@@ -182,7 +182,8 @@ namespace Mosa.Compiler.Framework
 				new StaticAllocationResolutionStage(),
 				compilerSettings.Devirtualization ? new DevirtualizeCallStage() : null,
 				new PlugStage(),
-				new UnboxValueTypeStage(),
+
+				//new UnboxValueTypeStage(),
 				new RuntimeCallStage(),
 				(compilerSettings.InlineMethods) ? new InlineStage() : null,
 				(compilerSettings.InlineMethods) ? new BlockMergeStage() : null,
@@ -480,7 +481,7 @@ namespace Mosa.Compiler.Framework
 		{
 			var threadID = Thread.CurrentThread.ManagedThreadId;
 			int success = 0;
-			
+
 			while (true)
 			{
 				var result = ProcessQueue(threadID);

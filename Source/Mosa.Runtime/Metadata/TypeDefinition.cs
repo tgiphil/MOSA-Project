@@ -22,6 +22,8 @@ namespace Mosa.Runtime.Metadata
 		// 11:Pointer slotTable;
 		// 12:Pointer bitmap;
 		// 13:uint numberOfMethods;
+		// 14:Pointer method table
+		// 15:Pointer method defination table
 
 		#endregion layout
 
@@ -66,9 +68,8 @@ namespace Mosa.Runtime.Metadata
 
 		public uint NumberOfMethods => Ptr.Load32(Pointer.Size * 13);
 
-		public MethodDefinition GetMethodDefinition(uint slot)
-		{
-			return new MethodDefinition(Ptr.LoadPointer((Pointer.Size * 14) + (Pointer.Size * (int)slot)));
-		}
+		public Pointer MethodTable => Ptr.LoadPointer(Pointer.Size * 14);
+
+		public Pointer MethodDefinitionTable => Ptr.LoadPointer(Pointer.Size * 15);
 	}
 }

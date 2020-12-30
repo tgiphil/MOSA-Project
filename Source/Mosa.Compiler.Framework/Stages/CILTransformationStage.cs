@@ -433,7 +433,7 @@ namespace Mosa.Compiler.Framework.Stages
 
 				if (OverridesMethod(method))
 				{
-					before.SetInstruction(Select(context.Operand1, IRInstruction.Sub32, IRInstruction.Sub64), context.Operand1, context.Operand1, CreateConstant32(NativePointerSize * 2));
+					//before.SetInstruction(Select(context.Operand1, IRInstruction.Sub32, IRInstruction.Sub64), context.Operand1, context.Operand1, CreateConstant32(NativePointerSize * 2));
 				}
 				else
 				{
@@ -682,6 +682,11 @@ namespace Mosa.Compiler.Framework.Stages
 			}
 
 			return method;
+		}
+
+		private Operand GetMethodTable(MosaType runtimeType)
+		{
+			return Operand.CreateSymbol(TypeSystem.BuiltIn.Pointer, Metadata.MethodTable + runtimeType.FullName);
 		}
 
 		private Operand GetRuntimeTypeHandle(MosaType runtimeType)
@@ -1988,9 +1993,8 @@ namespace Mosa.Compiler.Framework.Stages
 
 			// Get array length
 			var lengthOperand = AllocateVirtualRegisterI32();
-			var fixedOffset = CreateConstant32(NativePointerSize * 2);
 
-			before.SetInstruction(Select(lengthOperand, IRInstruction.Load32, IRInstruction.Load64), lengthOperand, arrayOperand, fixedOffset);
+			before.SetInstruction(Select(lengthOperand, IRInstruction.Load32, IRInstruction.Load64), lengthOperand, arrayOperand, ConstantZero);
 
 			// Now compare length with index
 			// If index is greater than or equal to the length then jump to exception block, otherwise jump to next block
@@ -2037,7 +2041,7 @@ namespace Mosa.Compiler.Framework.Stages
 		/// </returns>
 		private Operand CalculateTotalArrayOffset(InstructionNode node, Operand elementOffset)
 		{
-			var fixedOffset = CreateConstant32(NativePointerSize * 3);
+			var fixedOffset = CreateConstant32(NativePointerSize);
 			var arrayElement = Is32BitPlatform ? AllocateVirtualRegisterI32() : AllocateVirtualRegisterI64();
 
 			var context = new Context(node).InsertBefore();

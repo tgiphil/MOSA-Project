@@ -106,16 +106,6 @@ namespace Mosa.Platform.x86
 		public override PhysicalRegister ProgramCounter { get { return null; } }
 
 		/// <summary>
-		/// Gets the offset of first local.
-		/// </summary>
-		public override int OffsetOfFirstLocal { get { return 0; } }
-
-		/// <summary>
-		/// Gets the offset of first parameter.
-		/// </summary>
-		public override int OffsetOfFirstParameter { get { return 8; } }
-
-		/// <summary>
 		/// Gets the name of the platform.
 		/// </summary>
 		public override string PlatformName { get { return "x86"; } }

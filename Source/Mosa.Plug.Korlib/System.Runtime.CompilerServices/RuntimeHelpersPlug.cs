@@ -22,7 +22,6 @@ namespace Mosa.Plug.Korlib.System.Runtime.CompilerServices
 		internal new static bool Equals(Object o1, Object o2)
 		{
 			// For now just compare the object locations
-			// This will become more sophisticated when we introduce remote objects in the distant future
 			return o1 == o2;
 		}
 
@@ -66,7 +65,7 @@ namespace Mosa.Plug.Korlib.System.Runtime.CompilerServices
 			if (typeDefinition.DefaultConstructor.IsNull)
 				throw new ArgumentException("Type has no parameterless constructor.");
 
-			var thisObject = Mosa.Runtime.Internal.AllocateObject(type.TypeHandle, typeDefinition.Size);
+			var thisObject = Mosa.Runtime.Internal.AllocateObject(typeDefinition.MethodTable, typeDefinition.Size);
 
 			return Intrinsic.CreateInstanceSimple(typeDefinition.DefaultConstructor.Method, thisObject);
 		}

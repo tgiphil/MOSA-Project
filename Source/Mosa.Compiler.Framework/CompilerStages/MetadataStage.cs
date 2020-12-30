@@ -44,10 +44,20 @@ namespace Mosa.Compiler.Framework.CompilerStages
 			// Strings are now going to be embedded objects since they are immutable
 			var symbol = Linker.DefineSymbol(name, SectionKind.ROData, TypeLayout.NativePointerAlignment, 0);
 			var writer = new BinaryWriter(symbol.Stream);
-			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, symbol, writer.GetPosition(), $"{Metadata.TypeDefinition}System.String", 0);
-			writer.WriteZeroBytes(TypeLayout.NativePointerSize * 2);
+
+			// 1. Object Header
+			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
+
+			// 2. Method Table Pointers
+			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, symbol, writer.GetPosition(), $"{Metadata.MethodTable}System.String", 0);
+			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
+
+			// 3. Length
 			writer.Write(value.Length, TypeLayout.NativePointerSize);
+
+			// 4. Unicode
 			writer.Write(Encoding.Unicode.GetBytes(value));
+
 			return symbol;
 		}
 
@@ -138,24 +148,24 @@ namespace Mosa.Compiler.Framework.CompilerStages
 
 		#endregion Assembly Tables
 
-		#region TypeDefinition
+		#region Type Definition
 
 		private LinkerSymbol CreateTypeDefinition(MosaType type, LinkerSymbol assemblyTableSymbol)
 		{
 			// Emit type table
 			var typeNameSymbol = EmitStringWithLength(Metadata.NameString + type.FullName, type.FullName);
-			var typeTableSymbol = Linker.DefineSymbol(Metadata.TypeDefinition + type.FullName, SectionKind.ROData, TypeLayout.NativePointerAlignment, 0);
-			var writer = new BinaryWriter(typeTableSymbol.Stream);
+			var typeDefinitionSymbol = Linker.DefineSymbol(Metadata.TypeDefinition + type.FullName, SectionKind.ROData, TypeLayout.NativePointerAlignment, 0);
+			var writer = new BinaryWriter(typeDefinitionSymbol.Stream);
 
 			// 1. Pointer to Name
-			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), typeNameSymbol, 0);
+			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), typeNameSymbol, 0);
 			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 
 			// 2. Pointer to Custom Attributes
 			if (type.CustomAttributes.Count > 0)
 			{
 				var customAttributeListSymbol = CreateCustomAttributesTable(type);
-				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), customAttributeListSymbol, 0);
+				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), customAttributeListSymbol, 0);
 			}
 			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 
@@ -166,27 +176,27 @@ namespace Mosa.Compiler.Framework.CompilerStages
 			writer.Write((uint)TypeLayout.GetTypeSize(type), TypeLayout.NativePointerSize);
 
 			// 5. Pointer to Assembly Definition
-			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), assemblyTableSymbol, 0);
+			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), assemblyTableSymbol, 0);
 			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 
 			// 6. Pointer to Base Type
 			if (type.BaseType != null)
 			{
-				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), Metadata.TypeDefinition + type.BaseType.FullName, 0);
+				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), Metadata.TypeDefinition + type.BaseType.FullName, 0);
 			}
 			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 
 			// 7. Pointer to Declaring Type
 			if (type.DeclaringType != null)
 			{
-				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), Metadata.TypeDefinition + type.DeclaringType.FullName, 0);
+				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), Metadata.TypeDefinition + type.DeclaringType.FullName, 0);
 			}
 			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 
 			// 8. Pointer to Element Type
 			if (type.ElementType != null)
 			{
-				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), Metadata.TypeDefinition + type.ElementType.FullName, 0);
+				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), Metadata.TypeDefinition + type.ElementType.FullName, 0);
 			}
 			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 
@@ -200,7 +210,7 @@ namespace Mosa.Compiler.Framework.CompilerStages
 
 				if (targetMethodData.HasCode)
 				{
-					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), Metadata.MethodDefinition + targetMethodData.Method.FullName, 0);
+					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), Metadata.MethodDefinition + targetMethodData.Method.FullName, 0);
 				}
 
 				break;
@@ -211,9 +221,11 @@ namespace Mosa.Compiler.Framework.CompilerStages
 			if (type.Properties.Count > 0)
 			{
 				var propertiesSymbol = CreatePropertyDefinitions(type);
-				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), propertiesSymbol, 0);
+				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), propertiesSymbol, 0);
 			}
 			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
+
+			LinkerSymbol interfaceSlotTableSymbol = null;
 
 			// If the type is not an interface continue, otherwise just pad until the end
 			if (!type.IsInterface)
@@ -222,7 +234,7 @@ namespace Mosa.Compiler.Framework.CompilerStages
 				if (type.Fields.Count > 0)
 				{
 					var fieldsSymbol = CreateFieldDefinitions(type);
-					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), fieldsSymbol, 0);
+					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), fieldsSymbol, 0);
 				}
 				writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 
@@ -231,14 +243,15 @@ namespace Mosa.Compiler.Framework.CompilerStages
 				// If the type doesn't use interfaces then skip 9 and 10
 				if (interfaces != null && interfaces.Count > 0)
 				{
+					interfaceSlotTableSymbol = CreateInterfaceSlotTable(type, interfaces);
+
 					// 12. Pointer to Interface Slots
-					var interfaceSlotTableSymbol = CreateInterfaceSlotTable(type, interfaces);
-					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), interfaceSlotTableSymbol, 0);
+					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), interfaceSlotTableSymbol, 0);
 					writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 
 					// 13. Pointer to Interface Bitmap
 					var interfaceBitmapSymbol = CreateInterfaceBitmap(type, interfaces);
-					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), interfaceBitmapSymbol, 0);
+					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), interfaceBitmapSymbol, 0);
 					writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 				}
 				else
@@ -246,45 +259,105 @@ namespace Mosa.Compiler.Framework.CompilerStages
 					// Fill 12 and 13 with zeros
 					writer.WriteZeroBytes(TypeLayout.NativePointerSize * 2);
 				}
+			}
+			else
+			{
+				// 11, 12, 13
+				writer.WriteZeroBytes(TypeLayout.NativePointerSize * 4);
+			}
 
-				// For the next part we'll need to get the list of methods from the MosaTypeLayout
-				var methodList = TypeLayout.GetMethodTable(type) ?? new List<MosaMethod>();
+			var methodList = TypeLayout.GetMethodTable(type);
 
-				// 14. Number of Methods
-				writer.Write(methodList.Count, TypeLayout.NativePointerSize);
+			// 14. Number of Methods
+			writer.Write(methodList == null ? 0 : methodList.Count, TypeLayout.NativePointerSize);
 
-				// 15. Pointer to Methods
-				foreach (var method in methodList)
+			// 15. Pointer to Method Table
+			var methodTableSymbol = CreateMethodTable(type, typeDefinitionSymbol, interfaceSlotTableSymbol, methodList);
+
+			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), methodTableSymbol, 0);
+			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
+
+			// 15. Pointer to Method Definition Table
+			var methodDefinitionTableSymbol = CreateMethodDefinitionTable(type, typeDefinitionSymbol, methodList);
+
+			if (methodDefinitionTableSymbol != null)
+			{
+				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), methodDefinitionTableSymbol, 0);
+				writer.WriteZeroBytes(TypeLayout.NativePointerSize);
+			}
+
+			return typeDefinitionSymbol;
+		}
+
+		#endregion Type Definition
+
+		#region Method Table
+
+		private LinkerSymbol CreateMethodTable(MosaType type, LinkerSymbol typeDefinitionSymbol, LinkerSymbol interfaceSlotTableSymbol, List<MosaMethod> methodList)
+		{
+			var methodTableSymbol = Linker.DefineSymbol(Metadata.MethodTable + type.FullName, SectionKind.ROData, TypeLayout.NativePointerAlignment, 0);
+			var writer = new BinaryWriter(methodTableSymbol.Stream);
+
+			// 1. Pointer to Type Definition Table
+			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, methodTableSymbol, writer.GetPosition(), typeDefinitionSymbol, 0);
+			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
+
+			// 1. Pointer to Type Definition Table
+			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, methodTableSymbol, writer.GetPosition(), typeDefinitionSymbol, 0);
+			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
+
+			// 2. Pointer to Interface Slot Table
+			if (interfaceSlotTableSymbol != null)
+			{
+				Linker.Link(LinkType.AbsoluteAddress, NativePatchType, methodTableSymbol, writer.GetPosition(), interfaceSlotTableSymbol, 0);
+			}
+			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
+
+			// 3. Pointers to Methods
+			foreach (var method in methodList)
+			{
+				var targetMethodData = GetTargetMethodData(method);
+
+				if (targetMethodData.HasCode)
 				{
-					var targetMethodData = GetTargetMethodData(method);
-
-					if (targetMethodData.HasCode)
-					{
-						Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), targetMethodData.Method.FullName, 0);
-					}
-					writer.WriteZeroBytes(TypeLayout.NativePointerSize);
+					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, methodTableSymbol, writer.GetPosition(), targetMethodData.Method.FullName, 0);
 				}
+				writer.WriteZeroBytes(TypeLayout.NativePointerSize);
+			}
 
-				// 16. Pointer to Method Definitions
+			return methodTableSymbol;
+		}
+
+		#endregion Method Table
+
+		#region Method Definition Table
+
+		private LinkerSymbol CreateMethodDefinitionTable(MosaType type, LinkerSymbol typeDefinitionSymbol, List<MosaMethod> methodList)
+		{
+			// If the type is not an interface continue, otherwise just pad until the end
+			if (type.IsInterface)
+				return null;
+
+			var methodTableSymbol = Linker.DefineSymbol(Metadata.MethodDefinitionTable + type.FullName, SectionKind.ROData, TypeLayout.NativePointerAlignment, 0);
+			var writer = new BinaryWriter(methodTableSymbol.Stream);
+
+			// 1. Pointers to Methods
+			if (!type.IsInterface && methodList != null)
+			{
 				foreach (var method in methodList)
 				{
 					// Create definition and get the symbol
 					var methodDefinitionSymbol = CreateMethodDefinition(method);
 
-					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeTableSymbol, writer.GetPosition(), methodDefinitionSymbol, 0);
+					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, typeDefinitionSymbol, writer.GetPosition(), methodDefinitionSymbol, 0);
 					writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 				}
 			}
-			else
-			{
-				// Fill 11, 12, 13, 14 with zeros, 15 & 16 can be left out.
-				writer.WriteZeroBytes(TypeLayout.NativePointerSize * 4);
-			}
 
-			return typeTableSymbol;
+			return methodTableSymbol;
 		}
 
-		#endregion TypeDefinition
+		#endregion Method Definition Table
 
 		#region Interface Bitmap and Tables
 
@@ -400,7 +473,7 @@ namespace Mosa.Compiler.Framework.CompilerStages
 
 		#endregion Interface Bitmap and Tables
 
-		#region FieldDefinition
+		#region Field Definition
 
 		private LinkerSymbol CreateFieldDefinitions(MosaType type)
 		{
@@ -464,9 +537,9 @@ namespace Mosa.Compiler.Framework.CompilerStages
 			return fieldsTableSymbol;
 		}
 
-		#endregion FieldDefinition
+		#endregion Field Definition
 
-		#region PropertyDefinition
+		#region Property Definition
 
 		private LinkerSymbol CreatePropertyDefinitions(MosaType type)
 		{
@@ -539,9 +612,9 @@ namespace Mosa.Compiler.Framework.CompilerStages
 			return propertiesTableSymbol;
 		}
 
-		#endregion PropertyDefinition
+		#endregion Property Definition
 
-		#region MethodDefinition
+		#region Method Definition
 
 		private LinkerSymbol CreateMethodDefinition(MosaMethod method)
 		{
@@ -617,9 +690,9 @@ namespace Mosa.Compiler.Framework.CompilerStages
 			return methodTableSymbol;
 		}
 
-		#endregion MethodDefinition
+		#endregion Method Definition
 
-		#region ParameterDefinition
+		#region Parameter Definition
 
 		private LinkerSymbol CreateParameterDefinition(MosaParameter parameter)
 		{
@@ -652,7 +725,7 @@ namespace Mosa.Compiler.Framework.CompilerStages
 			return parameterTableSymbol;
 		}
 
-		#endregion ParameterDefinition
+		#endregion Parameter Definition
 
 		#region Custom Attributes
 

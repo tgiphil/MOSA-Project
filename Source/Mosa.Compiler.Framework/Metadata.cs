@@ -10,6 +10,8 @@ namespace Mosa.Compiler.Framework
 
 		public const string AssemblyDefinition = "$AssemblyDef$";
 		public const string TypeDefinition = "$TypeDef$";
+		public const string MethodTable = "$MethodTable$";
+		public const string MethodDefinitionTable = "$MethodDefTable$";
 		public const string MethodDefinition = "$MethodDef$";
 		public const string FieldDefinition = "$FieldDef$";
 		public const string FieldsTable = "$FieldsTable$";

@@ -14,7 +14,7 @@ namespace Mosa.Compiler.Framework.Intrinsics
 		{
 			var typeDef = Operand.CreateUnmanagedSymbolPointer(StringClassTypeDefinitionSymbolName, methodCompiler.TypeSystem);
 
-			var move = methodCompiler.Architecture.Is32BitPlatform ? (BaseInstruction)IRInstruction.Move32 : IRInstruction.Move64;
+			var move = methodCompiler.Is32BitPlatform ? (BaseInstruction)IRInstruction.Move32 : IRInstruction.Move64;
 
 			context.SetInstruction(move, context.Result, typeDef);
 		}
