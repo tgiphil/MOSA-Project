@@ -684,7 +684,7 @@ namespace Mosa.Compiler.Framework.Stages
 			return method;
 		}
 
-		private Operand GetMethodTable(MosaType runtimeType)
+		private Operand GetMethodTablePointer(MosaType runtimeType)
 		{
 			return Operand.CreateSymbol(TypeSystem.BuiltIn.Pointer, Metadata.MethodTable + runtimeType.FullName);
 		}
@@ -1209,9 +1209,9 @@ namespace Mosa.Compiler.Framework.Stages
 
 			Debug.Assert(elementSize != 0);
 
-			var runtimeTypeHandle = GetRuntimeTypeHandle(arrayType);
+			var methodTable = GetMethodTablePointer(arrayType);
 			var size = CreateConstant32(elementSize);
-			node.SetInstruction(IRInstruction.NewArray, result, runtimeTypeHandle, size, elements);
+			node.SetInstruction(IRInstruction.NewArray, result, methodTable, size, elements);
 			node.MosaType = arrayType;
 		}
 
@@ -1260,9 +1260,9 @@ namespace Mosa.Compiler.Framework.Stages
 			{
 				Debug.Assert(result.IsReferenceType);
 
-				var runtimeTypeHandle = GetRuntimeTypeHandle(classType);
+				var methodTable = GetMethodTablePointer(classType);
 				var size = CreateConstant32(TypeLayout.GetTypeSize(classType));
-				before.SetInstruction(IRInstruction.NewObject, result, runtimeTypeHandle, size);
+				before.SetInstruction(IRInstruction.NewObject, result, methodTable, size);
 				before.MosaType = classType;
 
 				operands.Insert(0, result);

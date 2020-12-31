@@ -16,10 +16,13 @@ namespace Mosa.Runtime
 		{
 			// An object has the following memory layout:
 			//   - Object Header
-			//   - TypeDef (eventually points to Method Table Pointer)
+			//   - MethodTable
 			//   - 0 .. n object data fields
 
-			var memory = GC.AllocateObject((2 * (uint)(Pointer.Size)) + classSize);
+			var allocationSize = (uint)((Pointer.Size * 2) + classSize);
+			allocationSize = (allocationSize + 3) & ~3u;    // Align to 4-bytes boundary
+
+			var memory = GC.AllocateObject(allocationSize);
 
 			// Set Object Header
 			if (Pointer.Size == 4)
@@ -37,7 +40,7 @@ namespace Mosa.Runtime
 			return memory + (Pointer.Size * 2);
 		}
 
-		[MethodImpl(MethodImplOptions.NoInlining)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Pointer AllocateObject(Pointer methodTable, int classSize)
 		{
 			return AllocateObject(methodTable, (uint)classSize);
@@ -48,12 +51,12 @@ namespace Mosa.Runtime
 		{
 			// An array has the following memory layout:
 			//   - Object Header
-			//   - TypeDef (eventually points to Method Table Pointer)
-			//   - int length
+			//   - MethodTable
+			//   - Length
 			//   - ElementType[length] elements
 			//   - Padding
 
-			uint allocationSize = ((uint)(Pointer.Size) * 3) + (elements * elementSize);
+			var allocationSize = ((uint)Pointer.Size * 3) + (elements * elementSize);
 			allocationSize = (allocationSize + 3) & ~3u;    // Align to 4-bytes boundary
 
 			var memory = GC.AllocateObject(allocationSize);

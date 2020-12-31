@@ -302,10 +302,6 @@ namespace Mosa.Compiler.Framework.CompilerStages
 			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, methodTableSymbol, writer.GetPosition(), typeDefinitionSymbol, 0);
 			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 
-			// 1. Pointer to Type Definition Table
-			Linker.Link(LinkType.AbsoluteAddress, NativePatchType, methodTableSymbol, writer.GetPosition(), typeDefinitionSymbol, 0);
-			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
-
 			// 2. Pointer to Interface Slot Table
 			if (interfaceSlotTableSymbol != null)
 			{
@@ -314,15 +310,18 @@ namespace Mosa.Compiler.Framework.CompilerStages
 			writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 
 			// 3. Pointers to Methods
-			foreach (var method in methodList)
+			if (methodList != null)
 			{
-				var targetMethodData = GetTargetMethodData(method);
-
-				if (targetMethodData.HasCode)
+				foreach (var method in methodList)
 				{
-					Linker.Link(LinkType.AbsoluteAddress, NativePatchType, methodTableSymbol, writer.GetPosition(), targetMethodData.Method.FullName, 0);
+					var targetMethodData = GetTargetMethodData(method);
+
+					if (targetMethodData.HasCode)
+					{
+						Linker.Link(LinkType.AbsoluteAddress, NativePatchType, methodTableSymbol, writer.GetPosition(), targetMethodData.Method.FullName, 0);
+					}
+					writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 				}
-				writer.WriteZeroBytes(TypeLayout.NativePointerSize);
 			}
 
 			return methodTableSymbol;

@@ -799,6 +799,11 @@ namespace Mosa.Compiler.Framework.Stages
 			return block;
 		}
 
+		private Operand GetMethodTablePointer(MosaType runtimeType)
+		{
+			return Operand.CreateSymbol(TypeSystem.BuiltIn.Pointer, Metadata.MethodTable + runtimeType.FullName);
+		}
+
 		private Operand GetRuntimeTypeHandle(MosaType runtimeType)
 		{
 			return Operand.CreateSymbol(TypeSystem.GetTypeByName("System", "RuntimeTypeHandle"), Metadata.TypeDefinition + runtimeType.FullName);
@@ -1252,7 +1257,7 @@ namespace Mosa.Compiler.Framework.Stages
 				return true;
 			}
 
-			var runtimeType = GetRuntimeTypeHandle(type);
+			var methodTable = GetMethodTablePointer(type);
 			var isPrimitive = IsPrimitive(type);
 
 			var elementType = GetElementType(type);
@@ -1260,7 +1265,7 @@ namespace Mosa.Compiler.Framework.Stages
 			if (isPrimitive)
 			{
 				var boxInstruction = GetBoxInstruction(elementType);
-				context.AppendInstruction(boxInstruction, result, runtimeType, entry.Operand);
+				context.AppendInstruction(boxInstruction, result, methodTable, entry.Operand);
 				return true;
 			}
 			else
@@ -1269,7 +1274,7 @@ namespace Mosa.Compiler.Framework.Stages
 				var typeSize = Alignment.AlignUp(TypeLayout.GetTypeSize(type), TypeLayout.NativePointerAlignment);
 
 				context.AppendInstruction(IRInstruction.AddressOf, address, entry.Operand);
-				context.AppendInstruction(IRInstruction.Box, result, runtimeType, address, CreateConstant32(typeSize));
+				context.AppendInstruction(IRInstruction.Box, result, methodTable, address, CreateConstant32(typeSize));
 				return true;
 			}
 		}
@@ -2831,11 +2836,11 @@ namespace Mosa.Compiler.Framework.Stages
 			var arrayType = (MosaType)instruction.Operand;
 
 			var elementSize = GetTypeSize(arrayType.ElementType, false);
-			var runtimeTypeHandle = GetRuntimeTypeHandle(arrayType);
+			var methodTable = GetMethodTablePointer(arrayType);
 			var size = CreateConstant32(elementSize);
 			var result = AllocateVirtualRegisterObject();
 
-			context.AppendInstruction(IRInstruction.NewArray, result, runtimeTypeHandle, size, elements.Operand);
+			context.AppendInstruction(IRInstruction.NewArray, result, methodTable, size, elements.Operand);
 			context.MosaType = arrayType;
 
 			stack.Push(new StackEntry(StackType.Object, result));
@@ -2867,10 +2872,10 @@ namespace Mosa.Compiler.Framework.Stages
 			{
 				var result = AllocateVirtualRegisterObject();
 
-				var runtimeTypeHandle = GetRuntimeTypeHandle(classType);
+				var methodTable = GetMethodTablePointer(classType);
 				var size = CreateConstant32(TypeLayout.GetTypeSize(classType));
 
-				context.AppendInstruction(IRInstruction.NewObject, result, runtimeTypeHandle, size);
+				context.AppendInstruction(IRInstruction.NewObject, result, methodTable, size);
 
 				operands.Insert(0, result);
 
@@ -3691,7 +3696,7 @@ namespace Mosa.Compiler.Framework.Stages
 			var type = (MosaType)instruction.Operand;
 
 			// FUTURE: Check for valid cast
-			var runtimeType = GetRuntimeTypeHandle(type);
+			var methodTable = GetMethodTablePointer(type);
 
 			var result = AllocatedOperand(StackType.ManagedPointer);
 			stack.Push(new StackEntry(StackType.ManagedPointer, result));
@@ -3711,7 +3716,7 @@ namespace Mosa.Compiler.Framework.Stages
 			var type = (MosaType)instruction.Operand;
 
 			// FUTURE: Check for valid cast
-			var runtimeType = GetRuntimeTypeHandle(type);
+			var methodTable = GetMethodTablePointer(type);
 
 			if (type.IsReferenceType)
 			{
