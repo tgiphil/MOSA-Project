@@ -209,7 +209,8 @@ namespace Mosa.Tool.Debugger
 			stackFrameView.Show(registersView.Pane, DockAlignment.Bottom, 0.5);
 
 			sourceView.Show(dockPanel, DockState.Document);
-			sourceDataView.Show(dockPanel, DockState.Document);
+
+			//sourceDataView.Show(dockPanel, DockState.Document);
 
 			var memoryView = new MemoryView(this);
 			memoryView.Show(dockPanel, DockState.Document);
@@ -274,7 +275,6 @@ namespace Mosa.Tool.Debugger
 			{
 				if (dock.DockHandler.Content is DebugDockContent debugdock)
 				{
-					debugdock.UpdateDockFocus();
 					debugdock.OnRunning();
 				}
 			}
@@ -345,7 +345,7 @@ namespace Mosa.Tool.Debugger
 
 			if (!GDBConnector.IsConnected)
 			{
-				MessageBox.Show($"Could not connect to '{GDBConnector.ConnectionHost}' on port {GDBConnector.ConnectionPort.ToString()}.");
+				MessageBox.Show($"Could not connect to '{GDBConnector.ConnectionHost}' on port {GDBConnector.ConnectionPort}.");
 				return;
 			}
 

@@ -43,6 +43,23 @@ namespace Mosa.Tool.Debugger
 		public ulong StackPointer { get; set; }
 		public ulong StatusFlag { get; set; }
 
+		protected bool IsReady
+		{
+			get
+			{
+				if (!IsConnected)
+					return false;
+
+				if (Platform == null)
+					return false;
+
+				if (Platform.Registers == null)
+					return false;
+
+				return true;
+			}
+		}
+
 		public void UpdateDockFocus()
 		{
 			if (!IsDockUpdatable)
@@ -56,6 +73,10 @@ namespace Mosa.Tool.Debugger
 
 		public virtual void OnPause()
 		{
+			if (IsReady)
+				UpdateDisplay();
+			else
+				ClearDisplay();
 		}
 
 		public virtual void OnRunning()
@@ -67,6 +88,14 @@ namespace Mosa.Tool.Debugger
 		}
 
 		public virtual void OnWatchChange()
+		{
+		}
+
+		protected virtual void UpdateDisplay()
+		{
+		}
+
+		protected virtual void ClearDisplay()
 		{
 		}
 	}

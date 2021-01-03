@@ -9,13 +9,15 @@ namespace Mosa.Tool.Debugger.Views
 {
 	public partial class SourceView : DebugDockContent
 	{
-		private SourceLocation lastSourceLocation;
+		private readonly SourceLocation lastSourceLocation;
 		private string lastFileContent;
+		private readonly List<int> lines = new List<int>();
 
 		public SourceView(MainForm mainForm)
 			: base(mainForm)
 		{
 			InitializeComponent();
+			ClearDisplay();
 		}
 
 		public override void OnRunning()
@@ -23,27 +25,15 @@ namespace Mosa.Tool.Debugger.Views
 			// Clear
 		}
 
-		public override void OnPause()
+		protected override void ClearDisplay()
 		{
-			UpdateDisplay();
-		}
-
-		private void UpdateDisplay()
-		{
-			// Clear controls
 			rtbSource.Text = string.Empty;
 			toolStripStatusLabel1.Text = string.Empty;
 			lbSourceFilename.Text = string.Empty;
+		}
 
-			if (!IsConnected || !IsPaused)
-				return;
-
-			if (Platform == null)
-				return;
-
-			if (Platform.Registers == null)
-				return;
-
+		protected override void UpdateDisplay()
+		{
 			var sourceLocation = Source.Find(DebugSource, InstructionPointer);
 
 			if (sourceLocation == null)
@@ -64,7 +54,7 @@ namespace Mosa.Tool.Debugger.Views
 				lastFileContent = fileContent;
 			}
 
-			lbSourceFilename.Text = sourceLocation.SourceFilename;
+			lbSourceFilename.Text = Path.GetFileName(sourceLocation.SourceFilename);
 			rtbSource.Text = fileContent;
 
 			int length = fileContent.Length;
@@ -78,7 +68,8 @@ namespace Mosa.Tool.Debugger.Views
 			int currentLine = 1;
 			int startLine = 0;
 
-			var lines = new List<int> { 0 };
+			lines.Clear();
+			lines.Add(0);
 
 			while (at < length)
 			{
@@ -128,7 +119,6 @@ namespace Mosa.Tool.Debugger.Views
 			rtbSource.SelectionBackColor = Color.Blue;
 			rtbSource.SelectionColor = Color.White;
 
-			lbSourceFilename.Text = Path.GetFileName(sourceLocation.SourceFilename);
 			toolStripStatusLabel1.Text = "Label: " + sourceLocation.Label + " / " + sourceLocation.SourceLabel + " - Lines " + sourceLocation.StartLine + "." + sourceLocation.StartColumn + "  to " + sourceLocation.EndLine + "." + sourceLocation.EndColumn;
 		}
 	}
