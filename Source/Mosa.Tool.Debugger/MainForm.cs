@@ -168,7 +168,8 @@ namespace Mosa.Tool.Debugger
 			//scriptView = new ScriptView(this);
 
 			sourceView = new SourceView(this);
-			sourceDataView = new SourceDataView(this);
+
+			//sourceDataView = new SourceDataView(this);	// only useful when debugging this tool
 
 			launchView = new LaunchView(this);
 
@@ -261,6 +262,7 @@ namespace Mosa.Tool.Debugger
 			{
 				if (dock.DockHandler.Content is DebugDockContent debugdock)
 				{
+					debugdock.UpdateDockFocus();
 					debugdock.OnPause();
 				}
 			}
@@ -272,6 +274,7 @@ namespace Mosa.Tool.Debugger
 			{
 				if (dock.DockHandler.Content is DebugDockContent debugdock)
 				{
+					debugdock.UpdateDockFocus();
 					debugdock.OnRunning();
 				}
 			}

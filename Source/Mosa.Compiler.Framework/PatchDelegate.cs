@@ -11,14 +11,14 @@ namespace Mosa.Compiler.Framework
 	/// <summary>
 	/// Patches delegates
 	/// </summary>
-	public static class DelegatePatcher
+	public static class PatchDelegate
 	{
-		public static bool PatchDelegate(MethodCompiler methodCompiler)
+		public static bool Patch(MethodCompiler methodCompiler)
 		{
 			Debug.Assert(methodCompiler.Method.DeclaringType.IsDelegate);
 
-			//if (!methodCompiler.Method.DeclaringType.IsDelegate)
-			//	return false;
+			if (!methodCompiler.Method.DeclaringType.IsDelegate)
+				return false;
 
 			switch (methodCompiler.Method.Name)
 			{
@@ -125,8 +125,6 @@ namespace Mosa.Compiler.Framework
 			b0.AppendInstruction(loadInstruction, opInstance, thisOperand, instanceOffsetOperand);
 			b0.AppendInstruction(compareInstruction, ConditionCode.Equal, opCompare, opInstance, methodCompiler.ConstantZero);
 			b0.AppendInstruction(branchInstruction, ConditionCode.Equal, null, opCompare, methodCompiler.ConstantZero, b2.Block);
-
-			//b0.AddBranchTarget(b2.Block);
 			b0.AppendInstruction(IRInstruction.Jmp, b1.Block);
 
 			var operands = new List<Operand>(methodCompiler.Parameters.Length + 1);

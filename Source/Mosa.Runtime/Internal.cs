@@ -226,13 +226,13 @@ namespace Mosa.Runtime
 
 		#region Virtual Machine
 
-		public static Pointer GetMethodTablePointer(Object obj)
+		public static Pointer GetTypeDefinition(Object obj)
 		{
 			var address = Intrinsic.GetObjectAddress(obj);
 			return address.LoadPointer(-Pointer.Size);
 		}
 
-		public static Pointer GetMethodTablePointer(Pointer obj)
+		public static Pointer GetTypeDefinition(Pointer obj)
 		{
 			return obj.LoadPointer(-Pointer.Size);
 		}
@@ -246,18 +246,6 @@ namespace Mosa.Runtime
 		public static Pointer GetObjectHeader(Pointer obj)
 		{
 			return obj.LoadPointer(-Pointer.Size * 2);
-		}
-
-		public static Pointer GetTypeDefAddress(Object obj)
-		{
-			var address = GetMethodTablePointer(obj);
-			return address.LoadPointer();
-		}
-
-		public static Pointer GetTypeDefAddress(Pointer obj)
-		{
-			var address = GetMethodTablePointer(obj);
-			return address.LoadPointer();
 		}
 
 		public static bool IsTypeInInheritanceChain(TypeDefinition typeDefinition, TypeDefinition chain)
@@ -278,7 +266,7 @@ namespace Mosa.Runtime
 			if (obj == null)
 				return null;
 
-			var objTypeDefinition = new TypeDefinition(GetTypeDefAddress(obj));
+			var objTypeDefinition = new TypeDefinition(GetTypeDefinition(obj));
 			var typeDefinition = new TypeDefinition(new Pointer(handle.Value));
 
 			if (IsTypeInInheritanceChain(typeDefinition, objTypeDefinition))
@@ -292,7 +280,7 @@ namespace Mosa.Runtime
 			if (obj == null)
 				return null;
 
-			var objTypeDefinition = new TypeDefinition(GetTypeDefAddress(obj));
+			var objTypeDefinition = new TypeDefinition(GetTypeDefinition(obj));
 
 			var bitmap = objTypeDefinition.Bitmap;
 
@@ -562,7 +550,7 @@ namespace Mosa.Runtime
 					Fault(0XBAD00002, i);
 				}
 
-				var exceptionType = new TypeDefinition(GetTypeDefAddress(exceptionObject));
+				var exceptionType = new TypeDefinition(GetTypeDefinition(exceptionObject));
 
 				var methodDef = GetMethodDefinitionViaMethodExceptionLookup(returnAddress);
 

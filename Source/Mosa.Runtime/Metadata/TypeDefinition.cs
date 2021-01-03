@@ -68,8 +68,9 @@ namespace Mosa.Runtime.Metadata
 
 		public uint NumberOfMethods => Ptr.Load32(Pointer.Size * 13);
 
-		public Pointer MethodTable => Ptr.LoadPointer(Pointer.Size * 14);
-
-		public Pointer MethodDefinitionTable => Ptr.LoadPointer(Pointer.Size * 15);
+		public MethodDefinition GetMethodDefinition(uint slot)
+		{
+			return new MethodDefinition(Ptr.LoadPointer((Pointer.Size * 14) + (Pointer.Size * (int)slot)));
+		}
 	}
 }

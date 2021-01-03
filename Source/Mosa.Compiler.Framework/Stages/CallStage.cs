@@ -72,7 +72,7 @@ namespace Mosa.Compiler.Framework.Stages
 		{
 			int slot = TypeLayout.GetMethodSlot(invokeTarget);
 
-			return NativePointerSize * slot;
+			return NativePointerSize * (slot + 15); // 15 is the offset into the TypeDef to sthe start of the MethodTable
 		}
 
 		private void CallStatic(Context context)
@@ -120,20 +120,20 @@ namespace Mosa.Compiler.Framework.Stages
 
 			operands.RemoveAt(0);
 
-			// Offset to MethodTable from thisPtr
-			var methodTableOffset = CreateConstant32(-NativePointerSize);
+			// Offset to TypeDef/MethodTable from thisPtr
+			var typeDefOffset = CreateConstant32(-NativePointerSize);
 
-			// Same as above except for methodPointer
-			var methodPointerOffset = CreateConstant32(CalculateMethodTableOffset(method) + 2); // +2 is to skip point to type defintion and interfce slot table entry
+			// Offset to the method pointer on the MethodTable
+			var methodPointerOffset = CreateConstant32(CalculateMethodTableOffset(method));
 
-			var methodTable = AllocateVirtualRegister(TypeSystem.BuiltIn.Pointer);
+			var typeDef = AllocateVirtualRegister(TypeSystem.BuiltIn.Pointer);
 			var callTarget = AllocateVirtualRegister(TypeSystem.BuiltIn.Pointer);
 
 			// Get the Method Table pointer
-			context.SetInstruction(LoadInstruction, methodTable, thisPtr, methodTableOffset);
+			context.SetInstruction(LoadInstruction, typeDef, thisPtr, typeDefOffset);
 
 			// Get the address of the method
-			context.AppendInstruction(LoadInstruction, callTarget, methodTable, methodPointerOffset);
+			context.AppendInstruction(LoadInstruction, callTarget, typeDef, methodPointerOffset);
 
 			MakeCall(context, callTarget, result, operands, method);
 
@@ -147,7 +147,21 @@ namespace Mosa.Compiler.Framework.Stages
 
 		private int CalculateInterfaceSlotOffset(MosaMethod invokeTarget)
 		{
-			return CalculateInterfaceSlot(invokeTarget.DeclaringType) * NativePointerSize;
+			var slot = CalculateInterfaceSlot(invokeTarget.DeclaringType);
+
+			slot += 1;
+
+			return slot * NativePointerSize;
+		}
+
+		private int CalculateInterfaceMethodTableOffset(MosaMethod invokeTarget)
+		{
+			int slot = TypeLayout.GetMethodSlot(invokeTarget);
+
+			// Skip the first two entries are pointers (TypeDef and InterfaceSlotTable)
+			slot += 2;
+
+			return NativePointerSize * slot;
 		}
 
 		private void CallInterface(Context context)
@@ -167,22 +181,22 @@ namespace Mosa.Compiler.Framework.Stages
 			// FUTURE: This can be optimized to skip Method Definition lookup.
 
 			// Offset to MethodTable from thisPtr
-			var methodTableOffset = CreateConstant32(-NativePointerSize);
+			var typeDefOffset = CreateConstant32(-NativePointerSize);
 
-			// Offset for InterfaceSlot able in Method Table
-			var interfaceSlotTableOffset = CreateConstant32(NativePointerSize * 2);
+			// Offset for InterfaceSlotTable in TypeDef/MethodTable
+			var interfaceSlotTableOffset = CreateConstant32(NativePointerSize * 12);
 
 			// Offset for InterfaceMethodTable in InterfaceSlotTable
-			var interfaceMethodTableOffset = CreateConstant32((NativePointerSize * 1) + CalculateInterfaceSlotOffset(method));
+			var interfaceMethodTableOffset = CreateConstant32(CalculateInterfaceSlotOffset(method));
 
 			// Offset for Method Def in InterfaceMethodTable
-			var methodDefinitionOffset = CreateConstant32((NativePointerSize * 2) + CalculateMethodTableOffset(method));
+			var methodDefinitionOffset = CreateConstant32(CalculateInterfaceMethodTableOffset(method));
 
 			// Offset for Method pointer in MethodDef
 			var methodPointerOffset = CreateConstant32(NativePointerSize * 4);
 
 			// Operands to hold pointers
-			var methodTable = AllocateVirtualRegister(TypeSystem.BuiltIn.Pointer);
+			var typeDef = AllocateVirtualRegister(TypeSystem.BuiltIn.Pointer);
 			var callTarget = AllocateVirtualRegister(TypeSystem.BuiltIn.Pointer);
 
 			var interfaceSlotPtr = AllocateVirtualRegister(TypeSystem.BuiltIn.Pointer);
@@ -190,10 +204,10 @@ namespace Mosa.Compiler.Framework.Stages
 			var methodDefinition = AllocateVirtualRegister(TypeSystem.BuiltIn.Pointer);
 
 			// Get the MethodTable pointer
-			context.SetInstruction(LoadInstruction, methodTable, thisPtr, methodTableOffset);
+			context.SetInstruction(LoadInstruction, typeDef, thisPtr, typeDefOffset);
 
 			// Get the InterfaceSlotTable pointer
-			context.AppendInstruction(LoadInstruction, interfaceSlotPtr, methodTable, interfaceSlotTableOffset);
+			context.AppendInstruction(LoadInstruction, interfaceSlotPtr, typeDef, interfaceSlotTableOffset);
 
 			// Get the InterfaceMethodTable pointer
 			context.AppendInstruction(LoadInstruction, interfaceMethodTablePtr, interfaceSlotPtr, interfaceMethodTableOffset);

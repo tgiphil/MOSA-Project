@@ -11,7 +11,7 @@ minlen = "4"
 ];
 
 "Key" [
-label = "<f0>Key|<f1>~ Denotes field may be zero filled|due to no value being available."
+label = "<f0>Key|<f1>~ Denotes field may be zero filled\ndue to no value being available."
 shape = "record"
 ];
 
@@ -50,7 +50,7 @@ shape = "record"
 	];
 
 "TypeDefinition" [
-label = "<f0>Type Definition|<f1>Pointer to Type Name|<f2>~Pointer to Custom Attributes|<f3>Type Code & Attributes|<f4>Type Size|<f5>Pointer to Assembly|<f6>~Pointer to Parent Type|<f7>~Pointer to Declaring Type|<f8>~Pointer to Element Type|<f9>~Pointer to Default Constructor Method|<f10>~Pointer to Properties Table|<f11>~Pointer to Fields Table|<f12>~Pointer to Interface Slot Table|<f13>~Pointer to Interface Bitmap|<f14>Number of Methods|<f15>Pointer to Method Table|<f16>~Pointer to Method Definition Table"
+label = "<f0>Type Definition\n(contains Method Table)|<f1>Pointer to Type Name|<f2>~Pointer to Custom Attributes|<f3>Type Code & Attributes|<f4>Type Size|<f5>Pointer to Assembly|<f6>~Pointer to Parent Type|<f7>~Pointer to Declaring Type|<f8>~Pointer to Element Type|<f9>~Pointer to Default Constructor Method|<f10>~Pointer to Properties Table|<f11>~Pointer to Fields Table|<f12>~Pointer to Interface Slot Table|<f13>~Pointer to Interface Bitmap|<f14>Number of Methods|<f15>Pointer to Method 1|...|Pointer to Method N|<f16>Pointer to Method Definition 1|...|Pointer to Method Definition N"
 shape = "record"
 color = "blue"
 ];
@@ -90,41 +90,9 @@ color = "blue"
 	id = 0
 	];
 
-	"TypeDefinition":f15 -> "MethodTable":f0 [
-	id = 0
-	color = "purple"
-	];
-
-	"TypeDefinition":f16 -> "MethodDefinitionTable":f0 [
+	"TypeDefinition":f16 -> "MethodDefinition":f0 [
 	id = 0
 	];
-
-"MethodTable" [
-label = "<f0>Method Table|<f1>Pointer to Type Definition|<f2>Pointer to Interface Slot Table|<f3>Pointer to Method 1|...|Pointer to Method N"
-shape = "record"
-color = "purple"
-];
-
-	"MethodTable":f1 -> "TypeDefinition":f0 [
-	id = 0
-	color = "blue"
-	];
-
-	"MethodTable":f2 -> "InterfaceSlotTable":f0 [
-	id = 0
-	color = "blue"
-	];
-
-"MethodDefinitionTable" [
-label = "<f0>Method Definition Table|<f1>Pointer to Method Definition 1|...|Pointer to Method Definition N"
-shape = "record"
-color = "blue"
-];
-
-
-"MethodDefinitionTable":f1 -> "MethodDefinition":f0 [
-id = 0
-];
 
 "FieldsTable" [
 label = "<f0>Fields Table|<f1>Number of Fields|<f1>Pointer to Field Definition 1|...|Pointer to Field Definition N"

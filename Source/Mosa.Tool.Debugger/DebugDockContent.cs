@@ -36,10 +36,23 @@ namespace Mosa.Tool.Debugger
 		public bool IsRunning { get { return GDBConnector.IsRunning; } }
 		public bool IsPaused { get { return GDBConnector.IsPaused; } }
 
-		public ulong InstructionPointer { get { return MainForm.InstructionPointer; } }
-		public ulong StackFrame { get { return MainForm.StackFrame; } }
-		public ulong StackPointer { get { return MainForm.StackPointer; } }
-		public ulong StatusFlag { get { return MainForm.StatusFlag; } }
+		public bool IsDockUpdatable { get; set; } = true;
+
+		public ulong InstructionPointer { get; set; }
+		public ulong StackFrame { get; set; }
+		public ulong StackPointer { get; set; }
+		public ulong StatusFlag { get; set; }
+
+		public void UpdateDockFocus()
+		{
+			if (!IsDockUpdatable)
+				return;
+
+			InstructionPointer = MainForm.InstructionPointer;
+			StackFrame = MainForm.StackFrame;
+			StackPointer = MainForm.StackPointer;
+			StatusFlag = MainForm.StatusFlag;
+		}
 
 		public virtual void OnPause()
 		{

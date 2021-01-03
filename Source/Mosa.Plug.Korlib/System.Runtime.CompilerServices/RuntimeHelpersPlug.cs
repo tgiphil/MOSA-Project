@@ -65,7 +65,7 @@ namespace Mosa.Plug.Korlib.System.Runtime.CompilerServices
 			if (typeDefinition.DefaultConstructor.IsNull)
 				throw new ArgumentException("Type has no parameterless constructor.");
 
-			var thisObject = Mosa.Runtime.Internal.AllocateObject(typeDefinition.MethodTable, typeDefinition.Size);
+			var thisObject = Mosa.Runtime.Internal.AllocateObject(typeDefinition.Ptr, typeDefinition.Size);
 
 			return Intrinsic.CreateInstanceSimple(typeDefinition.DefaultConstructor.Method, thisObject);
 		}
