@@ -63,9 +63,39 @@ namespace Mosa.Tool.Debugger.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap application_view_columns {
+            get {
+                object obj = ResourceManager.GetObject("application_view_columns", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap application_view_list {
+            get {
+                object obj = ResourceManager.GetObject("application_view_list", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap arrow_refresh {
             get {
                 object obj = ResourceManager.GetObject("arrow_refresh", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap connect {
+            get {
+                object obj = ResourceManager.GetObject("connect", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -193,6 +223,16 @@ namespace Mosa.Tool.Debugger.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap document_inspect {
+            get {
+                object obj = ResourceManager.GetObject("document_inspect", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap font_red_delete {
             get {
                 object obj = ResourceManager.GetObject("font_red_delete", resourceCulture);
@@ -313,6 +353,16 @@ namespace Mosa.Tool.Debugger.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap page_gear {
+            get {
+                object obj = ResourceManager.GetObject("page_gear", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap page_refresh {
             get {
                 object obj = ResourceManager.GetObject("page_refresh", resourceCulture);
@@ -336,16 +386,6 @@ namespace Mosa.Tool.Debugger.Properties {
         internal static System.Drawing.Bitmap save_document {
             get {
                 object obj = ResourceManager.GetObject("save_document", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap table_refresh {
-            get {
-                object obj = ResourceManager.GetObject("table_refresh", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

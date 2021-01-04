@@ -119,7 +119,7 @@ namespace Mosa.Tool.Debugger.Views
 			rtbSource.SelectionBackColor = Color.Blue;
 			rtbSource.SelectionColor = Color.White;
 
-			toolStripStatusLabel1.Text = "Label: " + sourceLocation.Label + " / " + sourceLocation.SourceLabel + " - Lines " + sourceLocation.StartLine + "." + sourceLocation.StartColumn + "  to " + sourceLocation.EndLine + "." + sourceLocation.EndColumn;
+			toolStripStatusLabel1.Text = $"Label: {sourceLocation.Label}:{sourceLocation.SourceLabel} - Lines: {sourceLocation.StartLine}:{sourceLocation.StartColumn}  to {sourceLocation.EndLine}:{sourceLocation.EndColumn}";
 		}
 	}
 }

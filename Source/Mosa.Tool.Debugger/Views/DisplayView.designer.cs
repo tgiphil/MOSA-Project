@@ -29,8 +29,8 @@
 		private void InitializeComponent()
 		{
 			this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-			this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+			this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
 			this.toolStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -48,19 +48,19 @@
 			this.toolStrip1.TabIndex = 1;
 			this.toolStrip1.Text = "toolStrip1";
 			// 
+			// toolStripSeparator1
+			// 
+			this.toolStripSeparator1.Name = "toolStripSeparator1";
+			this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+			// 
 			// toolStripButton1
 			// 
-			this.toolStripButton1.Image = global::Mosa.Tool.Debugger.Properties.Resources.table_refresh;
+			this.toolStripButton1.Image = global::Mosa.Tool.Debugger.Properties.Resources.page_refresh;
 			this.toolStripButton1.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Black;
 			this.toolStripButton1.Name = "toolStripButton1";
 			this.toolStripButton1.Size = new System.Drawing.Size(66, 22);
 			this.toolStripButton1.Text = "Refresh";
-			// 
-			// toolStripSeparator1
-			// 
-			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
 			// 
 			// DisplayView
 			// 

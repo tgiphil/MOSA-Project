@@ -56,7 +56,7 @@ namespace Mosa.Tool.Debugger.Views
 			if (StackFrame == 0 || StackPointer == 0)
 				return;
 
-			lbAddress.Text = ToHex(StackPointer);
+			lbAddress.Text = ToHex(StackFrame);
 
 			var span = StackFrame - StackPointer;
 
