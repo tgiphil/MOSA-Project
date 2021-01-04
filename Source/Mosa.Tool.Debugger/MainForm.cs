@@ -806,8 +806,33 @@ namespace Mosa.Tool.Debugger
 			}
 		}
 
-		private void toolStripButton3_Click(object sender, EventArgs e)
+		public void SetFocus(ulong instructionPointer, ulong stackFrame, ulong stackPointer)
 		{
+			sourceView.InstructionPointer = instructionPointer;
+			sourceView.StackFrame = stackFrame;
+			sourceView.StackPointer = stackPointer;
+
+			methodView.InstructionPointer = instructionPointer;
+			methodView.StackFrame = stackFrame;
+			methodView.StackPointer = stackPointer;
+
+			instructionView.InstructionPointer = instructionPointer;
+			instructionView.StackFrame = stackFrame;
+			instructionView.StackPointer = stackPointer;
+
+			methodParametersView.InstructionPointer = instructionPointer;
+			methodParametersView.StackFrame = stackFrame;
+			methodParametersView.StackPointer = stackPointer;
+
+			stackFrameView.InstructionPointer = instructionPointer;
+			stackFrameView.StackFrame = stackFrame;
+			stackFrameView.StackPointer = stackPointer;
+
+			methodView.OnPause();
+			instructionView.OnPause();
+			sourceView.OnPause();
+			methodParametersView.OnPause();
+			stackFrameView.OnPause();
 		}
 	}
 }

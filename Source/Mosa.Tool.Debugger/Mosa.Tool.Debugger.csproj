@@ -139,12 +139,6 @@
     <EmbeddedResource Update="Views\BreakpointView.resx">
       <DependentUpon>BreakpointView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Update="Views\CallStackView.resx">
-      <DependentUpon>CallStackView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Views\ControlView.resx">
-      <DependentUpon>ControlView.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Update="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

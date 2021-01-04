@@ -17,7 +17,7 @@ namespace Mosa.Tool.Debugger.Views
 			[Browsable(false)]
 			public ulong IP { get; set; }
 
-			public string Address { get { return "0x" + IP.ToString((IP <= uint.MaxValue) ? "X4" : "X8"); } }
+			public string Address { get { return DebugDockContent.ToHex(IP); } }
 
 			public string Instruction { get; set; }
 
@@ -46,7 +46,7 @@ namespace Mosa.Tool.Debugger.Views
 
 		protected override void UpdateDisplay()
 		{
-			tbAddress.Text = Platform.InstructionPointer.ToHex();
+			tbAddress.Text = ToHex(InstructionPointer);
 
 			var address = MainForm.ParseHexAddress(tbAddress.Text);
 			uint bytes = 512;

@@ -98,5 +98,10 @@ namespace Mosa.Tool.Debugger
 		protected virtual void ClearDisplay()
 		{
 		}
+
+		public static string ToHex(ulong address)
+		{
+			return $"0x{address.ToString((address <= uint.MaxValue) ? "X4" : "X8")}"; ;
+		}
 	}
 }
