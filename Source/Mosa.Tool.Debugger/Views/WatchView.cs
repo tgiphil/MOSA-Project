@@ -167,7 +167,7 @@ namespace Mosa.Tool.Debugger.Views
 
 		private void toolStripButton1_Click(object sender, EventArgs e)
 		{
-			if (MainForm.WatchFile != null)
+			if (MainForm.WatchFile == null)
 			{
 				if (MainForm.ImageFile != null)
 				{
