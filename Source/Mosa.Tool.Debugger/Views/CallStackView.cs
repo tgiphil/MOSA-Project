@@ -39,9 +39,14 @@ namespace Mosa.Tool.Debugger.Views
 			treeView1.Nodes.Clear();
 		}
 
-		public override void OnPause()
+		protected override void ClearDisplay()
 		{
 			treeView1.Nodes.Clear();
+		}
+
+		protected override void UpdateDisplay()
+		{
+			ClearDisplay();
 
 			if (StackFrame == 0 || InstructionPointer == 0 || StackPointer == 0)
 				return;

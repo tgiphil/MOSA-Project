@@ -39,22 +39,14 @@ namespace Mosa.Tool.Debugger.Views
 			instructions.Clear();
 		}
 
-		public override void OnPause()
+		protected override void ClearDisplay()
 		{
-			if (Platform == null)
-				return;
-
-			if (Platform.Registers == null)
-				return;
-
-			tbAddress.Text = Platform.InstructionPointer.ToHex();
-			Query();
+			tbAddress.Text = string.Empty;
 		}
 
-		private void Query()
+		protected override void UpdateDisplay()
 		{
-			if (!IsConnected || !IsPaused)
-				return;
+			tbAddress.Text = Platform.InstructionPointer.ToHex();
 
 			var address = MainForm.ParseHexAddress(tbAddress.Text);
 			uint bytes = 512;
@@ -86,7 +78,8 @@ namespace Mosa.Tool.Debugger.Views
 
 		private void toolStripButton1_Click(object sender, System.EventArgs e)
 		{
-			Query();
+			if (IsReady)
+				UpdateDisplay();
 		}
 
 		private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
