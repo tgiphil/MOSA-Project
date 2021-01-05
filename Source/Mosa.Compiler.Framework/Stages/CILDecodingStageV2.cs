@@ -712,8 +712,10 @@ namespace Mosa.Compiler.Framework.Stages
 			string symbolName = $"$ldstr${Method.Module.Name}${token}";
 			var linkerSymbol = Linker.DefineSymbol(symbolName, SectionKind.ROData, NativeAlignment, (NativePointerSize * 2) + 4 + (data.Length * 2));
 			var stream = linkerSymbol.Stream;
-			Linker.Link(LinkType.AbsoluteAddress, PatchType.I32, linkerSymbol, 0, $"{Metadata.TypeDefinition}System.String", 0);
-			stream.WriteZeroBytes(NativePointerSize * 2);
+
+			stream.WriteZeroBytes(NativePointerSize);
+			Linker.Link(LinkType.AbsoluteAddress, PatchType.I32, linkerSymbol, 0, Metadata.TypeDefinition + "System.String", 0);
+			stream.WriteZeroBytes(NativePointerSize);
 			stream.Write(BitConverter.GetBytes(data.Length), 0, 4);
 			var stringData = Encoding.Unicode.GetBytes(data);
 			stream.Write(stringData);

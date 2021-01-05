@@ -1102,10 +1102,13 @@ namespace Mosa.Compiler.Framework.Stages
 			var symbol = Linker.DefineSymbol(symbolName, SectionKind.ROData, NativeAlignment, (NativePointerSize * 2) + 4 + (stringdata.Length * 2));
 			var stream = symbol.Stream;
 
-			// Type Definition and sync block
-			Linker.Link(LinkType.AbsoluteAddress, PatchType.I32, symbol, 0, $"{Metadata.TypeDefinition}System.String", 0);
+			// Header Block
+			stream.WriteZeroBytes(NativePointerSize);
 
-			stream.WriteZeroBytes(NativePointerSize * 2);
+			// Type Definition
+			Linker.Link(LinkType.AbsoluteAddress, PatchType.I32, symbol, 0, Metadata.TypeDefinition + "System.String", 0);
+
+			stream.WriteZeroBytes(NativePointerSize);
 
 			// String length field
 			stream.Write(BitConverter.GetBytes(stringdata.Length), 0, 4);
