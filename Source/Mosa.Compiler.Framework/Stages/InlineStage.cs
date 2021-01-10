@@ -327,7 +327,7 @@ namespace Mosa.Compiler.Framework.Stages
 				if (operand.IsString)
 				{
 					// FUTURE: explore operand re-use
-					mappedOperand = Operand.CreateStringSymbol(operand.Name, operand.StringData, operand.Type.TypeSystem);
+					mappedOperand = Operand.CreateStringSymbol(operand.Name, operand.StringData, operand.Type.TypeSystem, (uint)NativePointerSize * 2);
 				}
 				else if (operand.Method != null)
 				{

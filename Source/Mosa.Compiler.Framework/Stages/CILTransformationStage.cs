@@ -1097,8 +1097,7 @@ namespace Mosa.Compiler.Framework.Stages
 			var symbolName = node.Operand1.Name;
 			var stringdata = node.Operand1.StringData;
 
-			node.SetInstruction(IRInstruction.MoveObject, node.Result, node.Operand1);
-
+			// FUTURE: Add to linkers to allow for deduplicate of internal strings
 			var symbol = Linker.DefineSymbol(symbolName, SectionKind.ROData, NativeAlignment, (NativePointerSize * 2) + 4 + (stringdata.Length * 2));
 			var stream = symbol.Stream;
 
@@ -1106,7 +1105,7 @@ namespace Mosa.Compiler.Framework.Stages
 			stream.WriteZeroBytes(NativePointerSize);
 
 			// Type Definition
-			Linker.Link(LinkType.AbsoluteAddress, PatchType.I32, symbol, 0, Metadata.TypeDefinition + "System.String", 0);
+			Linker.Link(LinkType.AbsoluteAddress, PatchType.I32, symbol, 0, Metadata.TypeDefinition + "System.String", (NativePointerSize * 2));
 
 			stream.WriteZeroBytes(NativePointerSize);
 
@@ -1117,6 +1116,10 @@ namespace Mosa.Compiler.Framework.Stages
 			var stringData = Encoding.Unicode.GetBytes(stringdata);
 			Debug.Assert(stringData.Length == stringdata.Length * 2, "Byte array of string data doesn't match expected string data length");
 			stream.Write(stringData);
+
+			//var stringOperand = Operand.CreateSymbol()
+
+			node.SetInstruction(IRInstruction.MoveObject, node.Result, node.Operand1);
 		}
 
 		/// <summary>
