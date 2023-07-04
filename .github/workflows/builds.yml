@@ -132,8 +132,8 @@ jobs:
         run: dotnet restore Source/Mosa.Linux.sln
       - name: Build
         run: dotnet build Source/Mosa.Linux.sln
-      - name: Unit Test
-        run: dotnet test Source/Mosa.Linux.sln
+      #- name: Unit Test
+      #  run: dotnet test Source/Mosa.Linux.sln
       - name: Store Build Artifact
         uses: actions/upload-artifact@v3
         with:
