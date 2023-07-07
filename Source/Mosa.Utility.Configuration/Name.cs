@@ -2,7 +2,7 @@
 
 namespace Mosa.Utility.Configuration;
 
-public static class SettingName
+public static class Name
 {
 	public const string AppLocation_Bochs = "AppLocation.Bochs";
 	public const string AppLocation_GDB = "AppLocation.GDB";
@@ -110,5 +110,6 @@ public static class SettingName
 	public const string UnitTest_Connection_TimeOut = "UnitTest.Connection.TimeOut";
 	public const string UnitTest_Filter = "UnitTest.Filter";
 	public const string UnitTest_MaxErrors = "UnitTest.MaxErrors";
+
 	public const string X86_InterruptMethodName = "X86.InterruptMethodName";
 }

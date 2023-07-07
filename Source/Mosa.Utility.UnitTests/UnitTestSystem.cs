@@ -20,22 +20,21 @@ public static class UnitTestSystem
 
 	public static int Start(string[] args)
 	{
-		var settings = Import.RecursiveReader(CommandLineArguments.Map, args);
+		var mosaSettings = new MosaSettings();
+		mosaSettings.LoadArguments(args);
 
 		var stopwatch = new Stopwatch();
 		stopwatch.Start();
 
 		Console.WriteLine("Discovering Unit Tests...");
 
-		var filter = settings.GetValue("UnitTest.Filter", null);
-
-		var discoveredUnitTests = Discovery.DiscoverUnitTests(filter);
+		var discoveredUnitTests = Discovery.DiscoverUnitTests(mosaSettings.Filter);
 
 		Console.WriteLine($"Found Tests: {discoveredUnitTests.Count} in {(stopwatch.ElapsedMilliseconds / 1000.0).ToString("F2")} secs");
 		Console.WriteLine();
 		Console.WriteLine("Starting Unit Test Engine...");
 
-		var unitTestEngine = new UnitTestEngine(settings);
+		var unitTestEngine = new UnitTestEngine(mosaSettings.Settings);
 
 		if (unitTestEngine.IsAborted)
 		{

@@ -6,7 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Mosa.Compiler.Common.Configuration;
 
-namespace Mosa.Utility.Launcher;
+namespace Mosa.Utility.Configuration;
 
 public static class AppLocationsSettings
 {
@@ -19,23 +19,28 @@ public static class AppLocationsSettings
 	private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 	private static readonly string[] LinuxDirectories = new string[] { "/bin", "/usr/bin" };
 
+	public static void GetAppLocationSettings(Settings settings)
+	{
+		Set(settings, Name.AppLocation_Qemu, FindQemu());
+		Set(settings, Name.AppLocation_QemuBIOS, FindQemuBIOS());
+		Set(settings, Name.AppLocation_QemuEDK2X86, FindQemuEDK2X86());
+		Set(settings, Name.AppLocation_QemuEDK2X64, FindQemuEDK2X64());
+		Set(settings, Name.AppLocation_QemuEDK2ARM, FindQemuEDK2ARM());
+		Set(settings, Name.AppLocation_QemuImg, FindQemuImg());
+		Set(settings, Name.AppLocation_Bochs, FindBochs());
+		Set(settings, Name.AppLocation_VmwarePlayer, FindVmwarePlayer());
+		Set(settings, Name.AppLocation_VmwareWorkstation, FindVmwareWorkstation());
+		Set(settings, Name.AppLocation_VirtualBox, FindVirtualBox());
+		Set(settings, Name.AppLocation_Ndisasm, FindNdisasm());
+		Set(settings, Name.AppLocation_Mkisofs, FindMkisofs());
+		Set(settings, Name.AppLocation_GDB, FindGDB());
+	}
+
 	public static Settings GetAppLocations()
 	{
 		var settings = new Settings();
 
-		Set(settings, "AppLocation.Qemu", FindQemu());
-		Set(settings, "AppLocation.QemuBIOS", FindQemuBIOS());
-		Set(settings, "AppLocation.QemuEDK2X86", FindQemuEDK2X86());
-		Set(settings, "AppLocation.QemuEDK2X64", FindQemuEDK2X64());
-		Set(settings, "AppLocation.QemuEDK2ARM", FindQemuEDK2ARM());
-		Set(settings, "AppLocation.QemuImg", FindQemuImg());
-		Set(settings, "AppLocation.Bochs", FindBochs());
-		Set(settings, "AppLocation.VmwarePlayer", FindVmwarePlayer());
-		Set(settings, "AppLocation.VmwareWorkstation", FindVmwareWorkstation());
-		Set(settings, "AppLocation.VirtualBox", FindVirtualBox());
-		Set(settings, "AppLocation.Ndisasm", FindNdisasm());
-		Set(settings, "AppLocation.Mkisofs", FindMkisofs());
-		Set(settings, "AppLocation.GDB", FindGDB());
+		GetAppLocationSettings(settings);
 
 		return settings;
 	}

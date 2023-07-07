@@ -13,23 +13,22 @@ public class BaseLauncher
 {
 	public CompilerHooks CompilerHooks { get; }
 
-	public MosaSettings Settings { get; }
+	public MosaSettings MosaSettings { get; }
 
-	public Settings ConfigurationSettings => Settings.Settings;
+	public Settings ConfigurationSettings => MosaSettings.Settings;
 
 	public BaseLauncher(Settings settings, CompilerHooks compilerHook)
 	{
 		CompilerHooks = compilerHook;
 
-		var startSettings = new Settings();
+		MosaSettings = new MosaSettings();
+		MosaSettings.SetDetfaultSettings();
 
-		SetDefaultSettings(startSettings);
+		SetDefaultSettings(MosaSettings.Settings);
 
-		startSettings.Merge(settings);
+		MosaSettings.Merge(settings);
 
-		Settings = new MosaSettings(startSettings);
-
-		NormalizeSettings();
+		MosaSettings.NormalizeSettings();
 
 		SetDefaults();
 	}
@@ -47,109 +46,99 @@ public class BaseLauncher
 		settings.SetValue("Launcher.PlugKorlib", true);
 	}
 
-	protected void NormalizeSettings()
-	{
-		// Normalize inputs
-		Settings.ImageFormat = Settings.ImageFormat == null ? string.Empty : Settings.ImageFormat.ToLowerInvariant().Trim();
-		Settings.FileSystem = Settings.FileSystem == null ? string.Empty : Settings.FileSystem.ToLowerInvariant().Trim();
-		Settings.EmulatorSerial = Settings.EmulatorSerial == null ? string.Empty : Settings.EmulatorSerial.ToLowerInvariant().Trim();
-		Settings.Emulator = Settings.Emulator == null ? string.Empty : Settings.Emulator.ToLowerInvariant().Trim();
-		Settings.Platform = Settings.Platform.ToLowerInvariant().Trim();
-	}
-
 	private void SetDefaults()
 	{
-		if (string.IsNullOrWhiteSpace(Settings.TemporaryFolder) || Settings.TemporaryFolder != "%DEFAULT%")
+		if (string.IsNullOrWhiteSpace(MosaSettings.TemporaryFolder) || MosaSettings.TemporaryFolder != "%DEFAULT%")
 		{
-			Settings.TemporaryFolder = Path.Combine(Path.GetTempPath(), "MOSA");
+			MosaSettings.TemporaryFolder = Path.Combine(Path.GetTempPath(), "MOSA");
 		}
 
-		if (string.IsNullOrWhiteSpace(Settings.DefaultFolder) || Settings.DefaultFolder != "%DEFAULT%")
+		if (string.IsNullOrWhiteSpace(MosaSettings.DefaultFolder) || MosaSettings.DefaultFolder != "%DEFAULT%")
 		{
-			if (Settings.OutputFile != null && Settings.OutputFile != "%DEFAULT%")
+			if (MosaSettings.OutputFile != null && MosaSettings.OutputFile != "%DEFAULT%")
 			{
-				Settings.DefaultFolder = Path.GetDirectoryName(Path.GetFullPath(Settings.OutputFile));
+				MosaSettings.DefaultFolder = Path.GetDirectoryName(Path.GetFullPath(MosaSettings.OutputFile));
 			}
 			else
 			{
-				Settings.DefaultFolder = Settings.TemporaryFolder;
+				MosaSettings.DefaultFolder = MosaSettings.TemporaryFolder;
 			}
 		}
 
-		if (Settings.ImageFolder != null && Settings.ImageFolder != "%DEFAULT%")
+		if (MosaSettings.ImageFolder != null && MosaSettings.ImageFolder != "%DEFAULT%")
 		{
-			Settings.ImageFolder = Settings.DefaultFolder;
+			MosaSettings.ImageFolder = MosaSettings.DefaultFolder;
 		}
 
 		string baseFilename;
 
-		if (Settings.OutputFile != null && Settings.OutputFile != "%DEFAULT%")
+		if (MosaSettings.OutputFile != null && MosaSettings.OutputFile != "%DEFAULT%")
 		{
-			baseFilename = Path.GetFileNameWithoutExtension(Settings.OutputFile);
+			baseFilename = Path.GetFileNameWithoutExtension(MosaSettings.OutputFile);
 		}
-		else if (Settings.SourceFiles != null && Settings.SourceFiles.Count != 0)
+		else if (MosaSettings.SourceFiles != null && MosaSettings.SourceFiles.Count != 0)
 		{
-			baseFilename = Path.GetFileNameWithoutExtension(Settings.SourceFiles[0]);
+			baseFilename = Path.GetFileNameWithoutExtension(MosaSettings.SourceFiles[0]);
 		}
-		else if (Settings.ImageFile != null && Settings.ImageFile != "%DEFAULT%")
+		else if (MosaSettings.ImageFile != null && MosaSettings.ImageFile != "%DEFAULT%")
 		{
-			baseFilename = Path.GetFileNameWithoutExtension(Settings.ImageFile);
+			baseFilename = Path.GetFileNameWithoutExtension(MosaSettings.ImageFile);
 		}
 		else
 		{
 			baseFilename = "_mosa_";
 		}
 
-		var defaultFolder = Settings.DefaultFolder;
+		var defaultFolder = MosaSettings.DefaultFolder;
 
-		if (Settings.OutputFile is null or "%DEFAULT%")
+		if (MosaSettings.OutputFile is null or "%DEFAULT%")
 		{
-			Settings.OutputFile = Path.Combine(defaultFolder, $"{baseFilename}.bin");
+			MosaSettings.OutputFile = Path.Combine(defaultFolder, $"{baseFilename}.bin");
 		}
 
-		if (Settings.ImageFile == "%DEFAULT%")
+		if (MosaSettings.ImageFile == "%DEFAULT%")
 		{
-			Settings.ImageFile = Path.Combine(Settings.ImageFolder, $"{baseFilename}.{Settings.ImageFormat}");
+			MosaSettings.ImageFile = Path.Combine(MosaSettings.ImageFolder, $"{baseFilename}.{MosaSettings.ImageFormat}");
 		}
 
-		if (Settings.MapFile == "%DEFAULT%")
+		if (MosaSettings.MapFile == "%DEFAULT%")
 		{
-			Settings.MapFile = Path.Combine(defaultFolder, $"{baseFilename}-map.txt");
+			MosaSettings.MapFile = Path.Combine(defaultFolder, $"{baseFilename}-map.txt");
 		}
 
-		if (Settings.CompileTimeFile == "%DEFAULT%")
+		if (MosaSettings.CompileTimeFile == "%DEFAULT%")
 		{
-			Settings.CompileTimeFile = Path.Combine(defaultFolder, $"{baseFilename}-time.txt");
+			MosaSettings.CompileTimeFile = Path.Combine(defaultFolder, $"{baseFilename}-time.txt");
 		}
 
-		if (Settings.DebugFile == "%DEFAULT%")
+		if (MosaSettings.DebugFile == "%DEFAULT%")
 		{
-			Settings.DebugFile = Path.Combine(defaultFolder, $"{baseFilename}.debug");
+			MosaSettings.DebugFile = Path.Combine(defaultFolder, $"{baseFilename}.debug");
 		}
 
-		if (Settings.InlinedFile == "%DEFAULT%")
+		if (MosaSettings.InlinedFile == "%DEFAULT%")
 		{
-			Settings.InlinedFile = Path.Combine(defaultFolder, $"{baseFilename}-inlined.txt");
+			MosaSettings.InlinedFile = Path.Combine(defaultFolder, $"{baseFilename}-inlined.txt");
 		}
 
-		if (Settings.PreLinkHashFile == "%DEFAULT%")
+		if (MosaSettings.PreLinkHashFile == "%DEFAULT%")
 		{
-			Settings.PreLinkHashFile = Path.Combine(defaultFolder, $"{baseFilename}-prelink-hash.txt");
+			MosaSettings.PreLinkHashFile = Path.Combine(defaultFolder, $"{baseFilename}-prelink-hash.txt");
 		}
 
-		if (Settings.PostLinkHashFile == "%DEFAULT%")
+		if (MosaSettings.PostLinkHashFile == "%DEFAULT%")
 		{
-			Settings.PostLinkHashFile = Path.Combine(defaultFolder, $"{baseFilename}-postlink-hash.txt");
+			MosaSettings.PostLinkHashFile = Path.Combine(defaultFolder, $"{baseFilename}-postlink-hash.txt");
 		}
 
-		if (Settings.AsmFile == "%DEFAULT%")
+		if (MosaSettings.AsmFile == "%DEFAULT%")
 		{
-			Settings.AsmFile = Path.Combine(defaultFolder, $"{baseFilename}.asm");
+			MosaSettings.AsmFile = Path.Combine(defaultFolder, $"{baseFilename}.asm");
 		}
 
-		if (Settings.NasmFile == "%DEFAULT%")
+		if (MosaSettings.NasmFile == "%DEFAULT%")
 		{
-			Settings.NasmFile = Path.Combine(defaultFolder, $"{baseFilename}.nasm");
+			MosaSettings.NasmFile = Path.Combine(defaultFolder, $"{baseFilename}.nasm");
 		}
 	}
 
