@@ -11,6 +11,8 @@ using Mosa.Compiler.Framework.Trace;
 using Mosa.Compiler.MosaTypeSystem.CLR;
 using Mosa.Utility.Configuration;
 
+using Mosa.Utility.Configuration;
+
 namespace Mosa.Tool.Compiler;
 
 /// <summary>
@@ -123,7 +125,7 @@ Example: Mosa.Tool.Compiler.exe -o Mosa.HelloWorld.x86.bin -platform x86 Mosa.He
 	{
 		SetDefaultSettings();
 
-		var arguments = SettingsLoader.RecursiveReader(args);
+		var arguments = Import.RecursiveReader(CommandLineArguments.Map, args);
 
 		Settings.Merge(arguments);
 
@@ -148,50 +150,50 @@ Example: Mosa.Tool.Compiler.exe -o Mosa.HelloWorld.x86.bin -platform x86 Mosa.He
 
 	private void SetDefaultSettings()
 	{
-		Settings.SetValue("Compiler.BaseAddress", 0x00400000);
-		Settings.SetValue("Compiler.Binary", true);
-		Settings.SetValue("Compiler.MethodScanner", false);
-		Settings.SetValue("Compiler.Multithreading", true);
-		Settings.SetValue("Compiler.Platform", "x86");
-		Settings.SetValue("Compiler.TraceLevel", 0);
-		Settings.SetValue("Launcher.PlugKorlib", true);
-		Settings.SetValue("CompilerDebug.DebugFile", string.Empty);
-		Settings.SetValue("CompilerDebug.AsmFile", string.Empty);
-		Settings.SetValue("CompilerDebug.MapFile", string.Empty);
-		Settings.SetValue("CompilerDebug.NasmFile", string.Empty);
-		Settings.SetValue("Optimizations.Basic", true);
-		Settings.SetValue("Optimizations.BitTracker", true);
-		Settings.SetValue("Optimizations.Inline", true);
-		Settings.SetValue("Optimizations.Inline.AggressiveMaximum", 24);
-		Settings.SetValue("Optimizations.Inline.Explicit", true);
-		Settings.SetValue("Optimizations.Inline.Maximum", 12);
-		Settings.SetValue("Optimizations.Basic.Window", 5);
-		Settings.SetValue("Optimizations.LongExpansion", true);
-		Settings.SetValue("Optimizations.LoopInvariantCodeMotion", true);
-		Settings.SetValue("Optimizations.Platform", true);
-		Settings.SetValue("Optimizations.SCCP", true);
-		Settings.SetValue("Optimizations.Devirtualization", true);
-		Settings.SetValue("Optimizations.SSA", true);
-		Settings.SetValue("Optimizations.TwoPass", true);
-		Settings.SetValue("Optimizations.ValueNumbering", true);
-		Settings.SetValue("Image.Folder", Path.Combine(Path.GetTempPath(), "MOSA"));
-		Settings.SetValue("Image.Format", "IMG");
-		Settings.SetValue("Image.FileSystem", "FAT16");
-		Settings.SetValue("Multiboot.Version", "v1");
-		Settings.SetValue("Multiboot.Video", false);
-		Settings.SetValue("Multiboot.Video.Width", 640);
-		Settings.SetValue("Multiboot.Video.Height", 480);
-		Settings.SetValue("Multiboot.Video.Depth", 32);
-		Settings.SetValue("Emulator", "Qemu");
-		Settings.SetValue("Emulator.Memory", 128);
-		Settings.SetValue("Emulator.Serial", "TCPServer");
-		Settings.SetValue("Emulator.Serial.Host", "127.0.0.1");
-		Settings.SetValue("Emulator.Serial.Port", 9999);
-		Settings.SetValue("Emulator.Serial.Pipe", "MOSA");
-		Settings.SetValue("Launcher.Start", false);
-		Settings.SetValue("Launcher.Launch", false);
-		Settings.SetValue("Launcher.Exit", false);
-		Settings.SetValue("OS.Name", "MOSA");
+		Settings.SetValue(SettingName.Compiler_BaseAddress, 0x00400000);
+		Settings.SetValue(SettingName.Compiler_Binary, true);
+		Settings.SetValue(SettingName.Compiler_MethodScanner, false);
+		Settings.SetValue(SettingName.Compiler_Multithreading, true);
+		Settings.SetValue(SettingName.Compiler_Platform, "x86");
+		Settings.SetValue(SettingName.Compiler_TraceLevel, 0);
+		Settings.SetValue(SettingName.Launcher_PlugKorlib, true);
+		Settings.SetValue(SettingName.CompilerDebug_DebugFile, string.Empty);
+		Settings.SetValue(SettingName.CompilerDebug_AsmFile, string.Empty);
+		Settings.SetValue(SettingName.CompilerDebug_MapFile, string.Empty);
+		Settings.SetValue(SettingName.CompilerDebug_NasmFile, string.Empty);
+		Settings.SetValue(SettingName.Optimizations_Basic, true);
+		Settings.SetValue(SettingName.Optimizations_BitTracker, true);
+		Settings.SetValue(SettingName.Optimizations_Inline, true);
+		Settings.SetValue(SettingName.Optimizations_Inline_AggressiveMaximum, 24);
+		Settings.SetValue(SettingName.Optimizations_Inline_Explicit, true);
+		Settings.SetValue(SettingName.Optimizations_Inline_Maximum, 12);
+		Settings.SetValue(SettingName.Optimizations_Basic_Window, 5);
+		Settings.SetValue(SettingName.Optimizations_LongExpansion, true);
+		Settings.SetValue(SettingName.Optimizations_LoopInvariantCodeMotion, true);
+		Settings.SetValue(SettingName.Optimizations_Platform, true);
+		Settings.SetValue(SettingName.Optimizations_SCCP, true);
+		Settings.SetValue(SettingName.Optimizations_Devirtualization, true);
+		Settings.SetValue(SettingName.Optimizations_SSA, true);
+		Settings.SetValue(SettingName.Optimizations_TwoPass, true);
+		Settings.SetValue(SettingName.Optimizations_ValueNumbering, true);
+		Settings.SetValue(SettingName.Image_Folder, Path.Combine(Path.GetTempPath(), "MOSA"));
+		Settings.SetValue(SettingName.Image_Format, "IMG");
+		Settings.SetValue(SettingName.Image_FileSystem, "FAT16");
+		Settings.SetValue(SettingName.Multiboot_Version, "v1");
+		Settings.SetValue(SettingName.Multiboot_Video, false);
+		Settings.SetValue(SettingName.Multiboot_Video_Width, 640);
+		Settings.SetValue(SettingName.Multiboot_Video_Height, 480);
+		Settings.SetValue(SettingName.Multiboot_Video_Depth, 32);
+		Settings.SetValue(SettingName.Emulator, "Qemu");
+		Settings.SetValue(SettingName.Emulator_Memory, 128);
+		Settings.SetValue(SettingName.Emulator_Serial, "TCPServer");
+		Settings.SetValue(SettingName.Emulator_Serial_Host, "127.0.0.1");
+		Settings.SetValue(SettingName.Emulator_Serial_Port, 9999);
+		Settings.SetValue(SettingName.Emulator_Serial_Pipe, "MOSA");
+		Settings.SetValue(SettingName.Launcher_Start, false);
+		Settings.SetValue(SettingName.Launcher_Launch, false);
+		Settings.SetValue(SettingName.Launcher_Exit, false);
+		Settings.SetValue(SettingName.OS_Name, "MOSA");
 	}
 
 	private CompilerHooks CreateCompilerHooks()

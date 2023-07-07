@@ -104,7 +104,7 @@ public partial class MainForm : Form
 	{
 		SetDefaultSettings();
 
-		var arguments = SettingsLoader.RecursiveReader(args);
+		var arguments = Import.RecursiveReader(CommandLineArguments.Map, args);
 
 		Settings.Merge(arguments);
 

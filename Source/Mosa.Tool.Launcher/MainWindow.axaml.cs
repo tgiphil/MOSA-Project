@@ -89,7 +89,7 @@ public partial class MainWindow : Window
 		SetDefaultSettings();
 
 		// Load the CLI arguments
-		settings.Merge(SettingsLoader.RecursiveReader(args));
+		settings.Merge(Import.RecursiveReader(CommandLineArguments.Map, args));
 
 		// Update the GUI settings
 		UpdateGuiSettings();

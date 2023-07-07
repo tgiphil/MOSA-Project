@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Mosa.Compiler.Common.Configuration;
 using Mosa.Compiler.Framework.Linker;
 using Mosa.Compiler.MosaTypeSystem;
 using Mosa.Utility.Configuration;
@@ -19,7 +20,7 @@ public static class UnitTestSystem
 
 	public static int Start(string[] args)
 	{
-		var settings = SettingsLoader.RecursiveReader(args);
+		var settings = Import.RecursiveReader(CommandLineArguments.Map, args);
 
 		var stopwatch = new Stopwatch();
 		stopwatch.Start();
