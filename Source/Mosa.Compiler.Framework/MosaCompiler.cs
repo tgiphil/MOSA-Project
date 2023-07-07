@@ -38,7 +38,10 @@ public sealed class MosaCompiler
 
 	public MosaCompiler(Settings settings, CompilerHooks compilerHook, IModuleLoader moduleLoader, ITypeResolver typeResolver)
 	{
-		CompilerSettings = new CompilerSettings(settings.Clone());
+		CompilerSettings = new CompilerSettings();
+		CompilerSettings.SetDetfaultSettings();
+		CompilerSettings.Merge(settings);
+
 		CompilerHooks = compilerHook;
 		ModuleLoader = moduleLoader;
 		TypeResolver = typeResolver;

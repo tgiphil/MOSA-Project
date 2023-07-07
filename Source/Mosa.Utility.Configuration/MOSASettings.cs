@@ -23,6 +23,8 @@ public class MosaSettings
 
 	#endregion Constants
 
+	public Settings Settings { get; } = new Settings();
+
 	#region Properties
 
 	public string AsmFile
@@ -229,7 +231,11 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Launcher_Debugger, value);
 	}
 
-	public string LinkerFormat => Settings.GetValue(Name.Linker_Format, "elf32");
+	public string LinkerFormat
+	{
+		get => Settings.GetValue(Name.Linker_Format, null);
+		set => Settings.SetValue(Name.Linker_Format, value);
+	}
 
 	public string MapFile
 	{
@@ -237,9 +243,17 @@ public class MosaSettings
 		set => Settings.SetValue(Name.CompilerDebug_MapFile, value);
 	}
 
-	public int MaxThreads => Settings.GetValue(Name.Compiler_Multithreading_MaxThreads, 0);
+	public int MaxThreads
+	{
+		get => Settings.GetValue(Name.Compiler_Multithreading_MaxThreads, 0);
+		set => Settings.SetValue(Name.Compiler_Multithreading_MaxThreads, value);
+	}
 
-	public bool MethodScanner => Settings.GetValue(Name.Compiler_MethodScanner, false);
+	public bool MethodScanner
+	{
+		get => Settings.GetValue(Name.Compiler_MethodScanner, false);
+		set => Settings.SetValue(Name.Compiler_MethodScanner, value);
+	}
 
 	public string Mkisofs
 	{
@@ -426,7 +440,129 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Compiler_TraceLevel, value);
 	}
 
-	public Settings Settings { get; } = new Settings();
+	public bool SSA
+	{
+		get => Settings.GetValue(Name.Optimizations_SSA, true);
+		set => Settings.SetValue(Name.Optimizations_SSA, value);
+	}
+
+	public bool BasicOptimizations
+	{
+		get => Settings.GetValue(Name.Optimizations_Basic, true);
+		set => Settings.SetValue(Name.Optimizations_Basic, value);
+	}
+
+	public bool ValueNumbering
+	{
+		get => Settings.GetValue(Name.Optimizations_ValueNumbering, true);
+		set => Settings.SetValue(Name.Optimizations_ValueNumbering, value);
+	}
+
+	public bool SparseConditionalConstantPropagation
+	{
+		get => Settings.GetValue(Name.Optimizations_SCCP, true);
+		set => Settings.SetValue(Name.Optimizations_SCCP, value);
+	}
+
+	public bool Devirtualization
+	{
+		get => Settings.GetValue(Name.Optimizations_Devirtualization, true);
+		set => Settings.SetValue(Name.Optimizations_Devirtualization, value);
+	}
+
+	public bool LoopInvariantCodeMotion
+	{
+		get => Settings.GetValue(Name.Optimizations_LoopInvariantCodeMotion, true);
+		set => Settings.SetValue(Name.Optimizations_LoopInvariantCodeMotion, value);
+	}
+
+	public bool InlineMethods
+	{
+		get => Settings.GetValue(Name.Optimizations_Inline, true);
+		set => Settings.SetValue(Name.Optimizations_Inline, value);
+	}
+
+	public bool InlineExplicit
+	{
+		get => Settings.GetValue(Name.Optimizations_Inline_Explicit, true);
+		set => Settings.SetValue(Name.Optimizations_Inline_Explicit, value);
+	}
+
+	public bool LongExpansion
+	{
+		get => Settings.GetValue(Name.Optimizations_LongExpansion, true);
+		set => Settings.SetValue(Name.Optimizations_LongExpansion, value);
+	}
+
+	public bool TwoPassOptimizations
+	{
+		get => Settings.GetValue(Name.Optimizations_TwoPass, true);
+		set => Settings.SetValue(Name.Optimizations_TwoPass, value);
+	}
+
+	public bool BitTracker
+	{
+		get => Settings.GetValue(Name.Optimizations_BitTracker, true);
+		set => Settings.SetValue(Name.Optimizations_BitTracker, value);
+	}
+
+	public int OptimizationWindow
+	{
+		get => Settings.GetValue(Name.Optimizations_Basic_Window, 5);
+		set => Settings.SetValue(Name.Optimizations_Basic_Window, value);
+	}
+
+	public int InlineMaximum
+	{
+		get => Settings.GetValue(Name.Optimizations_Inline_Maximum, 12);
+		set => Settings.SetValue(Name.Optimizations_Inline_Maximum, value);
+	}
+
+	public int InlineAggressiveMaximum
+	{
+		get => Settings.GetValue(Name.Optimizations_Inline_AggressiveMaximum, 24);
+		set => Settings.SetValue(Name.Optimizations_Inline_AggressiveMaximum, value);
+	}
+
+	public bool PlatformOptimizations
+	{
+		get => Settings.GetValue(Name.Optimizations_Platform, true);
+		set => Settings.SetValue(Name.Optimizations_Platform, value);
+	}
+
+	public bool TwoPass
+	{
+		get => Settings.GetValue(Name.Optimizations_TwoPass, true);
+		set => Settings.SetValue(Name.Optimizations_TwoPass, value);
+	}
+
+	public bool Statistics
+	{
+		get => Settings.GetValue(Name.CompilerDebug_Statistics, true);
+		set => Settings.SetValue(Name.CompilerDebug_Statistics, value);
+	}
+
+	public bool EmitInline
+	{
+		get => Settings.GetValue(Name.Compiler_EmitInline, false);
+		set => Settings.SetValue(Name.Compiler_EmitInline, value);
+	}
+
+	public List<string> InlineAggressiveList
+	{
+		get => Settings.GetValueList(Name.Optimizations_Inline_Aggressive);
+	}
+
+	public List<string> InlineExcludeList
+	{
+		get => Settings.GetValueList(Name.Optimizations_Inline_Exclude);
+	}
+
+	public bool FullCheckMode
+	{
+		get => Settings.GetValue(Name.CompilerDebug_FullCheckMode, false);
+		set => Settings.SetValue(Name.CompilerDebug_FullCheckMode, value);
+	}
 
 	#endregion Properties
 
@@ -461,14 +597,11 @@ public class MosaSettings
 	{
 		// FUTURE: Use properties to set values
 
-		Settings.SetValue("Compiler.MethodScanner", false);
-		Settings.SetValue("Compiler.Multithreading", true);
-		Settings.SetValue("Compiler.Platform", "x86");
-
-		Settings.SetValue("Compiler.MethodScanner", false);
-		Settings.SetValue("Compiler.Multithreading", true);
-
-		Settings.SetValue("Compiler.BaseAddress", 0x00500000);  // Change to constant
+		MethodScanner = false;
+		Multithreading = true;
+		Platform = "x86";
+		Multithreading = true;
+		BaseAddress = 0x00500000;
 		EmitBinary = true;
 		TraceLevel = 0;
 
