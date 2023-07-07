@@ -7,6 +7,7 @@ using Mosa.Compiler.Common.Configuration;
 using Mosa.Compiler.Framework;
 using Mosa.Compiler.MosaTypeSystem;
 using Mosa.Compiler.MosaTypeSystem.CLR;
+using Mosa.Utility.Configuration;
 
 namespace Mosa.Workspace.Experiment.Debug;
 
@@ -21,45 +22,17 @@ internal static class Program
 	{
 		RegisterPlatforms();
 
-		var settings = new Settings();
+		var mosaSettings = new MosaSettings
+		{
+			BaseAddress = 0x00500000,
+			EmulatorSerialPort = 11111,
+			LauncherStart = false,
+			Launcher = false,
+			LauncherExit = true,
+			ImageFolder = Path.Combine(Path.GetTempPath(), "MOSA-UnitTest")
+		};
 
-		settings.SetValue("Compiler.MethodScanner", false);
-		settings.SetValue("Compiler.Multithreading", true);
-		settings.SetValue("Optimizations.SSA", false);
-		settings.SetValue("Optimizations.Basic", false);
-		settings.SetValue("Optimizations.ValueNumbering", false);
-		settings.SetValue("Optimizations.SCCP", false);
-		settings.SetValue("Optimizations.Devirtualization", false);
-		settings.SetValue("Optimizations.BitTracker", false);
-		settings.SetValue("Optimizations.LoopInvariantCodeMotion", false);
-		settings.SetValue("Optimizations.LongExpansion", false);
-		settings.SetValue("Optimizations.TwoPass", false);
-		settings.SetValue("Optimizations.Platform", false);
-		settings.SetValue("Optimizations.Inline", false);
-		settings.SetValue("Optimizations.Inline.Explicit", false);
-		settings.SetValue("Optimizations.Inline.Maximum", 12);
-		settings.SetValue("Optimizations.Basic.Window", 5);
-		settings.SetValue("Optimizations.Inline.AggressiveMaximum", 24);
-		settings.SetValue("Multiboot.Version", "v1");
-		settings.SetValue("Compiler.Platform", "x86");
-		settings.SetValue("Compiler.BaseAddress", 0x00500000);
-		settings.SetValue("Compiler.Binary", true);
-		settings.SetValue("Compiler.TraceLevel", 0);
-		settings.SetValue("Launcher.PlugKorlib", true);
-		settings.SetValue("Multiboot.Version", "v1");
-		settings.SetValue("Emulator", "Qemu");
-		settings.SetValue("Emulator.Memory", 128);
-		settings.SetValue("Emulator.Serial", "TCPServer");
-		settings.SetValue("Emulator.Serial.Host", "127.0.0.1");
-		settings.SetValue("Emulator.Serial.Port", new Random().Next(11111, 22222));
-		settings.SetValue("Emulator.Serial.Pipe", "MOSA");
-		settings.SetValue("Launcher.Start", false);
-		settings.SetValue("Launcher.Launch", false);
-		settings.SetValue("Launcher.Exit", true);
-		settings.SetValue("Image.Folder", Path.Combine(Path.GetTempPath(), "MOSA-UnitTest"));
-		settings.SetValue("Image.Format", "IMG");
-		settings.SetValue("Image.FileSystem", "FAT16");
-		settings.SetValue("OS.Name", "MOSA");
+		var settings = mosaSettings.Settings;
 
 		settings.AddPropertyListValue("SearchPaths", AppContext.BaseDirectory);
 		settings.AddPropertyListValue("Compiler.SourceFiles", Path.Combine(AppContext.BaseDirectory, "Mosa.UnitTests.x86.dll"));

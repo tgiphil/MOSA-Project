@@ -50,11 +50,15 @@ public partial class MainForm : Form
 	//private ScriptView scriptView;
 
 	public string Status
-	{ set { toolStripStatusLabel1.Text = value; toolStrip1.Refresh(); } }
+	{
+		set { toolStripStatusLabel1.Text = value; toolStrip1.Refresh(); }
+	}
 
 	public Connector GDBConnector { get; private set; }
 
 	public MemoryCache MemoryCache { get; private set; }
+
+	public MosaSettings MosaSettings { get; private set; }
 
 	public Settings Settings { get; }
 
