@@ -13,7 +13,7 @@ public class BaseLauncher
 {
 	public CompilerHooks CompilerHooks { get; }
 
-	public LauncherSettings Settings { get; }
+	public MosaSettings Settings { get; }
 
 	public Settings ConfigurationSettings => Settings.Settings;
 
@@ -27,7 +27,7 @@ public class BaseLauncher
 
 		startSettings.Merge(settings);
 
-		Settings = new LauncherSettings(startSettings);
+		Settings = new MosaSettings(startSettings);
 
 		NormalizeSettings();
 

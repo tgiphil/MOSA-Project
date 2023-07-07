@@ -5,7 +5,7 @@ using Mosa.Compiler.Common.Configuration;
 
 namespace Mosa.Utility.Configuration;
 
-public class MOSASettings
+public class MosaSettings
 {
 	public Settings Settings { get; } = new Settings();
 
@@ -328,9 +328,9 @@ public class MOSASettings
 		set => Settings.SetValue(SettingName.Emulator_MaxRuntime, 10);
 	}
 
-	public List<string> SearchPaths => Settings.GetValueList("SearchPaths");
+	public List<string> SearchPaths => Settings.GetValueList(SettingName.SearchPaths);
 
-	public List<string> SourceFiles => Settings.GetValueList("Compiler_SourceFiles");
+	public List<string> SourceFiles => Settings.GetValueList(SettingName.Compiler_SourceFiles);
 
 	public string FileSystemRootInclude
 	{
@@ -364,7 +364,7 @@ public class MOSASettings
 
 	#endregion Properties
 
-	public MOSASettings(Settings settings)
+	public MosaSettings(Settings settings)
 	{
 		Settings.Merge(settings);
 	}
