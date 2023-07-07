@@ -13,7 +13,7 @@ public class BaseLauncher
 {
 	public CompilerHooks CompilerHooks { get; }
 
-	public MosaSettings MosaSettings { get; }
+	public Configuration.MosaSettings MosaSettings { get; }
 
 	public Settings ConfigurationSettings => MosaSettings.Settings;
 
@@ -21,7 +21,7 @@ public class BaseLauncher
 	{
 		CompilerHooks = compilerHook;
 
-		MosaSettings = new MosaSettings();
+		MosaSettings = new Configuration.MosaSettings();
 		MosaSettings.SetDetfaultSettings();
 
 		SetDefaultSettings(MosaSettings.Settings);

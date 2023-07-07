@@ -79,12 +79,12 @@ Example: Mosa.Tool.Compiler.exe -o Mosa.HelloWorld.x86.bin -platform x86 Mosa.He
 
 			compiler = new MosaCompiler(Settings, CreateCompilerHooks(), new ClrModuleLoader(), new ClrTypeResolver());
 
-			if (string.IsNullOrEmpty(compiler.CompilerSettings.OutputFile))
+			if (string.IsNullOrEmpty(compiler.MosaSettings.OutputFile))
 			{
 				throw new Exception("No output file specified.");
 			}
 
-			if (compiler.CompilerSettings.Platform == null)
+			if (compiler.MosaSettings.Platform == null)
 			{
 				throw new Exception("No Architecture specified.");
 			}
@@ -92,9 +92,9 @@ Example: Mosa.Tool.Compiler.exe -o Mosa.HelloWorld.x86.bin -platform x86 Mosa.He
 			Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
 			Debug.AutoFlush = true;
 
-			Console.WriteLine($" > Output file: {compiler.CompilerSettings.OutputFile}");
-			Console.WriteLine($" > Input file(s): {string.Join(", ", new List<string>(compiler.CompilerSettings.SourceFiles.ToArray()))}");
-			Console.WriteLine($" > Platform: {compiler.CompilerSettings.Platform}");
+			Console.WriteLine($" > Output file: {compiler.MosaSettings.OutputFile}");
+			Console.WriteLine($" > Input file(s): {string.Join(", ", new List<string>(compiler.MosaSettings.SourceFiles.ToArray()))}");
+			Console.WriteLine($" > Platform: {compiler.MosaSettings.Platform}");
 
 			Console.WriteLine();
 			Console.WriteLine("Compiling ...");

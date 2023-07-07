@@ -46,7 +46,7 @@ public sealed class MosaLinker
 	{
 		Compiler = compiler;
 
-		LinkerSettings = new LinkerSettings(compiler.CompilerSettings.Settings);
+		LinkerSettings = new LinkerSettings(compiler.MosaSettings.Settings);
 
 		LinkerFormatType = LinkerSettings.LinkerFormat.ToLowerInvariant() == "elf64" ? LinkerFormatType.Elf64 : LinkerFormatType.Elf32;
 

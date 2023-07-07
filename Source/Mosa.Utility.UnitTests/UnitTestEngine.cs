@@ -63,7 +63,7 @@ public class UnitTestEngine : IDisposable
 	protected Starter Starter;
 	protected Process Process;
 
-	private MosaSettings MosaSettings = new MosaSettings();
+	private Configuration.MosaSettings MosaSettings = new Configuration.MosaSettings();
 
 	//private Settings Settings => MosaSettings.Settings;
 
@@ -287,7 +287,7 @@ public class UnitTestEngine : IDisposable
 		Linker = builder.Linker;
 		TypeSystem = builder.TypeSystem;
 
-		MosaSettings = new MosaSettings(builder.ConfigurationSettings); // Switch to builder settings
+		MosaSettings = new Configuration.MosaSettings(builder.ConfigurationSettings); // Switch to builder settings
 
 		return builder.IsSucccessful;
 	}
@@ -346,7 +346,7 @@ public class UnitTestEngine : IDisposable
 
 			Starter = new Starter(MosaSettings.Settings, compilerHook);
 
-			MosaSettings = new MosaSettings(Starter.ConfigurationSettings); // Switch to starter settings
+			MosaSettings = new Configuration.MosaSettings(Starter.ConfigurationSettings); // Switch to starter settings
 		}
 
 		if (!Starter.Launch())
