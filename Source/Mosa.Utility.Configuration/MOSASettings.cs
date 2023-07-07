@@ -617,11 +617,13 @@ public class MosaSettings
 		EmitBinary = true;
 		TraceLevel = 0;
 
-		Settings.SetValue("CompilerDebug.DebugFile", "%DEFAULT%");
-		Settings.SetValue("CompilerDebug.AsmFile", "%DEFAULT%");
-		Settings.SetValue("CompilerDebug.MapFile", "%DEFAULT%");
-		Settings.SetValue("CompilerDebug.InlinedFile", "%DEFAULT%");
-		Settings.SetValue("CompilerDebug.NasmFile", string.Empty);
+		ImageFile = "%DEFAULT%";
+
+		DebugFile = null;
+		AsmFile = null;
+		MapFile = null;
+		NasmFile = null;
+		InlinedFile = null;
 
 		Settings.SetValue("Optimizations.Basic", true);
 		Settings.SetValue("Optimizations.BitTracker", true);
@@ -644,7 +646,10 @@ public class MosaSettings
 		Settings.SetValue("Multiboot.Video.Height", 480);
 		Settings.SetValue("Multiboot.Video.Depth", 32);
 
+		Settings.SetValue("Emulator", "Qemu");
 		Settings.SetValue("Emulator.Display", false);
+		Settings.SetValue("Emulator.Memory", 128);
+		Settings.SetValue("Emulator.Cores", 1);
 		Settings.SetValue("Emulator.Serial", "TCPServer");
 		Settings.SetValue("Emulator.Serial.Host", "127.0.0.1");
 		Settings.SetValue("Emulator.Serial.Port", Constant.Port);
@@ -667,13 +672,14 @@ public class MosaSettings
 
 		Settings.SetValue("Launcher.PlugKorlib", true);
 
-		Settings.SetValue("Emulator", "Qemu");
-		Settings.SetValue("Emulator.Memory", 128);
-		Settings.SetValue("Emulator.Cores", 1);
-
 		Settings.SetValue("Launcher.Start", false);
 		Settings.SetValue("Launcher.Launch", false);
 		Settings.SetValue("Launcher.Exit", true);
+
+		Settings.SetValue(Name.Multiboot_Video, false);
+		Settings.SetValue(Name.Multiboot_Video_Width, 640);
+		Settings.SetValue(Name.Multiboot_Video_Height, 480);
+		Settings.SetValue(Name.Multiboot_Video_Depth, 32);
 	}
 
 	public void NormalizeSettings()
@@ -683,5 +689,114 @@ public class MosaSettings
 		EmulatorSerial = EmulatorSerial == null ? string.Empty : EmulatorSerial.ToLowerInvariant().Trim();
 		Emulator = Emulator == null ? string.Empty : Emulator.ToLowerInvariant().Trim();
 		Platform = Platform == null ? string.Empty : Platform.ToLowerInvariant().Trim();
+	}
+
+	public void UpdateFileAndPathSettings()
+	{
+		if (string.IsNullOrWhiteSpace(TemporaryFolder) || TemporaryFolder != "%DEFAULT%")
+		{
+			TemporaryFolder = Path.Combine(Path.GetTempPath(), "MOSA");
+		}
+
+		if (string.IsNullOrWhiteSpace(ImageFolder) || ImageFolder != "%DEFAULT%")
+		{
+			ImageFolder = TemporaryFolder;
+		}
+
+		if (string.IsNullOrWhiteSpace(DefaultFolder) || DefaultFolder != "%DEFAULT%")
+		{
+			if (OutputFile != null && OutputFile != "%DEFAULT%")
+			{
+				DefaultFolder = Path.GetDirectoryName(Path.GetFullPath(OutputFile));
+			}
+			else
+			{
+				DefaultFolder = TemporaryFolder;
+			}
+		}
+
+		var defaultFolder = DefaultFolder;
+
+		string baseFilename;
+
+		if (OutputFile != null && OutputFile != "%DEFAULT%")
+		{
+			baseFilename = Path.GetFileNameWithoutExtension(OutputFile);
+		}
+		else if (SourceFiles != null && SourceFiles.Count != 0)
+		{
+			baseFilename = Path.GetFileNameWithoutExtension(SourceFiles[0]);
+		}
+		else
+		{
+			baseFilename = "_mosa_";
+		}
+
+		if (OutputFile is null or "%DEFAULT%")
+		{
+			OutputFile = Path.Combine(defaultFolder, $"{baseFilename}.bin");
+		}
+
+		if (ImageFile == "%DEFAULT%")
+		{
+			ImageFile = Path.Combine(ImageFolder, $"{baseFilename}.{ImageFormat}");
+		}
+
+		if (MapFile == "%DEFAULT%")
+		{
+			MapFile = Path.Combine(defaultFolder, $"{baseFilename}-map.txt");
+		}
+
+		if (CompileTimeFile == "%DEFAULT%")
+		{
+			CompileTimeFile = Path.Combine(defaultFolder, $"{baseFilename}-time.txt");
+		}
+
+		if (DebugFile == "%DEFAULT%")
+		{
+			DebugFile = Path.Combine(defaultFolder, $"{baseFilename}.debug");
+		}
+
+		if (InlinedFile == "%DEFAULT%")
+		{
+			InlinedFile = Path.Combine(defaultFolder, $"{baseFilename}-inlined.txt");
+		}
+
+		if (PreLinkHashFile == "%DEFAULT%")
+		{
+			PreLinkHashFile = Path.Combine(defaultFolder, $"{baseFilename}-prelink-hash.txt");
+		}
+
+		if (PostLinkHashFile == "%DEFAULT%")
+		{
+			PostLinkHashFile = Path.Combine(defaultFolder, $"{baseFilename}-postlink-hash.txt");
+		}
+
+		if (AsmFile == "%DEFAULT%")
+		{
+			AsmFile = Path.Combine(defaultFolder, $"{baseFilename}.asm");
+		}
+
+		if (NasmFile == "%DEFAULT%")
+		{
+			NasmFile = Path.Combine(defaultFolder, $"{baseFilename}.nasm");
+		}
+	}
+
+	public void ExpandSearchPaths()
+	{
+		if (SourceFiles == null)
+			return;
+
+		foreach (var sourcefile in SourceFiles)
+		{
+			var full = Path.GetFullPath(sourcefile);
+			var path = Path.GetDirectoryName(full);
+
+			if (!string.IsNullOrWhiteSpace(path))
+			{
+				Settings.AddPropertyListValue("SearchPaths", path);
+			}
+		}
 	}
 }
