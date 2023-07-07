@@ -60,8 +60,6 @@ public partial class MainForm : Form
 
 	public MosaSettings MosaSettings { get; private set; }
 
-	public Settings Settings => MosaSettings.Settings;
-
 	public DebugSource DebugSource { get; set; } = new DebugSource();
 
 	public List<BreakPoint> BreakPoints { get; } = new List<BreakPoint>();
@@ -318,7 +316,7 @@ public partial class MainForm : Form
 
 	private void btnConnect_Click(object sender, EventArgs e)
 	{
-		using (var connect = new ConnectWindow(Settings))
+		using (var connect = new ConnectWindow(MosaSettings.Settings))
 		{
 			if (connect.ShowDialog(this) == DialogResult.OK)
 			{
@@ -561,11 +559,7 @@ public partial class MainForm : Form
 
 	public void LoadArguments(string[] args)
 	{
-		var arguments = Reader.ParseArguments(args, CommandLineArguments.Map);
-
-		Settings.Merge(arguments);
-
-		//UpdateDisplay(Settings);
+		MosaSettings.LoadArguments(args);
 	}
 
 	private void toolStripButton2_Click(object sender, EventArgs e)
@@ -655,7 +649,7 @@ public partial class MainForm : Form
 	{
 		var compilerHook = CreateCompilerHooks();
 
-		var starter = new Starter(Settings, compilerHook);
+		var starter = new Starter(MosaSettings.Settings, compilerHook);
 
 		VMProcess = starter.LaunchVM();
 
