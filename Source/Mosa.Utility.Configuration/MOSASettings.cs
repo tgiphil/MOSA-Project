@@ -564,6 +564,18 @@ public class MosaSettings
 		set => Settings.SetValue(Name.CompilerDebug_FullCheckMode, value);
 	}
 
+	public string BreakpointFile
+	{
+		get { return Settings.GetValue(Name.Debugger_BreakpointFile, null); }
+		set { Settings.SetValue(Name.Debugger_BreakpointFile, value); }
+	}
+
+	public string WatchFile
+	{
+		get { return Settings.GetValue(Name.Debugger_WatchFile, null); }
+		set { Settings.SetValue(Name.Debugger_WatchFile, value); }
+	}
+
 	#endregion Properties
 
 	public MosaSettings()
