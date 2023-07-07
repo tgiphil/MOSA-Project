@@ -115,6 +115,7 @@ public class Builder : BaseLauncher
 
 			if (fileKorlib != null)
 			{
+				//MosaSettings.SourceFiles.Add(fileKorlib.FullName);
 				ConfigurationSettings.AddPropertyListValue("Compiler.SourceFiles", fileKorlib.FullName);
 			}
 

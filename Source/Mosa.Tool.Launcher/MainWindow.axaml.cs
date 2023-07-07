@@ -523,7 +523,12 @@ public partial class MainWindow : Window
 		Tabs.SelectedIndex = 4;
 		UpdateSettings();
 
-		var result = CheckOptions.Verify(settings);
+		var mosaSettings = new MosaSettings();
+		mosaSettings.SetDetfaultSettings();
+		mosaSettings.Merge(settings);
+
+		var result = CheckOptions.Verify(mosaSettings);
+
 		if (result == null)
 			CompileBuildAndStart();
 		else

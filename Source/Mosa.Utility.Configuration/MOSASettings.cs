@@ -459,6 +459,8 @@ public class MosaSettings
 
 	public void SetDetfaultSettings()
 	{
+		// FUTURE: Use properties to set values
+
 		Settings.SetValue("Compiler.MethodScanner", false);
 		Settings.SetValue("Compiler.Multithreading", true);
 		Settings.SetValue("Compiler.Platform", "x86");
@@ -503,7 +505,7 @@ public class MosaSettings
 		Settings.SetValue("Emulator.Serial.Port", Constant.Port);
 		Settings.SetValue("Emulator.Serial.Pipe", "MOSA");
 
-		Settings.SetValue("Multiboot.Version", "v1");   // Change to constant
+		MultibootVersion = Constant.MultibootVersion;
 
 		Settings.SetValue("Image.Firmware", "bios");
 		Settings.SetValue("Image.Folder", Path.Combine(Path.GetTempPath(), "MOSA-UnitTest"));
@@ -535,6 +537,6 @@ public class MosaSettings
 		FileSystem = FileSystem == null ? string.Empty : FileSystem.ToLowerInvariant().Trim();
 		EmulatorSerial = EmulatorSerial == null ? string.Empty : EmulatorSerial.ToLowerInvariant().Trim();
 		Emulator = Emulator == null ? string.Empty : Emulator.ToLowerInvariant().Trim();
-		Platform = Platform.ToLowerInvariant().Trim();
+		Platform = Platform == null ? string.Empty : Platform.ToLowerInvariant().Trim();
 	}
 }

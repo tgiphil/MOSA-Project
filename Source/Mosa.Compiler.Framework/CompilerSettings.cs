@@ -100,7 +100,6 @@ public class CompilerSettings
 		Settings.SetValue("Compiler.TraceLevel", 0);
 		Settings.SetValue("Compiler.Platform", "x86");
 		Settings.SetValue("Compiler.Multithreading", true);
-		//Settings.SetValue("Compiler.Multithreading.MaxThreads", 1);
 		Settings.SetValue("Optimizations.SSA", true);
 		Settings.SetValue("Optimizations.Basic", true);
 		Settings.SetValue("Optimizations.ValueNumbering", true);
