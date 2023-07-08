@@ -3,9 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection.Metadata.Ecma335;
-using Mosa.Compiler.Common.Configuration;
 using Mosa.Compiler.Framework;
 using Mosa.Compiler.Framework.Trace;
 using Mosa.Compiler.MosaTypeSystem.CLR;
@@ -53,6 +50,7 @@ Example: Mosa.Tool.Compiler.exe -o Mosa.HelloWorld.x86.bin -platform x86 Mosa.He
 			var mosaSettings = new MosaSettings();
 
 			mosaSettings.SetDetfaultSettings();
+			mosaSettings.LoadAppSettings();
 			mosaSettings.LoadArguments(args);
 			SetRequiredSettings(mosaSettings);
 			mosaSettings.ExpandSearchPaths();
@@ -63,7 +61,7 @@ Example: Mosa.Tool.Compiler.exe -o Mosa.HelloWorld.x86.bin -platform x86 Mosa.He
 				throw new Exception("No input file(s) specified.");
 			}
 
-			var compiler = new MosaCompiler(mosaSettings.Settings, CreateCompilerHooks(), new ClrModuleLoader(), new ClrTypeResolver());
+			var compiler = new MosaCompiler(mosaSettings, CreateCompilerHooks(), new ClrModuleLoader(), new ClrTypeResolver());
 
 			if (string.IsNullOrEmpty(compiler.MosaSettings.OutputFile))
 			{
@@ -109,7 +107,7 @@ Example: Mosa.Tool.Compiler.exe -o Mosa.HelloWorld.x86.bin -platform x86 Mosa.He
 
 	#region Private Methods
 
-	private void SetRequiredSettings(MosaSettings mosaSettings)
+	private static void SetRequiredSettings(MosaSettings mosaSettings)
 	{
 		mosaSettings.LauncherExit = false;
 	}

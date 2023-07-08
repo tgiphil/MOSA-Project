@@ -315,7 +315,7 @@ public partial class MainForm : Form
 
 	private void btnConnect_Click(object sender, EventArgs e)
 	{
-		using (var connect = new ConnectWindow(MosaSettings.Settings))
+		using (var connect = new ConnectWindow(MosaSettings))
 		{
 			if (connect.ShowDialog(this) == DialogResult.OK)
 			{
@@ -648,7 +648,7 @@ public partial class MainForm : Form
 	{
 		var compilerHook = CreateCompilerHooks();
 
-		var starter = new Starter(MosaSettings.Settings, compilerHook);
+		var starter = new Starter(MosaSettings, compilerHook);
 
 		VMProcess = starter.LaunchVM();
 

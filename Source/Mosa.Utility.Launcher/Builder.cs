@@ -14,6 +14,7 @@ using Mosa.Compiler.Framework.Trace;
 using Mosa.Compiler.MosaTypeSystem;
 using Mosa.Compiler.MosaTypeSystem.CLR;
 using Mosa.Utility.BootImage;
+using Mosa.Utility.Configuration;
 
 namespace Mosa.Utility.Launcher;
 
@@ -31,8 +32,8 @@ public class Builder : BaseLauncher
 
 	public const uint MultibootHeaderLength = 3 * 16;
 
-	public Builder(Settings settings, CompilerHooks compilerHooks)
-		: base(settings, compilerHooks)
+	public Builder(MosaSettings mosaSettings, CompilerHooks compilerHooks)
+		: base(mosaSettings, compilerHooks)
 	{
 		Counters = new List<string>();
 
@@ -116,7 +117,7 @@ public class Builder : BaseLauncher
 			if (fileKorlib != null)
 			{
 				//MosaSettings.SourceFiles.Add(fileKorlib.FullName);
-				ConfigurationSettings.AddPropertyListValue("Compiler.SourceFiles", fileKorlib.FullName);
+				MosaSettings.AddSourceFile(fileKorlib.FullName);
 			}
 
 			var platform = MosaSettings.Platform;
@@ -130,13 +131,13 @@ public class Builder : BaseLauncher
 
 			if (fileKorlibPlatform != null)
 			{
-				ConfigurationSettings.AddPropertyListValue("Compiler.SourceFiles", fileKorlibPlatform.FullName);
+				MosaSettings.AddSourceFile(fileKorlibPlatform.FullName);
 			}
 		}
 
 		Output($"Compiling: {MosaSettings.SourceFiles[0]}");
 
-		var compiler = new MosaCompiler(ConfigurationSettings, CompilerHooks, new ClrModuleLoader(), new ClrTypeResolver());
+		var compiler = new MosaCompiler(MosaSettings, CompilerHooks, new ClrModuleLoader(), new ClrTypeResolver());
 
 		compiler.Load();
 		compiler.Initialize();

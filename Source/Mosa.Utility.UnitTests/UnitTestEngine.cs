@@ -113,7 +113,7 @@ public class UnitTestEngine : IDisposable
 		MosaSettings.EmulatorCores = 1;
 		MosaSettings.Launcher = true;
 		MosaSettings.LauncherStart = false;
-		MosaSettings.LauncherExit = true;
+		MosaSettings.LauncherExit = true; // REVIEW: really?
 		MosaSettings.TraceLevel = 0;
 	}
 
@@ -273,21 +273,21 @@ public class UnitTestEngine : IDisposable
 	{
 		Stopwatch.Restart();
 
-		MosaSettings.Settings.AddPropertyListValue("SearchPaths", TestAssemblyPath);
+		MosaSettings.AddSearchPath(TestAssemblyPath);
 
-		MosaSettings.Settings.ClearProperty("Compiler.SourceFiles");
-		MosaSettings.Settings.AddPropertyListValue("Compiler.SourceFiles", Path.Combine(TestAssemblyPath, TestSuiteFile));
+		MosaSettings.ClearSourceFiles();
+		MosaSettings.AddSourceFile(Path.Combine(TestAssemblyPath, TestSuiteFile));
 
 		var compilerHook = CreateCompilerHook();
 
-		var builder = new Builder(MosaSettings.Settings, compilerHook);
+		var builder = new Builder(MosaSettings, compilerHook);
 
 		builder.Build();
 
 		Linker = builder.Linker;
 		TypeSystem = builder.TypeSystem;
 
-		MosaSettings = new Configuration.MosaSettings(builder.ConfigurationSettings); // Switch to builder settings
+		MosaSettings = builder.MosaSettings; // Switch to builder settings
 
 		return builder.IsSucccessful;
 	}
@@ -344,9 +344,9 @@ public class UnitTestEngine : IDisposable
 		{
 			var compilerHook = CreateCompilerHook();
 
-			Starter = new Starter(MosaSettings.Settings, compilerHook);
+			Starter = new Starter(MosaSettings, compilerHook);
 
-			MosaSettings = new Configuration.MosaSettings(Starter.ConfigurationSettings); // Switch to starter settings
+			MosaSettings = Starter.MosaSettings; // Switch to starter settings
 		}
 
 		if (!Starter.Launch())

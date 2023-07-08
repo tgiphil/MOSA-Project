@@ -28,20 +28,18 @@ internal static class Program
 			EmulatorSerialPort = 11111,
 			LauncherStart = false,
 			Launcher = false,
-			LauncherExit = true,
+			LauncherExit = false,
 			ImageFolder = Path.Combine(Path.GetTempPath(), "MOSA-UnitTest")
 		};
 
-		var settings = mosaSettings.Settings;
-
-		settings.AddPropertyListValue("SearchPaths", AppContext.BaseDirectory);
-		settings.AddPropertyListValue("Compiler.SourceFiles", Path.Combine(AppContext.BaseDirectory, "Mosa.UnitTests.x86.dll"));
-		settings.AddPropertyListValue("Compiler.SourceFiles", Path.Combine(AppContext.BaseDirectory, "Mosa.Plug.Korlib.dll"));
-		settings.AddPropertyListValue("Compiler.SourceFiles", Path.Combine(AppContext.BaseDirectory, "Mosa.Plug.Korlib.x86.dll"));
+		mosaSettings.AddSearchPath(AppContext.BaseDirectory);
+		mosaSettings.AddSourceFile(Path.Combine(AppContext.BaseDirectory, "Mosa.UnitTests.x86.dll"));
+		mosaSettings.AddSourceFile(Path.Combine(AppContext.BaseDirectory, "Mosa.Plug.Korlib.dll"));
+		mosaSettings.AddSourceFile(Path.Combine(AppContext.BaseDirectory, "Mosa.Plug.Korlib.x86.dll"));
 
 		var stopwatch = new Stopwatch();
 
-		var compiler = new MosaCompiler(settings, new CompilerHooks(), new ClrModuleLoader(), new ClrTypeResolver());
+		var compiler = new MosaCompiler(mosaSettings, new CompilerHooks(), new ClrModuleLoader(), new ClrTypeResolver());
 
 		compiler.Load();
 		compiler.Initialize();

@@ -195,11 +195,11 @@ public sealed class Compiler
 		mosaSettings.BasicOptimizations && mosaSettings.BitTracker ? new OptimizationStage(false) : null,
 		mosaSettings.BasicOptimizations && mosaSettings.LongExpansion ? new OptimizationStage(mosaSettings.LongExpansion) : null,
 
-		mosaSettings.TwoPass && mosaSettings.ValueNumbering && mosaSettings.SSA ? new ValueNumberingStage() : null,
-		mosaSettings.TwoPass && mosaSettings.LoopInvariantCodeMotion && mosaSettings.SSA ? new LoopInvariantCodeMotionStage() : null,
-		mosaSettings.TwoPass && mosaSettings.SparseConditionalConstantPropagation && mosaSettings.SSA ? new SparseConditionalConstantPropagationStage() : null,
-		mosaSettings.TwoPass && mosaSettings.BitTracker ? new BitTrackerStage() : null,
-		mosaSettings.TwoPass && mosaSettings.BasicOptimizations && mosaSettings.SSA ? new OptimizationStage(mosaSettings.LongExpansion) : null,
+		mosaSettings.TwoPassOptimizations && mosaSettings.ValueNumbering && mosaSettings.SSA ? new ValueNumberingStage() : null,
+		mosaSettings.TwoPassOptimizations && mosaSettings.LoopInvariantCodeMotion && mosaSettings.SSA ? new LoopInvariantCodeMotionStage() : null,
+		mosaSettings.TwoPassOptimizations && mosaSettings.SparseConditionalConstantPropagation && mosaSettings.SSA ? new SparseConditionalConstantPropagationStage() : null,
+		mosaSettings.TwoPassOptimizations && mosaSettings.BitTracker ? new BitTrackerStage() : null,
+		mosaSettings.TwoPassOptimizations && mosaSettings.BasicOptimizations && mosaSettings.SSA ? new OptimizationStage(mosaSettings.LongExpansion) : null,
 
 		mosaSettings.SSA ? new ExitSSAStage() : null,
 

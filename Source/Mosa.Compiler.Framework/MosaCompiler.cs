@@ -37,11 +37,11 @@ public sealed class MosaCompiler
 
 	public bool IsSuccess => !Compiler.HasError && Stage != CompileStage.Error;
 
-	public MosaCompiler(Settings settings, CompilerHooks compilerHook, IModuleLoader moduleLoader, ITypeResolver typeResolver)
+	public MosaCompiler(MosaSettings mosaSettings, CompilerHooks compilerHook, IModuleLoader moduleLoader, ITypeResolver typeResolver)
 	{
 		MosaSettings = new MosaSettings();
 		MosaSettings.SetDetfaultSettings();
-		MosaSettings.Merge(settings);
+		MosaSettings.Merge(mosaSettings);
 
 		CompilerHooks = compilerHook;
 		ModuleLoader = moduleLoader;

@@ -28,7 +28,7 @@ public static class UnitTestSystem
 
 		Console.WriteLine("Discovering Unit Tests...");
 
-		var discoveredUnitTests = Discovery.DiscoverUnitTests(mosaSettings.Filter);
+		var discoveredUnitTests = Discovery.DiscoverUnitTests(mosaSettings.UnitTestFilter);
 
 		Console.WriteLine($"Found Tests: {discoveredUnitTests.Count} in {(stopwatch.ElapsedMilliseconds / 1000.0).ToString("F2")} secs");
 		Console.WriteLine();

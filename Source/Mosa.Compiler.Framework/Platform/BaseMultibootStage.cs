@@ -132,11 +132,11 @@ public abstract class BaseMultibootStage : BaseCompilerStage
 
 	protected override void Initialization()
 	{
-		IsV2 = MosaSettings.Settings.GetValue("Multiboot.Version", "v1") == "v2";
-		HasVideo = MosaSettings.Settings.GetValue("Multiboot.Video", false);
-		Width = MosaSettings.Settings.GetValue("Multiboot.Video.Width", 0);
-		Height = MosaSettings.Settings.GetValue("Multiboot.Video.Height", 0);
-		Depth = MosaSettings.Settings.GetValue("Multiboot.Video.Depth", 0);
+		IsV2 = MosaSettings.MultibootVersion == "v2";
+		HasVideo = MosaSettings.MultibootVideo;
+		Width = MosaSettings.MultibootVideoWidth;
+		Height = MosaSettings.MultibootVideoHeight;
+		Depth = MosaSettings.MultibootVideoDepth;
 
 		InitialStackAddress = MosaSettings.Settings.GetValue("Multiboot.InitialStackAddress", StackAddress);
 	}

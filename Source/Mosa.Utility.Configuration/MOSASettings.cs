@@ -33,9 +33,9 @@ public class MosaSettings
 		set => Settings.SetValue(Name.CompilerDebug_AsmFile, value);
 	}
 
-	public int BaseAddress
+	public ulong BaseAddress
 	{
-		get => Settings.GetValue(Name.Compiler_BaseAddress, 0);
+		get => Settings.GetValue(Name.Compiler_BaseAddress, 0ul);
 		set => Settings.SetValue(Name.Compiler_BaseAddress, value);
 	}
 
@@ -428,10 +428,16 @@ public class MosaSettings
 		set => Settings.SetValue(Name.UnitTest_Connection_MaxAttempts, value);
 	}
 
-	public string Filter
+	public string UnitTestFilter
 	{
 		get => Settings.GetValue(Name.UnitTest_Filter, null);
 		set => Settings.SetValue(Name.UnitTest_Filter, value);
+	}
+
+	public string ExplorerFilter
+	{
+		get => Settings.GetValue(Name.Explorer_Filter, null);
+		set => Settings.SetValue(Name.Explorer_Filter, value);
 	}
 
 	public int TraceLevel
@@ -530,12 +536,6 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Optimizations_Platform, value);
 	}
 
-	public bool TwoPass
-	{
-		get => Settings.GetValue(Name.Optimizations_TwoPass, true);
-		set => Settings.SetValue(Name.Optimizations_TwoPass, value);
-	}
-
 	public bool Statistics
 	{
 		get => Settings.GetValue(Name.CompilerDebug_Statistics, true);
@@ -546,6 +546,24 @@ public class MosaSettings
 	{
 		get => Settings.GetValue(Name.Compiler_EmitInline, false);
 		set => Settings.SetValue(Name.Compiler_EmitInline, value);
+	}
+
+	public bool EmitSymbols
+	{
+		get => Settings.GetValue(Name.Linker_Symbols, false);
+		set => Settings.SetValue(Name.Linker_Symbols, value);
+	}
+
+	public bool EmitStaticRelocations
+	{
+		get => Settings.GetValue(Name.Linker_StaticRelocations, false);
+		set => Settings.SetValue(Name.Linker_StaticRelocations, value);
+	}
+
+	public bool EmitShortSymbolNames
+	{
+		get => Settings.GetValue(Name.Linker_ShortSymbolNames, false);
+		set => Settings.SetValue(Name.Linker_ShortSymbolNames, value);
 	}
 
 	public List<string> InlineAggressiveList
@@ -576,6 +594,42 @@ public class MosaSettings
 		set { Settings.SetValue(Name.Debugger_WatchFile, value); }
 	}
 
+	public bool ExplorerStart
+	{
+		get => Settings.GetValue(Name.Explorer_Start, false);
+		set => Settings.SetValue(Name.Explorer_Start, value);
+	}
+
+	public bool DebugDiagnostic
+	{
+		get => Settings.GetValue(Name.Explorer_DebugDiagnostic, false);
+		set => Settings.SetValue(Name.Explorer_DebugDiagnostic, value);
+	}
+
+	public bool MultibootVideo
+	{
+		get => Settings.GetValue(Name.Multiboot_Video, false);
+		set => Settings.SetValue(Name.Multiboot_Video, value);
+	}
+
+	public int MultibootVideoWidth
+	{
+		get => Settings.GetValue(Name.Multiboot_Video_Width, 640);
+		set => Settings.SetValue(Name.Multiboot_Video_Width, value);
+	}
+
+	public int MultibootVideoHeight
+	{
+		get => Settings.GetValue(Name.Multiboot_Video_Height, 480);
+		set => Settings.SetValue(Name.Multiboot_Video_Height, value);
+	}
+
+	public int MultibootVideoDepth
+	{
+		get => Settings.GetValue(Name.Multiboot_Video_Depth, 32);
+		set => Settings.SetValue(Name.Multiboot_Video_Depth, value);
+	}
+
 	#endregion Properties
 
 	public MosaSettings()
@@ -588,9 +642,19 @@ public class MosaSettings
 		Merge(settings);
 	}
 
+	public MosaSettings(MosaSettings mosaSettings)
+	{
+		Merge(mosaSettings);
+	}
+
 	public void Merge(Settings settings)
 	{
 		Settings.Merge(settings);
+	}
+
+	public void Merge(MosaSettings mosaSettings)
+	{
+		Settings.Merge(mosaSettings.Settings);
 	}
 
 	public void LoadAppSettings()
@@ -625,61 +689,67 @@ public class MosaSettings
 		NasmFile = null;
 		InlinedFile = null;
 
-		Settings.SetValue("Optimizations.Basic", true);
-		Settings.SetValue("Optimizations.BitTracker", true);
-		Settings.SetValue("Optimizations.Inline", true);
-		Settings.SetValue("Optimizations.Inline.AggressiveMaximum", 24); // Change to constant
-		Settings.SetValue("Optimizations.Inline.Explicit", true);
-		Settings.SetValue("Optimizations.Inline.Maximum", 12); // Change to constant
-		Settings.SetValue("Optimizations.Basic.Window", 5); // Change to constant
-		Settings.SetValue("Optimizations.LongExpansion", true);
-		Settings.SetValue("Optimizations.LoopInvariantCodeMotion", true);
-		Settings.SetValue("Optimizations.Platform", true);
-		Settings.SetValue("Optimizations.SCCP", true);
-		Settings.SetValue("Optimizations.Devirtualization", true);
-		Settings.SetValue("Optimizations.SSA", true);
-		Settings.SetValue("Optimizations.TwoPass", true);
-		Settings.SetValue("Optimizations.ValueNumbering", true);
+		MethodScanner = false; // experimental features
 
-		Settings.SetValue("Multiboot.Video", false);
-		Settings.SetValue("Multiboot.Video.Width", 640);
-		Settings.SetValue("Multiboot.Video.Height", 480);
-		Settings.SetValue("Multiboot.Video.Depth", 32);
+		EmitBinary = true;
+		SSA = true;
+		BasicOptimizations = true;
+		ValueNumbering = true;
+		SparseConditionalConstantPropagation = true;
+		Devirtualization = true;
+		BitTracker = true;
+		LoopInvariantCodeMotion = true;
+		LongExpansion = true;
+		TwoPassOptimizations = true;
+		PlatformOptimizations = true;
+		InlineMethods = true;
+		InlineExplicit = true;
 
-		Settings.SetValue("Emulator", "Qemu");
-		Settings.SetValue("Emulator.Display", false);
-		Settings.SetValue("Emulator.Memory", 128);
-		Settings.SetValue("Emulator.Cores", 1);
-		Settings.SetValue("Emulator.Serial", "TCPServer");
-		Settings.SetValue("Emulator.Serial.Host", "127.0.0.1");
-		Settings.SetValue("Emulator.Serial.Port", Constant.Port);
-		Settings.SetValue("Emulator.Serial.Pipe", "MOSA");
+		InlineAggressiveMaximum = 24;
+		InlineMaximum = 12;
+		OptimizationWindow = 5;
+
+		Emulator = "Qemu";
+		EmulatorDisplay = false;
+		EmulatorCores = 1;
+
+		EmulatorSerial = "TCPServer";
+		EmulatorSerialHost = "127.0.0.1";
+		EmulatorSerialPort = Constant.Port;
+		EmulatorSerialPipe = "MOSA";
 
 		MultibootVersion = Constant.MultibootVersion;
 
-		Settings.SetValue("Image.Firmware", "bios");
-		Settings.SetValue("Image.Folder", Path.Combine(Path.GetTempPath(), "MOSA-UnitTest"));
-		Settings.SetValue("Image.Format", "IMG");   // Change to constant
-		Settings.SetValue("Image.FileSystem", "FAT16"); // Change to constant
-		Settings.SetValue("Image.ImageFile", "%DEFAULT%");
+		ImageFirmware = "bios";
+		ImageFolder = Path.Combine(Path.GetTempPath(), "MOSA");
+		ImageFormat = "img";
+		FileSystem = "fat16";
+		ImageFile = "%DEFAULT%";
 
-		Settings.SetValue("OS.Name", "MOSA");
+		//Settings.SetValue("Image.Folder", Path.Combine(Path.GetTempPath(), "MOSA-UnitTest"));
 
-		Settings.SetValue("UnitTest.MaxErrors", Constant.MaxErrors);
-		Settings.SetValue("UnitTest.TimeOut", Constant.TimeOut);
-		Settings.SetValue("UnitTest.Connection.TimeOut", Constant.ConnectionTimeOut);
-		Settings.SetValue("UnitTest.Connection.MaxAttempts", Constant.MaxAttempts);
+		OSName = "MOSA";
 
-		Settings.SetValue("Launcher.PlugKorlib", true);
+		MaxErrors = Constant.MaxErrors;
+		ConnectionTimeOut = Constant.ConnectionTimeOut;
+		MaxAttempts = Constant.MaxAttempts;
 
-		Settings.SetValue("Launcher.Start", false);
-		Settings.SetValue("Launcher.Launch", false);
-		Settings.SetValue("Launcher.Exit", true);
+		PlugKorlib = true;
 
-		Settings.SetValue(Name.Multiboot_Video, false);
-		Settings.SetValue(Name.Multiboot_Video_Width, 640);
-		Settings.SetValue(Name.Multiboot_Video_Height, 480);
-		Settings.SetValue(Name.Multiboot_Video_Depth, 32);
+		LauncherStart = false;
+		LauncherExit = false;
+		Launcher = false;
+
+		MultibootVideo = false;
+		MultibootVideoWidth = 640;
+		MultibootVideoHeight = 480;
+		MultibootVideoDepth = 32;
+
+		EmitSymbols = false;
+		EmitStaticRelocations = false;
+		EmitShortSymbolNames = false;
+
+		LinkerFormat = "elf32";
 	}
 
 	public void NormalizeSettings()
@@ -689,6 +759,7 @@ public class MosaSettings
 		EmulatorSerial = EmulatorSerial == null ? string.Empty : EmulatorSerial.ToLowerInvariant().Trim();
 		Emulator = Emulator == null ? string.Empty : Emulator.ToLowerInvariant().Trim();
 		Platform = Platform == null ? string.Empty : Platform.ToLowerInvariant().Trim();
+		LinkerFormat = LinkerFormat == null ? string.Empty : LinkerFormat.ToLowerInvariant().Trim();
 	}
 
 	public void UpdateFileAndPathSettings()
@@ -715,8 +786,6 @@ public class MosaSettings
 			}
 		}
 
-		var defaultFolder = DefaultFolder;
-
 		string baseFilename;
 
 		if (OutputFile != null && OutputFile != "%DEFAULT%")
@@ -727,10 +796,16 @@ public class MosaSettings
 		{
 			baseFilename = Path.GetFileNameWithoutExtension(SourceFiles[0]);
 		}
+		else if (ImageFile != null && ImageFile != "%DEFAULT%")
+		{
+			baseFilename = Path.GetFileNameWithoutExtension(ImageFile);
+		}
 		else
 		{
 			baseFilename = "_mosa_";
 		}
+
+		var defaultFolder = DefaultFolder;
 
 		if (OutputFile is null or "%DEFAULT%")
 		{
@@ -799,4 +874,28 @@ public class MosaSettings
 			}
 		}
 	}
+
+	#region Customer Helpers
+
+	public void ClearSourceFiles()
+	{
+		Settings.ClearProperty(Name.Compiler_SourceFiles);
+	}
+
+	public void AddSourceFile(string filename)
+	{
+		Settings.AddPropertyListValue(Name.Compiler_SourceFiles, filename);
+	}
+
+	public void ClearSearchPaths()
+	{
+		Settings.ClearProperty(Name.SearchPaths);
+	}
+
+	public void AddSearchPath(string filename)
+	{
+		Settings.AddPropertyListValue(Name.SearchPaths, filename);
+	}
+
+	#endregion Customer Helpers
 }

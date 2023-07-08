@@ -11,6 +11,7 @@ using Mosa.Compiler.Common.Configuration;
 using Mosa.Compiler.Common.Exceptions;
 using Mosa.Compiler.Framework;
 using Mosa.Compiler.Framework.Linker;
+using Mosa.Utility.Configuration;
 
 namespace Mosa.Utility.Launcher;
 
@@ -22,13 +23,13 @@ public class Starter : BaseLauncher
 
 	public Process Process { get; private set; }
 
-	public Starter(Settings settings, CompilerHooks compilerHooks)
-		: base(settings, compilerHooks)
+	public Starter(MosaSettings mosaSettings, CompilerHooks compilerHooks)
+		: base(mosaSettings, compilerHooks)
 	{
 	}
 
-	public Starter(Settings settings, CompilerHooks compilerHooks, MosaLinker linker)
-		: base(settings, compilerHooks)
+	public Starter(MosaSettings mosaSettings, CompilerHooks compilerHooks, MosaLinker linker)
+		: base(mosaSettings, compilerHooks)
 	{
 		Linker = linker;
 	}

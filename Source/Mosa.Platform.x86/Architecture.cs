@@ -126,7 +126,7 @@ public sealed class Architecture : BaseArchitecture
 	/// <param name="pipeline">The pipeline to extend.</param>
 	public override void ExtendCompilerPipeline(Pipeline<BaseCompilerStage> pipeline, MosaSettings mosaSettings)
 	{
-		if (!string.IsNullOrEmpty(mosaSettings.Settings.GetValue("Multiboot.Version", string.Empty)))
+		if (!string.IsNullOrEmpty(mosaSettings.MultibootVersion))
 		{
 			pipeline.InsertAfterFirst<TypeInitializerStage>(
 				new MultibootStage()
