@@ -33,10 +33,12 @@ internal static class Program
 			var mosaSettings = new MosaSettings();
 
 			mosaSettings.SetDetfaultSettings();
+			mosaSettings.LoadAppLocations();
 			mosaSettings.LoadArguments(args);
 			SetRequiredSettings(mosaSettings);
 			mosaSettings.ExpandSearchPaths();
 			mosaSettings.UpdateFileAndPathSettings();
+			mosaSettings.NormalizeSettings();
 
 			var compilerHooks = CreateCompilerHooks();
 
@@ -50,7 +52,7 @@ internal static class Program
 				return 1;
 			}
 
-			if (Settings.GetValue("Launcher.Launch", false))
+			if (mosaSettings.Launcher)
 			{
 				var starter = new Starter(Builder.MosaSettings, compilerHooks, Builder.Linker);
 

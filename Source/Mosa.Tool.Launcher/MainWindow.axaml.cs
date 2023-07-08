@@ -87,7 +87,7 @@ public partial class MainWindow : Window
 	public void Initialize(string[] args)
 	{
 		MosaSettings.SetDetfaultSettings();
-		MosaSettings.LoadAppSettings();
+		MosaSettings.LoadAppLocations();
 		MosaSettings.LoadArguments(args);
 		SetRequiredSettings();
 		MosaSettings.ExpandSearchPaths();

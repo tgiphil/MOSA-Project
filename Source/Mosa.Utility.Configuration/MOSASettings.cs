@@ -657,9 +657,9 @@ public class MosaSettings
 		Settings.Merge(mosaSettings.Settings);
 	}
 
-	public void LoadAppSettings()
+	public void LoadAppLocations()
 	{
-		AppLocationsSettings.GetAppLocationSettings(this);
+		AppLocationsSettings.GetAppLocations(this);
 	}
 
 	public void LoadArguments(string[] args)
@@ -689,7 +689,7 @@ public class MosaSettings
 		NasmFile = null;
 		InlinedFile = null;
 
-		MethodScanner = false; // experimental features
+		MethodScanner = false;
 
 		EmitBinary = true;
 		SSA = true;
@@ -704,7 +704,6 @@ public class MosaSettings
 		PlatformOptimizations = true;
 		InlineMethods = true;
 		InlineExplicit = true;
-
 		InlineAggressiveMaximum = 24;
 		InlineMaximum = 12;
 		OptimizationBasicWindow = 5;

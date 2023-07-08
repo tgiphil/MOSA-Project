@@ -19,7 +19,7 @@ public static class AppLocationsSettings
 	private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 	private static readonly string[] LinuxDirectories = new string[] { "/bin", "/usr/bin" };
 
-	public static void GetAppLocationSettings(MosaSettings mosaSettings)
+	public static void GetAppLocations(MosaSettings mosaSettings)
 	{
 		mosaSettings.QEMUApp = FindQemu();
 		mosaSettings.QEMUBios = FindQemuBIOS();

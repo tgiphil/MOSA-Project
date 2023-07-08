@@ -112,7 +112,7 @@ public partial class MainForm : Form
 
 		MosaSettings = new MosaSettings();
 		MosaSettings.SetDetfaultSettings();
-		MosaSettings.LoadAppSettings();
+		MosaSettings.LoadAppLocations();
 
 		MosaSettings.EmulatorGDB = true;
 		MosaSettings.EmulatorSerial = "TCPServer";

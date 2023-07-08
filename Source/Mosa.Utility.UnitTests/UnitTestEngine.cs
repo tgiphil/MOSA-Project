@@ -95,7 +95,7 @@ public class UnitTestEngine : IDisposable
 
 	public UnitTestEngine(Settings settings)
 	{
-		MosaSettings.LoadAppSettings();
+		MosaSettings.LoadAppLocations();
 		MosaSettings.SetDetfaultSettings();
 		MosaSettings.Merge(settings);
 		SetRequiredSettings();

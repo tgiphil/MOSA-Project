@@ -50,7 +50,7 @@ Example: Mosa.Tool.Compiler.exe -o Mosa.HelloWorld.x86.bin -platform x86 Mosa.He
 			var mosaSettings = new MosaSettings();
 
 			mosaSettings.SetDetfaultSettings();
-			mosaSettings.LoadAppSettings();
+			mosaSettings.LoadAppLocations();
 			mosaSettings.LoadArguments(args);
 			SetRequiredSettings(mosaSettings);
 			mosaSettings.ExpandSearchPaths();
