@@ -450,7 +450,7 @@ public sealed class ElfLinker
 		var stream = new MemoryStream();
 		var writer = new BinaryWriter(stream);
 
-		var emitSymbols = Linker.MosaSettings.EmitSymbols;
+		var emitSymbols = Linker.MosaSettings.EmitSumbols;
 
 		// first entry is completely filled with zeros
 		writer.WriteZeroBytes(SymbolEntry.GetEntrySize(LinkerFormatType));

@@ -244,14 +244,14 @@ public class Builder : BaseLauncher
 	{
 		var arg = $"convert -f raw -O vmdk {Quote(source)} {Quote(MosaSettings.ImageFile)}";
 
-		LaunchApplicationWithOutput(MosaSettings.QemuImg, arg);
+		LaunchApplicationWithOutput(MosaSettings.QemuImgApp, arg);
 	}
 
 	private void CreateVDI(string source)
 	{
 		var arg = $"convert -f raw -O vdi {Quote(source)} {Quote(MosaSettings.ImageFile)}";
 
-		LaunchApplicationWithOutput(MosaSettings.QemuImg, arg);
+		LaunchApplicationWithOutput(MosaSettings.QemuImgApp, arg);
 	}
 
 	private void LaunchNDISASM()
@@ -264,7 +264,7 @@ public class Builder : BaseLauncher
 
 		//var nasmfile = Path.Combine(LauncherSettings.ImageFolder, $"{Path.GetFileNameWithoutExtension(LauncherSettings.SourceFiles[0])}.nasm");
 
-		var process = LaunchApplication(MosaSettings.Ndisasm, arg);
+		var process = LaunchApplication(MosaSettings.NdisasmApp, arg);
 
 		var output = GetOutput(process);
 

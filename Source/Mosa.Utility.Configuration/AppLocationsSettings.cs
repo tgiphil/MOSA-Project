@@ -19,30 +19,21 @@ public static class AppLocationsSettings
 	private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 	private static readonly string[] LinuxDirectories = new string[] { "/bin", "/usr/bin" };
 
-	public static void GetAppLocationSettings(Settings settings)
+	public static void GetAppLocationSettings(MosaSettings mosaSettings)
 	{
-		Set(settings, Name.AppLocation_Qemu, FindQemu());
-		Set(settings, Name.AppLocation_QemuBIOS, FindQemuBIOS());
-		Set(settings, Name.AppLocation_QemuEDK2X86, FindQemuEDK2X86());
-		Set(settings, Name.AppLocation_QemuEDK2X64, FindQemuEDK2X64());
-		Set(settings, Name.AppLocation_QemuEDK2ARM, FindQemuEDK2ARM());
-		Set(settings, Name.AppLocation_QemuImg, FindQemuImg());
-		Set(settings, Name.AppLocation_Bochs, FindBochs());
-		Set(settings, Name.AppLocation_VmwarePlayer, FindVmwarePlayer());
-		Set(settings, Name.AppLocation_VmwareWorkstation, FindVmwareWorkstation());
-		Set(settings, Name.AppLocation_VirtualBox, FindVirtualBox());
-		Set(settings, Name.AppLocation_Ndisasm, FindNdisasm());
-		Set(settings, Name.AppLocation_Mkisofs, FindMkisofs());
-		Set(settings, Name.AppLocation_GDB, FindGDB());
-	}
-
-	public static Settings GetAppLocations()
-	{
-		var settings = new Settings();
-
-		GetAppLocationSettings(settings);
-
-		return settings;
+		mosaSettings.QEMUApp = FindQemu();
+		mosaSettings.QEMUBios = FindQemuBIOS();
+		mosaSettings.QEMUEdk2X86 = FindQemuEDK2X86();
+		mosaSettings.QEMUEdk2X64 = FindQemuEDK2X64();
+		mosaSettings.QEMUEdk2ARM = FindQemuEDK2ARM();
+		mosaSettings.QemuImgApp = FindQemuImg();
+		mosaSettings.BochsApp = FindBochs();
+		mosaSettings.VmwarePlayerApp = FindVmwarePlayer();
+		mosaSettings.VmwareWorkstationApp = FindVmwareWorkstation();
+		mosaSettings.VirtualBoxApp = FindVirtualBox();
+		mosaSettings.NdisasmApp = FindNdisasm();
+		mosaSettings.MkisofsApp = FindMkisofs();
+		mosaSettings.GDBApp = FindGDB();
 	}
 
 	private static string FindQemu()

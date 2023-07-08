@@ -39,7 +39,7 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Compiler_BaseAddress, value);
 	}
 
-	public string Bochs
+	public string BochsApp
 	{
 		get => Settings.GetValue(Name.AppLocation_Bochs, null);
 		set => Settings.SetValue(Name.AppLocation_Bochs, value);
@@ -141,7 +141,7 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Image_FileSystem, value);
 	}
 
-	public string GDB
+	public string GDBApp
 	{
 		get => Settings.GetValue(Name.AppLocation_GDB, null);
 		set => Settings.SetValue(Name.AppLocation_GDB, value);
@@ -255,7 +255,7 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Compiler_MethodScanner, value);
 	}
 
-	public string Mkisofs
+	public string MkisofsApp
 	{
 		get => Settings.GetValue(Name.AppLocation_Mkisofs, null);
 		set => Settings.SetValue(Name.AppLocation_Mkisofs, value);
@@ -273,7 +273,7 @@ public class MosaSettings
 		set => Settings.SetValue(Name.CompilerDebug_NasmFile, value);
 	}
 
-	public string Ndisasm
+	public string NdisasmApp
 
 	{
 		get => Settings.GetValue(Name.AppLocation_Ndisasm, null);
@@ -310,7 +310,7 @@ public class MosaSettings
 		set => Settings.SetValue(Name.CompilerDebug_PreLinkHashFile, value);
 	}
 
-	public string QEMU
+	public string QEMUApp
 	{
 		get => Settings.GetValue(Name.AppLocation_Qemu, null);
 		set => Settings.SetValue(Name.AppLocation_Qemu, value);
@@ -340,7 +340,7 @@ public class MosaSettings
 		set => Settings.SetValue(Name.AppLocation_QemuEDK2ARM, value);
 	}
 
-	public string QemuImg
+	public string QemuImgApp
 	{
 		get => Settings.GetValue(Name.AppLocation_QemuImg, null);
 		set => Settings.SetValue(Name.AppLocation_QemuImg, value);
@@ -380,19 +380,19 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Image_FileSystem_RootInclude, value);
 	}
 
-	public string VmwarePlayer
+	public string VmwarePlayerApp
 	{
 		get => Settings.GetValue(Name.AppLocation_VmwarePlayer, null);
 		set => Settings.SetValue(Name.AppLocation_VmwarePlayer, value);
 	}
 
-	public string VmwareWorkstation
+	public string VmwareWorkstationApp
 	{
 		get => Settings.GetValue(Name.AppLocation_VmwareWorkstation, null);
 		set => Settings.SetValue(Name.AppLocation_VmwareWorkstation, value);
 	}
 
-	public string VirtualBox
+	public string VirtualBoxApp
 	{
 		get => Settings.GetValue(Name.AppLocation_VirtualBox, null);
 		set => Settings.SetValue(Name.AppLocation_VirtualBox, value);
@@ -500,7 +500,7 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Optimizations_LongExpansion, value);
 	}
 
-	public bool TwoPassOptimizations
+	public bool TwoPassOptimization
 	{
 		get => Settings.GetValue(Name.Optimizations_TwoPass, true);
 		set => Settings.SetValue(Name.Optimizations_TwoPass, value);
@@ -512,7 +512,7 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Optimizations_BitTracker, value);
 	}
 
-	public int OptimizationWindow
+	public int OptimizationBasicWindow
 	{
 		get => Settings.GetValue(Name.Optimizations_Basic_Window, 5);
 		set => Settings.SetValue(Name.Optimizations_Basic_Window, value);
@@ -536,7 +536,7 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Optimizations_Platform, value);
 	}
 
-	public bool Statistics
+	public bool EmitStatistics
 	{
 		get => Settings.GetValue(Name.CompilerDebug_Statistics, true);
 		set => Settings.SetValue(Name.CompilerDebug_Statistics, value);
@@ -548,7 +548,7 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Compiler_EmitInline, value);
 	}
 
-	public bool EmitSymbols
+	public bool EmitSumbols
 	{
 		get => Settings.GetValue(Name.Linker_Symbols, false);
 		set => Settings.SetValue(Name.Linker_Symbols, value);
@@ -566,12 +566,12 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Linker_ShortSymbolNames, value);
 	}
 
-	public List<string> InlineAggressiveList
+	public List<string> InlineAggressive
 	{
 		get => Settings.GetValueList(Name.Optimizations_Inline_Aggressive);
 	}
 
-	public List<string> InlineExcludeList
+	public List<string> InlineExclude
 	{
 		get => Settings.GetValueList(Name.Optimizations_Inline_Exclude);
 	}
@@ -584,14 +584,14 @@ public class MosaSettings
 
 	public string BreakpointFile
 	{
-		get { return Settings.GetValue(Name.Debugger_BreakpointFile, null); }
-		set { Settings.SetValue(Name.Debugger_BreakpointFile, value); }
+		get => Settings.GetValue(Name.Debugger_BreakpointFile, null);
+		set => Settings.SetValue(Name.Debugger_BreakpointFile, value);
 	}
 
 	public string WatchFile
 	{
-		get { return Settings.GetValue(Name.Debugger_WatchFile, null); }
-		set { Settings.SetValue(Name.Debugger_WatchFile, value); }
+		get => Settings.GetValue(Name.Debugger_WatchFile, null);
+		set => Settings.SetValue(Name.Debugger_WatchFile, value);
 	}
 
 	public bool ExplorerStart
@@ -659,7 +659,7 @@ public class MosaSettings
 
 	public void LoadAppSettings()
 	{
-		AppLocationsSettings.GetAppLocationSettings(Settings);
+		AppLocationsSettings.GetAppLocationSettings(this);
 	}
 
 	public void LoadArguments(string[] args)
@@ -671,8 +671,6 @@ public class MosaSettings
 
 	public void SetDetfaultSettings()
 	{
-		// FUTURE: Use properties to set values
-
 		MethodScanner = false;
 		Multithreading = true;
 		Platform = "x86";
@@ -700,14 +698,14 @@ public class MosaSettings
 		BitTracker = true;
 		LoopInvariantCodeMotion = true;
 		LongExpansion = true;
-		TwoPassOptimizations = true;
+		TwoPassOptimization = true;
 		PlatformOptimizations = true;
 		InlineMethods = true;
 		InlineExplicit = true;
 
 		InlineAggressiveMaximum = 24;
 		InlineMaximum = 12;
-		OptimizationWindow = 5;
+		OptimizationBasicWindow = 5;
 
 		Emulator = "Qemu";
 		EmulatorDisplay = false;
@@ -745,7 +743,7 @@ public class MosaSettings
 		MultibootVideoHeight = 480;
 		MultibootVideoDepth = 32;
 
-		EmitSymbols = false;
+		EmitSumbols = false;
 		EmitStaticRelocations = false;
 		EmitShortSymbolNames = false;
 

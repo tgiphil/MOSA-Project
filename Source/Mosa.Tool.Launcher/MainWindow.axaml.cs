@@ -192,19 +192,19 @@ public partial class MainWindow : Window
 
 	private void UpdateInterfaceAppLocations()
 	{
-		bochsPathLbl.Content = MosaSettings.Bochs;
-		ndiasmPathLbl.Content = MosaSettings.Ndisasm;
+		bochsPathLbl.Content = MosaSettings.BochsApp;
+		ndiasmPathLbl.Content = MosaSettings.NdisasmApp;
 
-		qemuPathLbl.Content = MosaSettings.QEMU;
+		qemuPathLbl.Content = MosaSettings.QEMUApp;
 		qemuBiosPathLbl.Content = MosaSettings.QEMUBios;
 		qemuEdk2X86PathLbl.Content = MosaSettings.QEMUEdk2X86;
 		qemuEdk2X64PathLbl.Content = MosaSettings.QEMUEdk2X64;
 		qemuEdk2ARMPathLbl.Content = MosaSettings.QEMUEdk2ARM;
-		qemuImgPathLbl.Content = MosaSettings.QemuImg;
-		vboxPathLbl.Content = MosaSettings.VirtualBox;
-		mkisofsPathLbl.Content = MosaSettings.Mkisofs;
+		qemuImgPathLbl.Content = MosaSettings.QemuImgApp;
+		vboxPathLbl.Content = MosaSettings.VirtualBoxApp;
+		mkisofsPathLbl.Content = MosaSettings.MkisofsApp;
 
-		vmwarePathLbl.Content = string.IsNullOrEmpty(MosaSettings.VmwarePlayer) ? MosaSettings.VmwareWorkstation : MosaSettings.VmwarePlayer;
+		vmwarePathLbl.Content = string.IsNullOrEmpty(MosaSettings.VmwarePlayerApp) ? MosaSettings.VmwareWorkstationApp : MosaSettings.VmwarePlayerApp;
 	}
 
 	private void UpdateGuiSettings()
@@ -216,13 +216,13 @@ public partial class MainWindow : Window
 		InlineOpts.IsChecked = MosaSettings.InlineMethods;
 		InlineExplOpts.IsChecked = MosaSettings.InlineExplicit;
 		LongExpOpts.IsChecked = MosaSettings.LongExpansion;
-		TwoOptPass.IsChecked = MosaSettings.TwoPassOptimizations;
+		TwoOptPass.IsChecked = MosaSettings.TwoPassOptimization;
 		ValueNumOpts.IsChecked = MosaSettings.ValueNumbering;
 		BtOpts.IsChecked = MosaSettings.BitTracker;
 		PlatOpts.IsChecked = MosaSettings.PlatformOptimizations;
 		LicmOpts.IsChecked = MosaSettings.LoopInvariantCodeMotion;
 
-		EmtSymbs.IsChecked = MosaSettings.EmitSymbols;
+		EmtSymbs.IsChecked = MosaSettings.EmitSumbols;
 		EmtRelocs.IsChecked = MosaSettings.EmitStaticRelocations;
 		EmtDwarf.IsChecked = MosaSettings.EmitDwarf;
 		BaseAddrTxt.Text = MosaSettings.BaseAddress.ToHex();
@@ -314,13 +314,13 @@ public partial class MainWindow : Window
 		MosaSettings.InlineMethods = InlineOpts.IsChecked!.Value;
 		MosaSettings.InlineExplicit = InlineExplOpts.IsChecked!.Value;
 		MosaSettings.LongExpansion = LongExpOpts.IsChecked!.Value;
-		MosaSettings.TwoPassOptimizations = TwoOptPass.IsChecked!.Value;
+		MosaSettings.TwoPassOptimization = TwoOptPass.IsChecked!.Value;
 		MosaSettings.ValueNumbering = ValueNumOpts.IsChecked!.Value;
 		MosaSettings.BitTracker = BtOpts.IsChecked!.Value;
 		MosaSettings.PlatformOptimizations = PlatOpts.IsChecked!.Value;
 		MosaSettings.LoopInvariantCodeMotion = LicmOpts.IsChecked!.Value;
 
-		MosaSettings.EmitSymbols = EmtSymbs.IsChecked!.Value;
+		MosaSettings.EmitSumbols = EmtSymbs.IsChecked!.Value;
 		MosaSettings.EmitStaticRelocations = EmtRelocs.IsChecked!.Value;
 		MosaSettings.EmitDwarf = EmtDwarf.IsChecked!.Value;
 

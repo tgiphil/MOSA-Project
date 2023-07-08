@@ -195,11 +195,11 @@ public sealed class Compiler
 		mosaSettings.BasicOptimizations && mosaSettings.BitTracker ? new OptimizationStage(false) : null,
 		mosaSettings.BasicOptimizations && mosaSettings.LongExpansion ? new OptimizationStage(mosaSettings.LongExpansion) : null,
 
-		mosaSettings.TwoPassOptimizations && mosaSettings.ValueNumbering && mosaSettings.SSA ? new ValueNumberingStage() : null,
-		mosaSettings.TwoPassOptimizations && mosaSettings.LoopInvariantCodeMotion && mosaSettings.SSA ? new LoopInvariantCodeMotionStage() : null,
-		mosaSettings.TwoPassOptimizations && mosaSettings.SparseConditionalConstantPropagation && mosaSettings.SSA ? new SparseConditionalConstantPropagationStage() : null,
-		mosaSettings.TwoPassOptimizations && mosaSettings.BitTracker ? new BitTrackerStage() : null,
-		mosaSettings.TwoPassOptimizations && mosaSettings.BasicOptimizations && mosaSettings.SSA ? new OptimizationStage(mosaSettings.LongExpansion) : null,
+		mosaSettings.TwoPassOptimization && mosaSettings.ValueNumbering && mosaSettings.SSA ? new ValueNumberingStage() : null,
+		mosaSettings.TwoPassOptimization && mosaSettings.LoopInvariantCodeMotion && mosaSettings.SSA ? new LoopInvariantCodeMotionStage() : null,
+		mosaSettings.TwoPassOptimization && mosaSettings.SparseConditionalConstantPropagation && mosaSettings.SSA ? new SparseConditionalConstantPropagationStage() : null,
+		mosaSettings.TwoPassOptimization && mosaSettings.BitTracker ? new BitTrackerStage() : null,
+		mosaSettings.TwoPassOptimization && mosaSettings.BasicOptimizations && mosaSettings.SSA ? new OptimizationStage(mosaSettings.LongExpansion) : null,
 
 		mosaSettings.SSA ? new ExitSSAStage() : null,
 
@@ -236,7 +236,7 @@ public sealed class Compiler
 		Architecture = mosaCompiler.Platform;
 		CompilerHooks = mosaCompiler.CompilerHooks;
 		TraceLevel = MosaSettings.TraceLevel;
-		Statistics = MosaSettings.Statistics;
+		Statistics = MosaSettings.EmitStatistics;
 		FullCheckMode = MosaSettings.FullCheckMode;
 
 		PostEvent(CompilerEvent.CompilerStart);

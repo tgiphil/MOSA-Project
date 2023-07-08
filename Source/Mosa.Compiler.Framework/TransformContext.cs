@@ -127,7 +127,7 @@ public sealed class TransformContext
 
 		LowerTo32 = Compiler.MosaSettings.LongExpansion;
 		Devirtualization = Compiler.MosaSettings.Devirtualization;
-		Window = Math.Max(Compiler.MosaSettings.OptimizationWindow, 1);
+		Window = Math.Max(Compiler.MosaSettings.OptimizationBasicWindow, 1);
 
 		LowerTo32 = Compiler.MosaSettings.LongExpansion;
 

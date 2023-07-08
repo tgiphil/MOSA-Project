@@ -366,12 +366,12 @@ public class Starter : BaseLauncher
 			}
 		}
 
-		return CreateApplicationProcess(MosaSettings.QEMU, arg.ToString());
+		return CreateApplicationProcess(MosaSettings.QEMUApp, arg.ToString());
 	}
 
 	private Process LaunchBochs()
 	{
-		var bochsdirectory = Path.GetDirectoryName(MosaSettings.Bochs);
+		var bochsdirectory = Path.GetDirectoryName(MosaSettings.BochsApp);
 
 		var logfile = Path.Combine(MosaSettings.TemporaryFolder, Path.GetFileNameWithoutExtension(MosaSettings.ImageFile) + "-bochs.log");
 		var configfile = Path.Combine(MosaSettings.TemporaryFolder, Path.GetFileNameWithoutExtension(MosaSettings.ImageFile) + ".bxrc");
@@ -448,7 +448,7 @@ public class Starter : BaseLauncher
 
 		File.WriteAllText(configfile, sb.ToString());
 
-		return CreateApplicationProcess(MosaSettings.Bochs, $"-q -f {Quote(configfile)}");
+		return CreateApplicationProcess(MosaSettings.BochsApp, $"-q -f {Quote(configfile)}");
 	}
 
 	private Process LaunchVMware()
@@ -512,14 +512,14 @@ public class Starter : BaseLauncher
 
 		var arg = Quote(configFile);
 
-		if (!string.IsNullOrWhiteSpace(MosaSettings.VmwareWorkstation))
+		if (!string.IsNullOrWhiteSpace(MosaSettings.VmwareWorkstationApp))
 		{
-			return CreateApplicationProcess(MosaSettings.VmwareWorkstation, arg);
+			return CreateApplicationProcess(MosaSettings.VmwareWorkstationApp, arg);
 		}
 
-		if (!string.IsNullOrWhiteSpace(MosaSettings.VmwarePlayer))
+		if (!string.IsNullOrWhiteSpace(MosaSettings.VmwarePlayerApp))
 		{
-			return CreateApplicationProcess(MosaSettings.VmwarePlayer, arg);
+			return CreateApplicationProcess(MosaSettings.VmwarePlayerApp, arg);
 		}
 
 		return null;
@@ -527,7 +527,7 @@ public class Starter : BaseLauncher
 
 	private Process LaunchVirtualBox()
 	{
-		if (GetOutput(LaunchApplication(MosaSettings.VirtualBox, "list vms")).Contains(MosaSettings.OSName))
+		if (GetOutput(LaunchApplication(MosaSettings.VirtualBoxApp, "list vms")).Contains(MosaSettings.OSName))
 		{
 			var newFile = Path.ChangeExtension(MosaSettings.ImageFile, "bak");
 
@@ -535,18 +535,18 @@ public class Starter : BaseLauncher
 			File.Move(MosaSettings.ImageFile, newFile);
 
 			// Delete the VM first
-			LaunchApplication(MosaSettings.VirtualBox, $"unregistervm {MosaSettings.OSName} --delete").WaitForExit();
+			LaunchApplication(MosaSettings.VirtualBoxApp, $"unregistervm {MosaSettings.OSName} --delete").WaitForExit();
 
 			// Restore the image file
 			File.Move(newFile, MosaSettings.ImageFile);
 		}
 
-		LaunchApplication(MosaSettings.VirtualBox, $"createvm --name {MosaSettings.OSName} --ostype Other --register").WaitForExit();
-		LaunchApplication(MosaSettings.VirtualBox, $"modifyvm {MosaSettings.OSName} --memory {MosaSettings.EmulatorMemory.ToString()} --cpus {MosaSettings.EmulatorCores} --graphicscontroller vmsvga").WaitForExit();
-		LaunchApplication(MosaSettings.VirtualBox, $"storagectl {MosaSettings.OSName} --name Controller --add ide --controller PIIX4").WaitForExit();
-		LaunchApplication(MosaSettings.VirtualBox, $"storageattach {MosaSettings.OSName} --storagectl Controller --port 0 --device 0 --type hdd --medium {Quote(MosaSettings.ImageFile)}").WaitForExit();
+		LaunchApplication(MosaSettings.VirtualBoxApp, $"createvm --name {MosaSettings.OSName} --ostype Other --register").WaitForExit();
+		LaunchApplication(MosaSettings.VirtualBoxApp, $"modifyvm {MosaSettings.OSName} --memory {MosaSettings.EmulatorMemory.ToString()} --cpus {MosaSettings.EmulatorCores} --graphicscontroller vmsvga").WaitForExit();
+		LaunchApplication(MosaSettings.VirtualBoxApp, $"storagectl {MosaSettings.OSName} --name Controller --add ide --controller PIIX4").WaitForExit();
+		LaunchApplication(MosaSettings.VirtualBoxApp, $"storageattach {MosaSettings.OSName} --storagectl Controller --port 0 --device 0 --type hdd --medium {Quote(MosaSettings.ImageFile)}").WaitForExit();
 
-		return CreateApplicationProcess(MosaSettings.VirtualBox, $"startvm {MosaSettings.OSName}");
+		return CreateApplicationProcess(MosaSettings.VirtualBoxApp, $"startvm {MosaSettings.OSName}");
 	}
 
 	private void LaunchDebugger()
@@ -609,6 +609,6 @@ public class Starter : BaseLauncher
 		sb.Append(" -x ");
 		sb.Append(Quote(gdbScript));
 
-		LaunchConsoleApplication(MosaSettings.GDB, sb.ToString());
+		LaunchConsoleApplication(MosaSettings.GDBApp, sb.ToString());
 	}
 }

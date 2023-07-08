@@ -1040,7 +1040,7 @@ public partial class MainForm : Form
 		cbInlineExplicit.Checked = MosaSettings.InlineExplicit;
 		cbPlatformOptimizations.Checked = MosaSettings.PlatformOptimizations;
 		cbEnableLongExpansion.Checked = MosaSettings.LongExpansion;
-		cbEnableTwoPassOptimizations.Checked = MosaSettings.TwoPassOptimizations;
+		cbEnableTwoPassOptimizations.Checked = MosaSettings.TwoPassOptimization;
 		cbLoopInvariantCodeMotion.Checked = MosaSettings.LoopInvariantCodeMotion;
 		cbEnableValueNumbering.Checked = MosaSettings.ValueNumbering;
 		cbEnableBitTracker.Checked = MosaSettings.BitTracker;
@@ -1162,7 +1162,7 @@ public partial class MainForm : Form
 		MosaSettings.BitTracker = cbEnableBitTracker.Checked;
 		MosaSettings.LoopInvariantCodeMotion = cbLoopInvariantCodeMotion.Checked;
 		MosaSettings.LongExpansion = cbEnableLongExpansion.Checked;
-		MosaSettings.TwoPassOptimizations = cbEnableTwoPassOptimizations.Checked;
+		MosaSettings.TwoPassOptimization = cbEnableTwoPassOptimizations.Checked;
 		MosaSettings.PlatformOptimizations = cbPlatformOptimizations.Checked;
 		MosaSettings.InlineMethods = cbEnableInline.Checked;
 		MosaSettings.InlineExplicit = cbInlineExplicit.Checked;
