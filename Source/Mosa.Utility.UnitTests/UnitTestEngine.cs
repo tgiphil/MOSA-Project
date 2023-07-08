@@ -16,6 +16,7 @@ using Mosa.Compiler.MosaTypeSystem;
 using Mosa.Utility.Configuration;
 using Mosa.Utility.DebugEngine;
 using Mosa.Utility.Launcher;
+using Reko.Core.Loading;
 
 namespace Mosa.Utility.UnitTests;
 
@@ -63,7 +64,7 @@ public class UnitTestEngine : IDisposable
 	protected Starter Starter;
 	protected Process Process;
 
-	private Configuration.MosaSettings MosaSettings = new Configuration.MosaSettings();
+	private MosaSettings MosaSettings = new Configuration.MosaSettings();
 
 	//private Settings Settings => MosaSettings.Settings;
 
@@ -97,8 +98,8 @@ public class UnitTestEngine : IDisposable
 		MosaSettings.LoadAppSettings();
 		MosaSettings.SetDetfaultSettings();
 		MosaSettings.Merge(settings);
-
 		SetRequiredSettings();
+		MosaSettings.NormalizeSettings();
 
 		Initialize();
 	}
@@ -115,6 +116,7 @@ public class UnitTestEngine : IDisposable
 		MosaSettings.LauncherStart = false;
 		MosaSettings.LauncherExit = true; // REVIEW: really?
 		MosaSettings.TraceLevel = 0;
+		//MosaSettings.ImageFolder = Path.Combine(Path.GetTempPath(), "MOSA-Test");
 	}
 
 	private void Initialize()
@@ -274,7 +276,6 @@ public class UnitTestEngine : IDisposable
 		Stopwatch.Restart();
 
 		MosaSettings.AddSearchPath(TestAssemblyPath);
-
 		MosaSettings.ClearSourceFiles();
 		MosaSettings.AddSourceFile(Path.Combine(TestAssemblyPath, TestSuiteFile));
 
@@ -400,7 +401,7 @@ public class UnitTestEngine : IDisposable
 	{
 		DebugServerEngine.Stream = null;
 
-		switch (MosaSettings.EmulatorSerial.ToLowerInvariant())
+		switch (MosaSettings.EmulatorSerial)
 		{
 			case "tcpserver":
 				{

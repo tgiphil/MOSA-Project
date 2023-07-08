@@ -671,6 +671,8 @@ public class MosaSettings
 
 	public void SetDetfaultSettings()
 	{
+		TemporaryFolder = Path.Combine(Path.GetTempPath(), "MOSA");
+
 		MethodScanner = false;
 		Multithreading = true;
 		Platform = "x86";
@@ -719,12 +721,10 @@ public class MosaSettings
 		MultibootVersion = Constant.MultibootVersion;
 
 		ImageFirmware = "bios";
-		ImageFolder = Path.Combine(Path.GetTempPath(), "MOSA");
+		ImageFolder = TemporaryFolder;
 		ImageFormat = "img";
 		FileSystem = "fat16";
 		ImageFile = "%DEFAULT%";
-
-		//Settings.SetValue("Image.Folder", Path.Combine(Path.GetTempPath(), "MOSA-UnitTest"));
 
 		OSName = "MOSA";
 
