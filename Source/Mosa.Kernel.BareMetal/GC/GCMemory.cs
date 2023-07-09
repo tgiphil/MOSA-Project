@@ -33,8 +33,6 @@ public static class GCMemory
 		var heapSize = CurrentHeap.Size;
 		var heapUsed = CurrentHeap.Used;
 
-		Debug.WriteLine("+ Allocating Memory: ", size);
-
 		if (heapStart.IsNull || heapSize - heapUsed < size)
 		{
 			CurrentHeap = AllocateHeap();
@@ -43,6 +41,9 @@ public static class GCMemory
 		}
 
 		var at = heapStart + heapUsed;
+
+		Debug.WriteLine("+ Allocating Memory: ", size, " at: ", new Hex(at));
+
 		CurrentHeap.Used = heapUsed + size;
 		return at;
 	}

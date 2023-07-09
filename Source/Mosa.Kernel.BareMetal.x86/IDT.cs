@@ -48,7 +48,7 @@ public static class IDT
 		IDTTable = BootPageAllocator.AllocatePage();
 		Page.ClearPage(IDTTable);
 
-		Debug.WriteLineHex(" > Address: ", IDTTable.ToUInt64());
+		Debug.WriteLine(" > Address: ", new Hex(IDTTable));
 
 		IDTTable.Store16(IDTEntryOffset.TotalSize * 256 - 1);
 		IDTTable.Store32(2, IDTTable.ToUInt32() + 6);
