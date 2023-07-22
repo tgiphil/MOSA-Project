@@ -2,6 +2,7 @@
 
 using Mosa.Kernel.BareMetal;
 using Mosa.Kernel.BareMetal.x86;
+using Mosa.Runtime.Plug;
 using Mosa.UnitTests.Framework;
 using Mosa.UnitTests.Optimization;
 
@@ -45,5 +46,11 @@ public static class Boot
 	{
 		// required to force assembly to be referenced and loaded
 		CommonTests.OptimizationTest1();
+	}
+
+	[Plug("Mosa.Runtime.StartUp::BootOptions")]
+	public static void SetBootOptions()
+	{
+		BootOptions.EnableDebugOutput = false;
 	}
 }

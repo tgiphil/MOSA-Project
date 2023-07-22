@@ -111,15 +111,12 @@ public static class UnitTestEngine
 
 		ProcessQueue();
 
-		for (var x = 0; x < 5; x++)
+		for (var i = 0; i < 75; i++)
 		{
-			for (var i = 0; i < 75; i++)
-			{
-				while (ProcessSerial()) ;
-			}
-
-			ProcessQueue();
+			while (ProcessSerial()) ;
 		}
+
+		ProcessQueue();
 	}
 
 	private static bool ProcessSerial()
