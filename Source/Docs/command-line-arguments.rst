@@ -166,7 +166,7 @@ Below are the command line arguments available:
     -watch,Debugger.WatchFile,{value}
 
 	Unit Testings:
-	-unittest-maxerrors,UnitTest.MaxErrors,{value}
+	-maxerrors,UnitTest.MaxErrors,{value}
 
     Optimization Levels:
     -o0,Optimizations.Basic,false
