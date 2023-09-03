@@ -11,6 +11,8 @@ public static class Boot
 		Debug.WriteLine("Boot::Main()");
 		Debug.WriteLine("MOSA x64 Kernel");
 
+		Debug.WriteLine("##PASS##");
+
 		Program.EntryPoint();
 	}
 
