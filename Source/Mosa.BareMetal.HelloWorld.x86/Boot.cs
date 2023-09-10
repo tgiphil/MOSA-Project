@@ -12,7 +12,7 @@ public static class Boot
 		Debug.WriteLine("Boot::Main()");
 		Debug.WriteLine("MOSA x86 Kernel");
 
-		Division.DivisionBy7(254u);
+		Division.DivisionU4By7(254u);
 
 		Program.EntryPoint();
 	}

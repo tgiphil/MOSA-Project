@@ -276,7 +276,8 @@ public static class ManualTransforms
 		new StaticLoad.Load32(),
 		new StaticLoad.Load64(),
 
-		new Simplification.DivUnsignedMagicNumber32(),
-		new Simplification.DivUnsignedMagicNumber64(),
+		new StrengthReduction.DivUnsignedMagicNumber32(),
+		//new StrengthReduction.DivSignedMagicNumber32(),
+		new StrengthReduction.DivSigned32ByPowerOfTwo(),
 	};
 }

@@ -16,6 +16,14 @@ public class DivisionTwiddlingTests
 	}
 
 	[Fact]
+	public static void SignedMagic_5()
+	{
+		var (M, s) = DivisionTwiddling.GetMagicNumber(5);
+		Debug.Assert(M == 0x66666667);
+		Debug.Assert(s == 1);
+	}
+
+	[Fact]
 	public static void SignedMagic_7()
 	{
 		var (M, s) = DivisionTwiddling.GetMagicNumber(7);

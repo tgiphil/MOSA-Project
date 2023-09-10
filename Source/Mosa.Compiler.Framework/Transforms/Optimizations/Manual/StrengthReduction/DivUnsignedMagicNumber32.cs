@@ -2,19 +2,17 @@
 
 using Mosa.Compiler.Common;
 
-namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Simplification;
+namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.StrengthReduction;
 
 /// <summary>
 /// DivUnsignedMagicNumber32
 /// </summary>
-[Transform("IR.Optimizations.Manual.Simplification")]
+[Transform("IR.Optimizations.Manual.StrengthReduction")]
 public sealed class DivUnsignedMagicNumber32 : BaseTransform
 {
 	public DivUnsignedMagicNumber32() : base(IRInstruction.DivUnsigned32, TransformType.Auto | TransformType.Optimization)
 	{
 	}
-
-	public override int Priority => 100;
 
 	public override bool Match(Context context, TransformContext transform)
 	{
@@ -44,7 +42,7 @@ public sealed class DivUnsignedMagicNumber32 : BaseTransform
 
 		var v1 = transform.VirtualRegisters.Allocate32();
 
-		context.SetInstruction(IRInstruction.MulHu32, v1, n, Operand.CreateConstant64(M));
+		context.SetInstruction(IRInstruction.MulHu32, v1, n, Operand.CreateConstant32(M));
 
 		if (!a)
 		{
