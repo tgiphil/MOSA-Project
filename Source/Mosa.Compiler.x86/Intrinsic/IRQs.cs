@@ -14,9 +14,9 @@ internal static partial class IntrinsicMethods
 
 	private static readonly string[] seperator = new string[] { "::" };
 
-	private static void InsertIRQ(int irq, Context context, TransformContext transformContext)
+	private static void InsertIRQ(int irq, Context context, TransformContext transform)
 	{
-		var interruptMethodName = transformContext.Compiler.MosaSettings.Settings.GetValue("X86.InterruptMethodName", DefaultInterruptMethodName);
+		var interruptMethodName = transform.Compiler.MosaSettings.Settings.GetValue("X86.InterruptMethodName", DefaultInterruptMethodName);
 
 		if (string.IsNullOrEmpty(interruptMethodName))
 		{
@@ -31,7 +31,7 @@ internal static partial class IntrinsicMethods
 		var typeFullname = ar[0];
 		var methodName = ar[1];
 
-		var type = transformContext.TypeSystem.GetTypeByName(typeFullname);
+		var type = transform.TypeSystem.GetTypeByName(typeFullname);
 
 		if (type == null)
 			return;
@@ -41,18 +41,18 @@ internal static partial class IntrinsicMethods
 		if (method == null)
 			return;
 
-		var plugMethod = transformContext.Compiler.PlugSystem.GetReplacement(method);
+		var plugMethod = transform.Compiler.PlugSystem.GetReplacement(method);
 
 		if (plugMethod != null)
 		{
 			method = plugMethod;
 		}
 
-		transformContext.MethodScanner.MethodInvoked(method, transformContext.Method);
+		transform.MethodScanner.MethodInvoked(method, transform.Method);
 
-		var interrupt = Operand.CreateLabel(method, transformContext.Is32BitPlatform);
+		var interrupt = Operand.CreateLabel(method, transform.Is32BitPlatform);
 
-		var esp = Operand.CreateCPURegister32(CPURegister.ESP);
+		var esp = transform.PhysicalRegisters.Allocate32(CPURegister.ESP);
 
 		context.SetInstruction(X86.Cli);
 		if (irq <= 7 || irq >= 16 | irq == 9) // For IRQ 8, 10, 11, 12, 13, 14 the cpu will automatically pushed the error code

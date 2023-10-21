@@ -96,9 +96,14 @@ public sealed class MethodCompiler
 	public int StackSize { get; set; }
 
 	/// <summary>
-	/// Gets the virtual register layout.
+	/// Gets the virtual registers.
 	/// </summary>
 	public VirtualRegisters VirtualRegisters { get; }
+
+	/// <summary>
+	/// Gets the physical registers.
+	/// </summary>
+	public PhysicalRegisters PhysicalRegisters { get; }
 
 	/// <summary>
 	/// Gets the parameters.
@@ -230,6 +235,7 @@ public sealed class MethodCompiler
 
 		LocalStack = new LocalStack(Is32BitPlatform);
 		VirtualRegisters = new VirtualRegisters(Is32BitPlatform);
+		PhysicalRegisters = new PhysicalRegisters(Is32BitPlatform);
 		Parameters = new Parameters(Is32BitPlatform);
 
 		ConstantZero = Is32BitPlatform ? Operand.Constant32_0 : Operand.Constant64_0;

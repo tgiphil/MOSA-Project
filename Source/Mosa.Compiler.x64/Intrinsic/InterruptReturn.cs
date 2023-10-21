@@ -10,11 +10,11 @@ namespace Mosa.Compiler.x64.Intrinsic;
 internal static partial class IntrinsicMethods
 {
 	[IntrinsicMethod("Mosa.Compiler.x64.Intrinsic::InterruptReturn")]
-	private static void InterruptReturn(Context context, TransformContext transformContext)
+	private static void InterruptReturn(Context context, TransformContext transform)
 	{
-		Operand v0 = context.Operand1;
+		var v0 = context.Operand1;
 
-		Operand esp = Operand.CreateCPURegister64(CPURegister.RSP);
+		var esp = transform.PhysicalRegisters.Allocate64(CPURegister.RSP);
 
 		context.SetInstruction(X64.Mov64, esp, v0);
 		context.AppendInstruction(X64.Popad);

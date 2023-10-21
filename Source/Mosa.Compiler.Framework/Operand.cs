@@ -581,7 +581,7 @@ public sealed partial class Operand
 		};
 	}
 
-	public static Operand CreateCPURegister(Operand operand, PhysicalRegister register)
+	public static Operand CreateCPURegister(Operand operand, PhysicalRegister register, int index = 0)
 	{
 		Debug.Assert(operand.Type == null);
 
@@ -589,7 +589,8 @@ public sealed partial class Operand
 		{
 			Location = LocationType.PhysicalRegister,
 			Primitive = operand.Primitive,
-			Register = register
+			Register = register,
+			Index = index
 		};
 	}
 
@@ -597,73 +598,80 @@ public sealed partial class Operand
 
 	#region Factory Methods - CPURegister
 
-	public static Operand CreateCPURegister32(PhysicalRegister register)
+	public static Operand CreateCPURegister32(PhysicalRegister register, int index = 0)
 	{
 		return new Operand()
 		{
 			Location = LocationType.PhysicalRegister,
 			Primitive = PrimitiveType.Int32,
-			Register = register
+			Register = register,
+			Index = index
 		};
 	}
 
-	public static Operand CreateCPURegister64(PhysicalRegister register)
+	public static Operand CreateCPURegister64(PhysicalRegister register, int index = 0)
 	{
 		return new Operand()
 		{
 			Location = LocationType.PhysicalRegister,
 			Primitive = PrimitiveType.Int64,
-			Register = register
+			Register = register,
+			Index = index
 		};
 	}
 
-	public static Operand CreateCPURegisterR4(PhysicalRegister register)
+	public static Operand CreateCPURegisterR4(PhysicalRegister register, int index = 0)
 	{
 		return new Operand()
 		{
 			Location = LocationType.PhysicalRegister,
 			Primitive = PrimitiveType.R4,
-			Register = register
+			Register = register,
+			Index = index
 		};
 	}
 
-	public static Operand CreateCPURegisterR8(PhysicalRegister register)
+	public static Operand CreateCPURegisterR8(PhysicalRegister register, int index = 0)
 	{
 		return new Operand()
 		{
 			Location = LocationType.PhysicalRegister,
 			Primitive = PrimitiveType.R8,
-			Register = register
+			Register = register,
+			Index = index
 		};
 	}
 
-	public static Operand CreateCPURegisterObject(PhysicalRegister register)
+	public static Operand CreateCPURegisterObject(PhysicalRegister register, int index = 0)
 	{
 		return new Operand()
 		{
 			Location = LocationType.PhysicalRegister,
 			Primitive = PrimitiveType.Object,
-			Register = register
+			Register = register,
+			Index = index
 		};
 	}
 
-	public static Operand CreateCPURegisterManagedPointer(PhysicalRegister register)
+	public static Operand CreateCPURegisterManagedPointer(PhysicalRegister register, int index = 0)
 	{
 		return new Operand()
 		{
 			Location = LocationType.PhysicalRegister,
 			Primitive = PrimitiveType.ManagedPointer,
-			Register = register
+			Register = register,
+			Index = index
 		};
 	}
 
-	public static Operand CreateCPURegisterNativeInteger(PhysicalRegister register, bool is32Platform)
+	public static Operand CreateCPURegisterNativeInteger(PhysicalRegister register, bool is32Platform, int index = 0)
 	{
 		return new Operand
 		{
 			Location = LocationType.PhysicalRegister,
 			Primitive = is32Platform ? PrimitiveType.Int32 : PrimitiveType.Int64,
-			Register = register
+			Register = register,
+			Index = index
 		};
 	}
 
@@ -712,13 +720,14 @@ public sealed partial class Operand
 		};
 	}
 
-	public static Operand CreateCPURegister(PrimitiveType primitiveType, PhysicalRegister register)
+	public static Operand CreateCPURegister(PrimitiveType primitiveType, PhysicalRegister register, int index = 0)
 	{
 		return new Operand()
 		{
 			Location = LocationType.PhysicalRegister,
 			Primitive = primitiveType,
-			Register = register
+			Register = register,
+			Index = index
 		};
 	}
 

@@ -10,15 +10,15 @@ namespace Mosa.Compiler.x86.Intrinsic;
 internal static partial class IntrinsicMethods
 {
 	[IntrinsicMethod("Mosa.Compiler.x86.Intrinsic::CmpXChgLoad32")]
-	private static void CmpXChgLoad32(Context context, TransformContext transformContext)
+	private static void CmpXChgLoad32(Context context, TransformContext transform)
 	{
 		var location = context.Operand1;
 		var value = context.Operand2;
 		var comparand = context.Operand3;
 		var result = context.Result;
 
-		var eax = Operand.CreateCPURegister32(CPURegister.EAX);
-		var v1 = transformContext.VirtualRegisters.Allocate32();
+		var eax = transform.PhysicalRegisters.Allocate32(CPURegister.EAX);
+		var v1 = transform.VirtualRegisters.Allocate32();
 
 		context.SetInstruction(X86.Mov32, eax, comparand);
 		context.AppendInstruction(X86.Mov32, v1, value);

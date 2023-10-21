@@ -26,6 +26,8 @@ public sealed class TransformContext
 
 	public VirtualRegisters VirtualRegisters { get; private set; }
 
+	public PhysicalRegisters PhysicalRegisters { get; private set; }
+
 	public LocalStack LocalStack { get; set; }
 
 	public BasicBlocks BasicBlocks { get; set; }

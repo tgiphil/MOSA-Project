@@ -10,8 +10,8 @@ namespace Mosa.Compiler.x86.Intrinsic;
 internal static partial class IntrinsicMethods
 {
 	[IntrinsicMethod("Mosa.Compiler.x86.Intrinsic::GetCR2")]
-	private static void GetCR2(Context context, TransformContext transformContext)
+	private static void GetCR2(Context context, TransformContext transform)
 	{
-		context.SetInstruction(X86.MovCRLoad32, context.Result, Operand.CreateCPURegister32(CPURegister.CR2));
+		context.SetInstruction(X86.MovCRLoad32, context.Result, transform.PhysicalRegisters.Allocate32(CPURegister.CR2));
 	}
 }

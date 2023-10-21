@@ -4,7 +4,7 @@ using Mosa.Compiler.Framework;
 
 namespace Mosa.Compiler.x64.CompilerStages;
 
-public sealed class MultibootStage : Mosa.Compiler.Framework.Platform.BaseMultibootStage
+public sealed class MultibootStage : Framework.Platform.BaseMultibootStage
 {
 	protected override void Finalization()
 	{
@@ -22,10 +22,10 @@ public sealed class MultibootStage : Mosa.Compiler.Framework.Platform.BaseMultib
 
 		var entryPoint = Operand.CreateLabel(initializeMethod, Architecture.Is32BitPlatform);
 
-		var rax = Operand.CreateCPURegister64(CPURegister.RAX);
-		var rbx = Operand.CreateCPURegister64(CPURegister.RBX);
-		var rbp = Operand.CreateCPURegister64(CPURegister.RBP);
-		var rsp = Operand.CreateCPURegister64(CPURegister.RSP);
+		var rax = transform.PhysicalRegisters.Allocate64(CPURegister.RAX);
+		var rbx = transform.PhysicalRegisters.Allocate64(CPURegister.RBX);
+		var rbp = transform.PhysicalRegisters.Allocate64(CPURegister.RBP);
+		var rsp = transform.PhysicalRegisters.Allocate64(CPURegister.RSP);
 
 		var multibootEAX = Operand.CreateLabel(MultibootEAX, Architecture.Is32BitPlatform);
 		var multibootEBX = Operand.CreateLabel(MultibootEBX, Architecture.Is32BitPlatform);

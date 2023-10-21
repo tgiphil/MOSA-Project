@@ -109,7 +109,7 @@ public sealed class InstructionNode
 			}
 			if (value != null)
 			{
-				if (value.IsVirtualRegister || value.IsOnStack)
+				if (value.IsVirtualRegister || value.IsOnStack || value.IsCPURegister)
 				{
 					value.Uses.Add(this);
 				}
@@ -136,7 +136,7 @@ public sealed class InstructionNode
 			}
 			if (value != null)
 			{
-				if (value.IsVirtualRegister || value.IsOnStack)
+				if (value.IsVirtualRegister || value.IsOnStack || value.IsCPURegister)
 				{
 					value.Uses.Add(this);
 				}
@@ -162,7 +162,7 @@ public sealed class InstructionNode
 			}
 			if (value != null)
 			{
-				if (value.IsVirtualRegister || value.IsOnStack)
+				if (value.IsVirtualRegister || value.IsOnStack || value.IsCPURegister)
 				{
 					value.Uses.Add(this);
 				}
@@ -253,7 +253,7 @@ public sealed class InstructionNode
 			}
 			if (value != null)
 			{
-				if (value.IsVirtualRegister || value.IsOnStack)
+				if (value.IsVirtualRegister || value.IsOnStack || value.IsCPURegister)
 				{
 					value.Definitions.Add(this);
 				}
@@ -278,7 +278,7 @@ public sealed class InstructionNode
 			}
 			if (value != null)
 			{
-				if (value.IsVirtualRegister || value.IsOnStack)
+				if (value.IsVirtualRegister || value.IsOnStack || value.IsCPURegister)
 				{
 					value.Definitions.Add(this);
 				}
@@ -315,7 +315,7 @@ public sealed class InstructionNode
 	{
 		Debug.Assert(block != null);
 
-		(BranchTargets ?? (BranchTargets = new List<BasicBlock>(1))).Add(block);
+		(BranchTargets ??= new List<BasicBlock>(1)).Add(block);
 
 		Block?.AddBranchInstruction(this);
 	}
@@ -608,7 +608,7 @@ public sealed class InstructionNode
 
 					if (operand != null)
 					{
-						if (operand.IsVirtualRegister || operand.IsOnStack)
+						if (operand.IsVirtualRegister || operand.IsOnStack || operand.IsCPURegister)
 						{
 							operand.Uses.Add(this);
 						}

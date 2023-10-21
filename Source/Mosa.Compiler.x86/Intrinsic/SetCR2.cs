@@ -10,12 +10,12 @@ namespace Mosa.Compiler.x86.Intrinsic;
 internal static partial class IntrinsicMethods
 {
 	[IntrinsicMethod("Mosa.Compiler.x86.Intrinsic::SetCR2")]
-	private static void SetCR2(Context context, TransformContext transformContext)
+	private static void SetCR2(Context context, TransformContext transform)
 	{
-		Operand operand1 = context.Operand1;
+		var operand1 = context.Operand1;
 
-		Operand eax = Operand.CreateCPURegister32(CPURegister.EAX);
-		Operand cr = Operand.CreateCPURegister32(CPURegister.CR2);
+		var eax = transform.PhysicalRegisters.Allocate32(CPURegister.EAX);
+		var cr = transform.PhysicalRegisters.Allocate32(CPURegister.CR2);
 
 		context.SetInstruction(X86.Mov32, eax, operand1);
 		context.AppendInstruction(X86.MovCRStore32, null, cr, eax);

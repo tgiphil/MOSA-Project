@@ -10,8 +10,8 @@ namespace Mosa.Compiler.x86.Intrinsic;
 internal static partial class IntrinsicMethods
 {
 	[IntrinsicMethod("Mosa.Compiler.x86.Intrinsic::GetCS")]
-	private static void GetCS(Context context, TransformContext transformContext)
+	private static void GetCS(Context context, TransformContext transform)
 	{
-		context.SetInstruction(X86.MovLoadSeg32, context.Result, Operand.CreateCPURegister32(CPURegister.CS));
+		context.SetInstruction(X86.MovLoadSeg32, context.Result, transform.PhysicalRegisters.Allocate32(CPURegister.CS));
 	}
 }

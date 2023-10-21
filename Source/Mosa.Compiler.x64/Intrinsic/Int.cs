@@ -10,7 +10,7 @@ namespace Mosa.Compiler.x64.Intrinsic;
 internal static partial class IntrinsicMethods
 {
 	[IntrinsicMethod("Mosa.Compiler.x64.Intrinsic::Int")]
-	private static void Int(Context context, TransformContext transformContext)
+	private static void Int(Context context, TransformContext transform)
 	{
 		Helper.FoldOperand1ToConstant(context);
 

@@ -10,14 +10,14 @@ namespace Mosa.Compiler.x86.Intrinsic;
 internal static partial class IntrinsicMethods
 {
 	[IntrinsicMethod("Mosa.Compiler.x86.Intrinsic::FrameCallRetR8")]
-	private static void FrameCallRetR8(Context context, TransformContext transformContext)
+	private static void FrameCallRetR8(Context context, TransformContext transform)
 	{
 		var result = context.Result;
 		var methodAddress = context.Operand1;
 
-		var eax = Operand.CreateCPURegister32(CPURegister.EAX);
-		var edx = Operand.CreateCPURegister32(CPURegister.EDX);
-		var xmm0 = Operand.CreateCPURegister32(CPURegister.XMM0);
+		var eax = transform.PhysicalRegisters.Allocate32(CPURegister.EAX);
+		var edx = transform.PhysicalRegisters.Allocate32(CPURegister.EDX);
+		var xmm0 = transform.PhysicalRegisters.Allocate32(CPURegister.XMM0);
 
 		context.SetInstruction(X86.Call, null, methodAddress);
 		context.AppendInstruction(IRInstruction.Gen, xmm0);

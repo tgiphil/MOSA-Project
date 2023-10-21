@@ -10,11 +10,11 @@ namespace Mosa.Compiler.x64.Intrinsic;
 internal static partial class IntrinsicMethods
 {
 	[IntrinsicMethod("Mosa.Compiler.x64.Intrinsic::Memclr256")]
-	private static void Memclr256(Context context, TransformContext transformContext)
+	private static void Memclr256(Context context, TransformContext transform)
 	{
 		var dest = context.Operand1;
 
-		var v0 = Operand.CreateCPURegisterR8(CPURegister.XMM0);
+		var v0 = transform.PhysicalRegisters.AllocateR8(CPURegister.XMM0);
 		var offset16 = Operand.Constant64_16;
 
 		context.SetInstruction(X64.PXor, v0, v0, v0);

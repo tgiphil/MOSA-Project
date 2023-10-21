@@ -2,7 +2,6 @@
 
 using System.Collections;
 using System.Diagnostics;
-using System.Net.WebSockets;
 using System.Text;
 using Mosa.Compiler.Common;
 using Mosa.Compiler.Framework.Analysis;
@@ -15,6 +14,8 @@ namespace Mosa.Compiler.Framework.RegisterAllocator;
 /// </summary>
 public abstract class BaseRegisterAllocator
 {
+	protected readonly TransformContext TransformContext;
+
 	protected readonly BasicBlocks BasicBlocks;
 	protected readonly BaseArchitecture Architecture;
 	protected readonly LocalStack LocalStack;
@@ -52,32 +53,34 @@ public abstract class BaseRegisterAllocator
 	public int DataFlowMoves = 0;
 	public int ResolvingMoves = 0;
 
-	protected BaseRegisterAllocator(BasicBlocks basicBlocks, VirtualRegisters virtualRegisters, BaseArchitecture architecture, LocalStack localStack, Operand stackFrame, BaseMethodCompilerStage.CreateTraceHandler createTrace)
+	protected BaseRegisterAllocator(TransformContext transformContext, Operand stackFrame, BaseMethodCompilerStage.CreateTraceHandler createTrace)
 	{
+		TransformContext = transformContext;
+		BasicBlocks = transformContext.BasicBlocks;
+		Architecture = transformContext.Architecture;
+		LocalStack = transformContext.MethodCompiler.LocalStack;
+
 		CreateTrace = createTrace;
 
-		BasicBlocks = basicBlocks;
-		Architecture = architecture;
-		LocalStack = localStack;
 		StackFrame = stackFrame;
 
-		VirtualRegisterCount = virtualRegisters.Count;
-		PhysicalRegisterCount = architecture.RegisterSet.Length;
+		VirtualRegisterCount = transformContext.MethodCompiler.VirtualRegisters.Count;
+		PhysicalRegisterCount = Architecture.RegisterSet.Length;
 		RegisterCount = VirtualRegisterCount + PhysicalRegisterCount;
 
 		Tracks = new List<RegisterTrack>(PhysicalRegisterCount);
 		Registers = new List<Register>(RegisterCount);
-		ExtendedBlocks = new List<ExtendedBlock>(basicBlocks.Count);
+		ExtendedBlocks = new List<ExtendedBlock>(BasicBlocks.Count);
 
 		Trace = CreateTrace("Main", 7);
 
-		StackFrameRegister = architecture.StackFrameRegister;
-		StackPointerRegister = architecture.StackPointerRegister;
-		ProgramCounter = architecture.ProgramCounter;
-		LinkRegister = architecture.LinkRegister;
+		StackFrameRegister = Architecture.StackFrameRegister;
+		StackPointerRegister = Architecture.StackPointerRegister;
+		ProgramCounter = Architecture.ProgramCounter;
+		LinkRegister = Architecture.LinkRegister;
 
 		// Setup extended physical registers
-		foreach (var physicalRegister in architecture.RegisterSet)
+		foreach (var physicalRegister in Architecture.RegisterSet)
 		{
 			var reserved = physicalRegister == StackFrameRegister
 				|| physicalRegister == StackPointerRegister
@@ -89,7 +92,7 @@ public abstract class BaseRegisterAllocator
 		}
 
 		// Setup extended virtual registers
-		foreach (var virtualRegister in virtualRegisters)
+		foreach (var virtualRegister in transformContext.VirtualRegisters)
 		{
 			Debug.Assert(virtualRegister.Index == Registers.Count - PhysicalRegisterCount + 1);
 
@@ -1416,7 +1419,7 @@ public abstract class BaseRegisterAllocator
 				if (liveInterval.AssignedPhysicalRegister == null)
 					continue;
 
-				liveInterval.AssignedPhysicalOperand = Operand.CreateCPURegister(liveInterval.Register.RegisterOperand, liveInterval.AssignedPhysicalRegister);
+				liveInterval.AssignedPhysicalOperand = TransformContext.PhysicalRegisters.Allocate(liveInterval.Register.RegisterOperand, liveInterval.AssignedPhysicalRegister);
 			}
 		}
 	}

@@ -10,16 +10,16 @@ namespace Mosa.Compiler.x64.Intrinsic;
 internal static partial class IntrinsicMethods
 {
 	[IntrinsicMethod("Mosa.Compiler.x64.Intrinsic::CpuIdRAX")]
-	private static void CpuIdRAX(Context context, TransformContext transformContext)
+	private static void CpuIdRAX(Context context, TransformContext transform)
 	{
 		var result = context.Result;
 		var operand1 = context.Operand1;
 		var operand2 = context.Operand2;
 
-		var rax = Operand.CreateCPURegister64(CPURegister.RAX);
-		var rbx = Operand.CreateCPURegister64(CPURegister.RBX);
-		var rcx = Operand.CreateCPURegister64(CPURegister.RCX);
-		var rdx = Operand.CreateCPURegister64(CPURegister.RDX);
+		var rax = transform.PhysicalRegisters.Allocate64(CPURegister.RAX);
+		var rbx = transform.PhysicalRegisters.Allocate64(CPURegister.RBX);
+		var rcx = transform.PhysicalRegisters.Allocate64(CPURegister.RCX);
+		var rdx = transform.PhysicalRegisters.Allocate64(CPURegister.RDX);
 
 		context.SetInstruction(X64.Mov64, rax, operand1);
 		context.AppendInstruction(X64.Mov64, rcx, operand2);
