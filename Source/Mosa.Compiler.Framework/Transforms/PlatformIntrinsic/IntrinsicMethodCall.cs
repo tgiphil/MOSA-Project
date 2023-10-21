@@ -18,15 +18,15 @@ public sealed class IntrinsicMethodCall : BaseTransform
 		return transform.Architecture.GetInstrinsicMethod(context.Operand1.Method.ExternMethodModule) != null;
 	}
 
-	public override void Transform(Context context, TransformContext transformContext)
+	public override void Transform(Context context, TransformContext transform)
 	{
-		var intrinsic = transformContext.Architecture.GetInstrinsicMethod(context.Operand1.Method.ExternMethodModule);
+		var intrinsic = transform.Architecture.GetInstrinsicMethod(context.Operand1.Method.ExternMethodModule);
 
 		var operands = context.GetOperands();
 		operands.RemoveAt(0);
 
 		context.SetInstruction(IRInstruction.IntrinsicMethodCall, context.Result, operands);
 
-		intrinsic(context, transformContext);
+		intrinsic(context, transform);
 	}
 }

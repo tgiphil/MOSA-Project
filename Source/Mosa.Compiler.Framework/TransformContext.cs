@@ -70,29 +70,29 @@ public sealed class TransformContext
 
 	#region Properties - Registers
 
-	public Operand StackFrame => MethodCompiler.Compiler.StackFrame;
+	public Operand StackFrame => MethodCompiler.StackFrame;
 
-	public Operand StackPointer => MethodCompiler.Compiler.StackPointer;
+	public Operand StackPointer => MethodCompiler.StackPointer;
 
 	/// <summary>
 	/// Gets the link register.
 	/// </summary>
-	public Operand LinkRegister => MethodCompiler.Compiler.LinkRegister;
+	public Operand LinkRegister => MethodCompiler.LinkRegister;
 
 	/// <summary>
 	/// Gets the program counter
 	/// </summary>
-	public Operand ProgramCounter => MethodCompiler.Compiler.ProgramCounter;
+	public Operand ProgramCounter => MethodCompiler.ProgramCounter;
 
 	/// <summary>
 	/// Gets the exception register.
 	/// </summary>
-	public Operand ExceptionRegister => MethodCompiler.Compiler.ExceptionRegister;
+	public Operand ExceptionRegister => MethodCompiler.ExceptionRegister;
 
 	/// <summary>
 	/// Gets the leave target register.
 	/// </summary>
-	public Operand LeaveTargetRegister => MethodCompiler.Compiler.LeaveTargetRegister;
+	public Operand LeaveTargetRegister => MethodCompiler.LeaveTargetRegister;
 
 	#endregion Properties - Registers
 
@@ -147,10 +147,13 @@ public sealed class TransformContext
 		IsLowerTo32 = false;
 		TraceLog = null;
 		Managers.Clear();
+		TotalTransformCount = 0;
 
 		// clear - just in case
 		MethodCompiler = null;
 		VirtualRegisters = null;
+		PhysicalRegisters = null;
+
 		LocalStack = null;
 		BasicBlocks = null;
 	}
@@ -159,6 +162,7 @@ public sealed class TransformContext
 	{
 		MethodCompiler = methodCompiler;
 		VirtualRegisters = methodCompiler.VirtualRegisters;
+		PhysicalRegisters = methodCompiler.PhysicalRegisters;
 		LocalStack = methodCompiler.LocalStack;
 		BasicBlocks = methodCompiler.BasicBlocks;
 		AreCPURegistersAllocated = methodCompiler.AreCPURegistersAllocated;
@@ -166,6 +170,7 @@ public sealed class TransformContext
 		IsLowerTo32 = false;
 		TraceLog = null;
 		Managers.Clear();
+		TotalTransformCount = 0;
 
 		Stage = null;
 	}

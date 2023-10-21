@@ -41,7 +41,7 @@ public sealed partial class Operand
 
 	public LocationType Location { get; private set; }
 
-	public ConstantType Constant { get; private set; }
+	public ConstantType Constant { get; private set; } = ConstantType.Default;
 
 	public ElementType Element { get; private set; }
 
@@ -57,7 +57,7 @@ public sealed partial class Operand
 
 	public uint ConstantUnsigned32 { get => (uint)ConstantUnsigned64; private set => ConstantUnsigned64 = value; }
 
-	public List<InstructionNode> Definitions { get; }
+	public readonly List<InstructionNode> Definitions = new();
 
 	public MosaField Field { get; private set; }
 
@@ -181,7 +181,7 @@ public sealed partial class Operand
 
 	public MosaType Type { get; private set; }
 
-	public List<InstructionNode> Uses { get; }
+	public readonly List<InstructionNode> Uses = new();
 
 	public bool IsDefined => Definitions.Count != 0;
 
@@ -304,10 +304,6 @@ public sealed partial class Operand
 
 	private Operand()
 	{
-		Definitions = new List<InstructionNode>();
-		Uses = new List<InstructionNode>();
-		Constant = ConstantType.Default;
-
 		IsResolved = true;
 	}
 

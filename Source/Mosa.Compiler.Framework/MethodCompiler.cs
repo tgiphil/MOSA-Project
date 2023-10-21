@@ -196,6 +196,40 @@ public sealed class MethodCompiler
 
 	#endregion Properties
 
+	#region Properties - Operand
+
+	/// <summary>
+	/// The stack frame
+	/// </summary>
+	public Operand StackFrame { get; }
+
+	/// <summary>
+	/// The stack frame
+	/// </summary>
+	public Operand StackPointer { get; }
+
+	/// <summary>
+	/// The program counter
+	/// </summary>
+	internal Operand ProgramCounter { get; }
+
+	/// <summary>
+	/// The link register
+	/// </summary>
+	internal Operand LinkRegister { get; }
+
+	/// <summary>
+	/// The exception register
+	/// </summary>
+	public Operand ExceptionRegister { get; }
+
+	/// <summary>
+	/// The ;eave target register
+	/// </summary>
+	public Operand LeaveTargetRegister { get; }
+
+	#endregion Properties - Operand
+
 	#region Construction
 
 	/// <summary>
@@ -220,6 +254,14 @@ public sealed class MethodCompiler
 		CompilerHooks = compiler.CompilerHooks;
 		Is32BitPlatform = Architecture.Is32BitPlatform;
 		Is64BitPlatform = Architecture.Is64BitPlatform;
+
+		StackFrame = Operand.CreateCPURegisterNativeInteger(Architecture.StackFrameRegister, Architecture.Is32BitPlatform);
+		StackPointer = Operand.CreateCPURegisterNativeInteger(Architecture.StackPointerRegister, Architecture.Is32BitPlatform);
+		ExceptionRegister = Operand.CreateCPURegisterObject(Architecture.ExceptionRegister);
+		LeaveTargetRegister = Operand.CreateCPURegisterNativeInteger(Architecture.LeaveTargetRegister, Architecture.Is32BitPlatform);
+
+		LinkRegister = Architecture.LinkRegister == null ? null : Operand.CreateCPURegisterNativeInteger(Architecture.LinkRegister, Architecture.Is32BitPlatform);
+		ProgramCounter = Architecture.ProgramCounter == null ? null : Operand.CreateCPURegisterNativeInteger(Architecture.ProgramCounter, Architecture.Is32BitPlatform);
 
 		NotifyInstructionTraceHandler = CompilerHooks.NotifyMethodInstructionTrace != null ? CompilerHooks.NotifyMethodInstructionTrace(Method) : null;
 		NotifyTranformTraceHandler = CompilerHooks.NotifyMethodTranformTrace != null ? CompilerHooks.NotifyMethodTranformTrace(Method) : null;

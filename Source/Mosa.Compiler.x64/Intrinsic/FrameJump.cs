@@ -28,7 +28,7 @@ internal static partial class IntrinsicMethods
 		context.SetInstruction(X64.Mov64, rax, v0);
 		context.AppendInstruction(X64.Mov64, rbx, v1);
 		context.AppendInstruction(X64.Mov64, rcx, v2);
-		context.AppendInstruction(X64.Mov64, transform.Compiler.ExceptionRegister, v3);
+		context.AppendInstruction(X64.Mov64, transform.ExceptionRegister, v3);
 
 		// Update the frame and stack registers
 		context.AppendInstruction(X64.Mov64, rbp, rcx);

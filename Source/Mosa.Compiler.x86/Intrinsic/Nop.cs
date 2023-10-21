@@ -10,7 +10,7 @@ namespace Mosa.Compiler.x86.Intrinsic;
 internal static partial class IntrinsicMethods
 {
 	[IntrinsicMethod("Mosa.Compiler.x86.Intrinsic::Nop")]
-	private static void Nop(Context context, TransformContext transformContext)
+	private static void Nop(Context context, TransformContext transform)
 	{
 		context.SetInstruction(X86.Nop);
 	}

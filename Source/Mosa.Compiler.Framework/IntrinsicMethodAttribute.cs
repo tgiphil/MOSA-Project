@@ -4,7 +4,7 @@ using System;
 
 namespace Mosa.Compiler.Framework;
 
-public delegate void IntrinsicMethodDelegate(Context context, TransformContext transformContext);
+public delegate void IntrinsicMethodDelegate(Context context, TransformContext transform);
 
 /// <summary>
 /// Used for defining targets when using intrinsic replacements
