@@ -255,14 +255,6 @@ public sealed class MethodCompiler
 		Is32BitPlatform = Architecture.Is32BitPlatform;
 		Is64BitPlatform = Architecture.Is64BitPlatform;
 
-		StackFrame = Operand.CreateCPURegisterNativeInteger(Architecture.StackFrameRegister, Architecture.Is32BitPlatform);
-		StackPointer = Operand.CreateCPURegisterNativeInteger(Architecture.StackPointerRegister, Architecture.Is32BitPlatform);
-		ExceptionRegister = Operand.CreateCPURegisterObject(Architecture.ExceptionRegister);
-		LeaveTargetRegister = Operand.CreateCPURegisterNativeInteger(Architecture.LeaveTargetRegister, Architecture.Is32BitPlatform);
-
-		LinkRegister = Architecture.LinkRegister == null ? null : Operand.CreateCPURegisterNativeInteger(Architecture.LinkRegister, Architecture.Is32BitPlatform);
-		ProgramCounter = Architecture.ProgramCounter == null ? null : Operand.CreateCPURegisterNativeInteger(Architecture.ProgramCounter, Architecture.Is32BitPlatform);
-
 		NotifyInstructionTraceHandler = CompilerHooks.NotifyMethodInstructionTrace != null ? CompilerHooks.NotifyMethodInstructionTrace(Method) : null;
 		NotifyTranformTraceHandler = CompilerHooks.NotifyMethodTranformTrace != null ? CompilerHooks.NotifyMethodTranformTrace(Method) : null;
 
@@ -276,9 +268,17 @@ public sealed class MethodCompiler
 		BasicBlocks = basicBlocks ?? new BasicBlocks();
 
 		LocalStack = new LocalStack(Is32BitPlatform);
+		Parameters = new Parameters(Is32BitPlatform);
+
 		VirtualRegisters = new VirtualRegisters(Is32BitPlatform);
 		PhysicalRegisters = new PhysicalRegisters(Is32BitPlatform);
-		Parameters = new Parameters(Is32BitPlatform);
+
+		StackFrame = PhysicalRegisters.AllocateNativeInteger(Architecture.StackFrameRegister);
+		StackPointer = PhysicalRegisters.AllocateNativeInteger(Architecture.StackPointerRegister);
+		ExceptionRegister = PhysicalRegisters.AllocateObject(Architecture.ExceptionRegister);
+		LeaveTargetRegister = PhysicalRegisters.AllocateNativeInteger(Architecture.LeaveTargetRegister);
+		LinkRegister = Architecture.LinkRegister == null ? null : PhysicalRegisters.AllocateNativeInteger(Architecture.LinkRegister);
+		ProgramCounter = Architecture.ProgramCounter == null ? null : PhysicalRegisters.AllocateNativeInteger(Architecture.ProgramCounter);
 
 		ConstantZero = Is32BitPlatform ? Operand.Constant32_0 : Operand.Constant64_0;
 

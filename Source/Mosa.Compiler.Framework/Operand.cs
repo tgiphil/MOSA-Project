@@ -594,7 +594,7 @@ public sealed partial class Operand
 
 	#region Factory Methods - CPURegister
 
-	public static Operand CreateCPURegister32(PhysicalRegister register, int index = 0)
+	public static Operand CreateCPURegister32(PhysicalRegister register, int index)
 	{
 		return new Operand()
 		{
@@ -605,7 +605,7 @@ public sealed partial class Operand
 		};
 	}
 
-	public static Operand CreateCPURegister64(PhysicalRegister register, int index = 0)
+	public static Operand CreateCPURegister64(PhysicalRegister register, int index)
 	{
 		return new Operand()
 		{
@@ -616,7 +616,7 @@ public sealed partial class Operand
 		};
 	}
 
-	public static Operand CreateCPURegisterR4(PhysicalRegister register, int index = 0)
+	public static Operand CreateCPURegisterR4(PhysicalRegister register, int index)
 	{
 		return new Operand()
 		{
@@ -627,7 +627,7 @@ public sealed partial class Operand
 		};
 	}
 
-	public static Operand CreateCPURegisterR8(PhysicalRegister register, int index = 0)
+	public static Operand CreateCPURegisterR8(PhysicalRegister register, int index)
 	{
 		return new Operand()
 		{
@@ -638,7 +638,7 @@ public sealed partial class Operand
 		};
 	}
 
-	public static Operand CreateCPURegisterObject(PhysicalRegister register, int index = 0)
+	public static Operand CreateCPURegisterObject(PhysicalRegister register, int index)
 	{
 		return new Operand()
 		{
@@ -649,7 +649,7 @@ public sealed partial class Operand
 		};
 	}
 
-	public static Operand CreateCPURegisterManagedPointer(PhysicalRegister register, int index = 0)
+	public static Operand CreateCPURegisterManagedPointer(PhysicalRegister register, int index)
 	{
 		return new Operand()
 		{
@@ -660,7 +660,7 @@ public sealed partial class Operand
 		};
 	}
 
-	public static Operand CreateCPURegisterNativeInteger(PhysicalRegister register, bool is32Platform, int index = 0)
+	public static Operand CreateCPURegisterNativeInteger(PhysicalRegister register, bool is32Platform, int index)
 	{
 		return new Operand
 		{
