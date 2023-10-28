@@ -24,13 +24,11 @@ internal static partial class IntrinsicMethods
 		var ebx = transform.PhysicalRegisters.Allocate32(CPURegister.EBX);
 		var ecx = transform.PhysicalRegisters.Allocate32(CPURegister.ECX);
 
-		var exceptionRegister = transform.PhysicalRegisters.AllocateObject(transform.Architecture.ExceptionRegister);
-
 		// Move all virtual registers into physical registers - necessary since stack frame pointer will change
 		context.SetInstruction(X86.Mov32, eax, v0);
 		context.AppendInstruction(X86.Mov32, ebx, v1);
 		context.AppendInstruction(X86.Mov32, ecx, v2);
-		context.AppendInstruction(X86.Mov32, exceptionRegister, v3);
+		context.AppendInstruction(X86.Mov32, transform.ExceptionRegister, v3);
 
 		// Update the frame and stack registers
 		context.AppendInstruction(X86.Mov32, ebp, ecx);

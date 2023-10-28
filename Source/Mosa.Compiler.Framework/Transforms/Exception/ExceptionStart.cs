@@ -14,10 +14,9 @@ public sealed class ExceptionStart : BaseExceptionTransform
 	public override void Transform(Context context, Transform transform)
 	{
 		var exceptionVirtualRegister = context.Result;
-		var exceptionRegister = transform.PhysicalRegisters.AllocateObject(transform.Architecture.ExceptionRegister);
 
 		context.SetInstruction(IRInstruction.KillAll);
-		context.AppendInstruction(IRInstruction.Gen, exceptionRegister);
-		context.AppendInstruction(IRInstruction.MoveObject, exceptionVirtualRegister, exceptionRegister);
+		context.AppendInstruction(IRInstruction.Gen, transform.ExceptionRegister);
+		context.AppendInstruction(IRInstruction.MoveObject, exceptionVirtualRegister, transform.ExceptionRegister);
 	}
 }

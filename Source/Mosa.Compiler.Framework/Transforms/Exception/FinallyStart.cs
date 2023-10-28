@@ -22,13 +22,12 @@ public sealed class FinallyStart : BaseExceptionTransform
 
 		var exceptionVirtualRegister = context.Result;
 		var leaveTargetVirtualRegister = context.Result2;
-		var exceptionRegister = transform.PhysicalRegisters.AllocateObject(transform.Architecture.ExceptionRegister);
 
 		context.SetInstruction(IRInstruction.KillAll);
-		context.AppendInstruction(IRInstruction.Gen, exceptionRegister);
+		context.AppendInstruction(IRInstruction.Gen, transform.ExceptionRegister);
 		context.AppendInstruction(IRInstruction.Gen, transform.LeaveTargetRegister);
 
-		context.AppendInstruction(IRInstruction.MoveObject, exceptionVirtualRegister, exceptionRegister);
+		context.AppendInstruction(IRInstruction.MoveObject, exceptionVirtualRegister, transform.ExceptionRegister);
 		context.AppendInstruction(IRInstruction.MoveObject, leaveTargetVirtualRegister, transform.LeaveTargetRegister);
 
 		exceptionManager.ExceptionVirtualRegisters.Add(context.Block, exceptionVirtualRegister);

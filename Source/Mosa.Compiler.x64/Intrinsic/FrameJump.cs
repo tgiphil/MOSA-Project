@@ -24,13 +24,11 @@ internal static partial class IntrinsicMethods
 		var rbx = transform.PhysicalRegisters.Allocate64(CPURegister.RBX);
 		var rcx = transform.PhysicalRegisters.Allocate64(CPURegister.RCX);
 
-		var exceptionRegister = transform.PhysicalRegisters.AllocateObject(transform.Architecture.ExceptionRegister);
-
 		// Move all virtual registers into physical registers - necessary since stack frame pointer will change
 		context.SetInstruction(X64.Mov64, rax, v0);
 		context.AppendInstruction(X64.Mov64, rbx, v1);
 		context.AppendInstruction(X64.Mov64, rcx, v2);
-		context.AppendInstruction(X64.Mov64, exceptionRegister, v3);
+		context.AppendInstruction(X64.Mov64, transform.ExceptionRegister, v3);
 
 		// Update the frame and stack registers
 		context.AppendInstruction(X64.Mov64, rbp, rcx);
