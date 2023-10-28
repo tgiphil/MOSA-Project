@@ -35,9 +35,10 @@ public sealed class ExceptionEnd : BaseExceptionTransform
 		}
 
 		var handlerBlock = transform.BasicBlocks.GetByLabel(handler.HandlerStart);
+		var exceptionRegister = transform.PhysicalRegisters.AllocateObject(transform.Architecture.ExceptionRegister);
 
 		context.SetInstruction(IRInstruction.MoveObject, transform.LeaveTargetRegister, Operand.CreateConstant32(target.Label));
-		context.AppendInstruction(IRInstruction.MoveObject, transform.ExceptionRegister, Operand.NullObject);
+		context.AppendInstruction(IRInstruction.MoveObject, exceptionRegister, Operand.NullObject);
 		context.AppendInstruction(IRInstruction.Jmp, handlerBlock);
 	}
 }

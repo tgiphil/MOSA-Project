@@ -24,8 +24,10 @@ public sealed class TryEnd : BaseExceptionTransform
 
 		if (immediate.ExceptionHandlerType == ExceptionHandlerType.Finally)
 		{
+			var exceptionRegister = transform.PhysicalRegisters.AllocateObject(transform.Architecture.ExceptionRegister);
+
 			context.SetInstruction(IRInstruction.MoveObject, transform.LeaveTargetRegister, Operand.CreateConstant32(target.Label));
-			context.AppendInstruction(IRInstruction.MoveObject, transform.ExceptionRegister, Operand.NullObject);
+			context.AppendInstruction(IRInstruction.MoveObject, exceptionRegister, Operand.NullObject);
 			context.AppendInstruction(IRInstruction.Jmp, transform.BasicBlocks.GetByLabel(immediate.HandlerStart));
 			return;
 		}
@@ -36,8 +38,10 @@ public sealed class TryEnd : BaseExceptionTransform
 
 		if (next != null && next.HandlerEnd > immediate.HandlerEnd)
 		{
+			var exceptionRegister = transform.PhysicalRegisters.AllocateObject(transform.Architecture.ExceptionRegister);
+
 			context.SetInstruction(IRInstruction.MoveObject, transform.LeaveTargetRegister, Operand.CreateConstant32(target.Label));
-			context.AppendInstruction(IRInstruction.MoveObject, transform.ExceptionRegister, Operand.NullObject);
+			context.AppendInstruction(IRInstruction.MoveObject, exceptionRegister, Operand.NullObject);
 			context.AppendInstruction(IRInstruction.Jmp, transform.BasicBlocks.GetByLabel(next.HandlerStart));
 			return;
 		}

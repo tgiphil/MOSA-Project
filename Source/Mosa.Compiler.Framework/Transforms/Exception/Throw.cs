@@ -14,8 +14,9 @@ public sealed class Throw : BaseExceptionTransform
 	public override void Transform(Context context, Transform transform)
 	{
 		var method = transform.Compiler.PlatformInternalRuntimeType.FindMethodByName("ExceptionHandler");
+		var exceptionRegister = transform.PhysicalRegisters.AllocateObject(transform.Architecture.ExceptionRegister);
 
-		context.SetInstruction(IRInstruction.MoveObject, transform.ExceptionRegister, context.Operand1);
+		context.SetInstruction(IRInstruction.MoveObject, exceptionRegister, context.Operand1);
 		context.AppendInstruction(IRInstruction.CallStatic, null, Operand.CreateLabel(method, transform.Is32BitPlatform));
 
 		transform.MethodScanner.MethodInvoked(method, transform.Method);

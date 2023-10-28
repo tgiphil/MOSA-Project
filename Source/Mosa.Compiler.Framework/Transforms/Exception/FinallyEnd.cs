@@ -53,7 +53,9 @@ public sealed class FinallyEnd : BaseExceptionTransform
 		context.SetInstruction(IRInstruction.BranchObject, ConditionCode.NotEqual, null, exceptionVirtualRegister, Operand.NullObject, exceptionCallBlock.Block);
 		context.AppendInstruction(IRInstruction.Jmp, newBlocks[1].Block);
 
-		exceptionCallBlock.AppendInstruction(IRInstruction.MoveObject, transform.ExceptionRegister, exceptionVirtualRegister);
+		var exceptionRegister = transform.PhysicalRegisters.AllocateObject(transform.Architecture.ExceptionRegister);
+
+		exceptionCallBlock.AppendInstruction(IRInstruction.MoveObject, exceptionRegister, exceptionVirtualRegister);
 		exceptionCallBlock.AppendInstruction(IRInstruction.CallStatic, null, Operand.CreateLabel(exceptionManager.ExceptionHandler, transform.Is32BitPlatform));
 
 		transform.MethodScanner.MethodInvoked(exceptionManager.ExceptionHandler, transform.Method);
@@ -74,7 +76,7 @@ public sealed class FinallyEnd : BaseExceptionTransform
 
 		if (next != null)
 		{
-			finallyCallBlock.AppendInstruction(IRInstruction.MoveObject, transform.ExceptionRegister, Operand.NullObject);
+			finallyCallBlock.AppendInstruction(IRInstruction.MoveObject, exceptionRegister, Operand.NullObject);
 			finallyCallBlock.AppendInstruction(IRInstruction.MoveObject, transform.LeaveTargetRegister, leaveTargetRegister);
 			finallyCallBlock.AppendInstruction(IRInstruction.Jmp, transform.BasicBlocks.GetByLabel(next.HandlerStart));
 		}

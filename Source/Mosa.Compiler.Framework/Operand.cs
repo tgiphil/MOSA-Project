@@ -554,107 +554,9 @@ public sealed partial class Operand
 
 	#endregion Factory Methods - Constants
 
-	#region Factory Methods - Operands
-
-	public static Operand CreateCPURegister(Operand operand, PhysicalRegister register, int index = 0)
-	{
-		Debug.Assert(operand.Type == null);
-
-		return new Operand()
-		{
-			Location = LocationType.PhysicalRegister,
-			Primitive = operand.Primitive,
-			Register = register,
-			Index = index
-		};
-	}
-
-	#endregion Factory Methods - Operands
-
-	#region Factory Methods - CPURegister
-
-	public static Operand CreateCPURegister32(PhysicalRegister register, int index = 0)
-	{
-		return new Operand()
-		{
-			Location = LocationType.PhysicalRegister,
-			Primitive = PrimitiveType.Int32,
-			Register = register,
-			Index = index
-		};
-	}
-
-	public static Operand CreateCPURegister64(PhysicalRegister register, int index = 0)
-	{
-		return new Operand()
-		{
-			Location = LocationType.PhysicalRegister,
-			Primitive = PrimitiveType.Int64,
-			Register = register,
-			Index = index
-		};
-	}
-
-	public static Operand CreateCPURegisterR4(PhysicalRegister register, int index = 0)
-	{
-		return new Operand()
-		{
-			Location = LocationType.PhysicalRegister,
-			Primitive = PrimitiveType.R4,
-			Register = register,
-			Index = index
-		};
-	}
-
-	public static Operand CreateCPURegisterR8(PhysicalRegister register, int index = 0)
-	{
-		return new Operand()
-		{
-			Location = LocationType.PhysicalRegister,
-			Primitive = PrimitiveType.R8,
-			Register = register,
-			Index = index
-		};
-	}
-
-	public static Operand CreateCPURegisterObject(PhysicalRegister register, int index = 0)
-	{
-		return new Operand()
-		{
-			Location = LocationType.PhysicalRegister,
-			Primitive = PrimitiveType.Object,
-			Register = register,
-			Index = index
-		};
-	}
-
-	public static Operand CreateCPURegisterManagedPointer(PhysicalRegister register, int index = 0)
-	{
-		return new Operand()
-		{
-			Location = LocationType.PhysicalRegister,
-			Primitive = PrimitiveType.ManagedPointer,
-			Register = register,
-			Index = index
-		};
-	}
-
-	public static Operand CreateCPURegisterNativeInteger(PhysicalRegister register, bool is32Platform, int index = 0)
-	{
-		return new Operand
-		{
-			Location = LocationType.PhysicalRegister,
-			Primitive = is32Platform ? PrimitiveType.Int32 : PrimitiveType.Int64,
-			Register = register,
-			Index = index
-		};
-	}
-
-	#endregion Factory Methods - CPURegister
-
 	#region Factory Methods - Standard
 
-	public static Operand CreateVirtualRegister(PrimitiveType primitiveType, int index, MosaType type = null)
+	internal static Operand CreateVirtualRegister(PrimitiveType primitiveType, int index, MosaType type = null)
 	{
 		return new Operand
 		{
@@ -665,7 +567,18 @@ public sealed partial class Operand
 		};
 	}
 
-	public static Operand CreateStackLocal(PrimitiveType primitiveType, int index, bool pinned, MosaType type = null)
+	internal static Operand CreateCPURegister(PrimitiveType primitiveType, PhysicalRegister register, int index)
+	{
+		return new Operand()
+		{
+			Location = LocationType.PhysicalRegister,
+			Primitive = primitiveType,
+			Register = register,
+			Index = index
+		};
+	}
+
+	internal static Operand CreateStackLocal(PrimitiveType primitiveType, int index, bool pinned, MosaType type = null)
 	{
 		return new Operand
 		{
@@ -679,7 +592,7 @@ public sealed partial class Operand
 		};
 	}
 
-	public static Operand CreateStackParameter(PrimitiveType primitiveType, ElementType elementType, int index, string name, int offset, uint size, MosaType type = null)
+	internal static Operand CreateStackParameter(PrimitiveType primitiveType, ElementType elementType, int index, string name, int offset, uint size, MosaType type = null)
 	{
 		return new Operand
 		{
@@ -692,17 +605,6 @@ public sealed partial class Operand
 			Name = name,
 			ConstantSigned64 = offset,
 			Type = type,
-		};
-	}
-
-	public static Operand CreateCPURegister(PrimitiveType primitiveType, PhysicalRegister register, int index = 0)
-	{
-		return new Operand()
-		{
-			Location = LocationType.PhysicalRegister,
-			Primitive = primitiveType,
-			Register = register,
-			Index = index
 		};
 	}
 
