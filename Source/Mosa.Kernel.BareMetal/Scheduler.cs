@@ -22,6 +22,8 @@ public static class Scheduler
 
 	private static int clockTicks;
 
+	private static uint DefaultStackSize => Page.Size * 8;
+
 	#endregion Private Members
 
 	#region Public Members
@@ -31,19 +33,6 @@ public static class Scheduler
 	#endregion Public Members
 
 	#region Public API
-
-	public static uint CreateThread(ThreadStart thread, uint stackSize)
-	{
-		Debug.WriteLine("Scheduler:CreateThread()");
-
-		var address = GetAddress(thread);
-
-		var newthread = CreateThread(address, stackSize);
-
-		Debug.WriteLine("Scheduler:CreateThread() [Exit]");
-
-		return newthread;
-	}
 
 	public static void Start()
 	{
@@ -55,6 +44,11 @@ public static class Scheduler
 		Platform.Scheduler.Start();
 
 		Debug.WriteLine("Scheduler:Start() [Exit]");
+	}
+
+	public static uint CreateThread(ThreadStart thread)
+	{
+		return CreateThread(thread, DefaultStackSize);
 	}
 
 	public static void ClockInterrupt(Pointer stackSate)
@@ -117,6 +111,19 @@ public static class Scheduler
 	internal static void SignalTermination()
 	{
 		Platform.Scheduler.SignalTermination();
+	}
+
+	private static uint CreateThread(ThreadStart thread, uint stackSize)
+	{
+		Debug.WriteLine("Scheduler:CreateThread()");
+
+		var address = GetAddress(thread);
+
+		var newthread = CreateThread(address, stackSize);
+
+		Debug.WriteLine("Scheduler:CreateThread() [Exit]");
+
+		return newthread;
 	}
 
 	#endregion Internal API
