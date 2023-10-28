@@ -1,6 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Collections;
+using System.Diagnostics;
 
 namespace Mosa.Compiler.Framework;
 
@@ -45,6 +46,12 @@ public sealed class PhysicalRegisters : IEnumerable<Operand>
 	public Operand Allocate(Operand operand, PhysicalRegister register)
 	{
 		return Allocate(operand.Primitive, register);
+	}
+
+	public Operand Allocate(Operand operand)
+	{
+		Debug.Assert(operand.IsCPURegister);
+		return Allocate(operand.Primitive, operand.Register);
 	}
 
 	public Operand Allocate32(PhysicalRegister register)
