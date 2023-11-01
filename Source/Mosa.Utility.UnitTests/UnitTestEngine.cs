@@ -6,7 +6,6 @@ using System.Net.Sockets;
 using Mosa.Compiler.Common;
 using Mosa.Compiler.Framework;
 using Mosa.Compiler.Framework.Linker;
-using Mosa.Compiler.Framework.Trace;
 using Mosa.Compiler.MosaTypeSystem;
 using Mosa.Utility.Configuration;
 using Mosa.Utility.Launcher;

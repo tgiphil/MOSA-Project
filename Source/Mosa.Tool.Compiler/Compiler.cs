@@ -2,7 +2,6 @@
 
 using System.Diagnostics;
 using Mosa.Compiler.Framework;
-using Mosa.Compiler.Framework.Trace;
 using Mosa.Compiler.MosaTypeSystem.CLR;
 using Mosa.Utility.Configuration;
 

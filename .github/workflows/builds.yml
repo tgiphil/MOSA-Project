@@ -218,11 +218,6 @@ jobs:
           path: bin
       - name: Unit Test
         run: bin\Mosa.Utility.UnitTests.exe -check -output-counters -o${{ matrix.optimization }}
-      - name: Store Build Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: macos-build-artifact
-          path: ${{ runner.temp	 }}
 
   linux-unit-testing:
     strategy:
