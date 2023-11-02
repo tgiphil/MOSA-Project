@@ -14,7 +14,7 @@ public class Compiler
 {
 	#region Data
 
-	private DateTime CompileStartTime;
+	private static Stopwatch Stopwatch = new Stopwatch();
 
 	#endregion Data
 
@@ -24,7 +24,7 @@ public class Compiler
 	/// Runs the command line parser and the compilation process.
 	/// </summary>
 	/// <param name="args">The command line arguments.</param>
-	public void Run(string[] args)
+	public int Run(string[] args)
 	{
 		RegisterPlatforms();
 
@@ -32,8 +32,9 @@ public class Compiler
 		Console.WriteLine("MOSA Compiler, Version {0}.", CompilerVersion.VersionString);
 		Console.WriteLine("Copyright 2023 by the MOSA Project. Licensed under the New BSD License.");
 
-		Console.WriteLine();
-		Console.WriteLine("Parsing options...");
+		Stopwatch.Start();
+
+		NotifyStatus($"Current Directory: {Environment.CurrentDirectory}");
 
 		try
 		{
@@ -45,35 +46,35 @@ public class Compiler
 			SetRequiredSettings(mosaSettings);
 			mosaSettings.ExpandSearchPaths();
 			mosaSettings.NormalizeSettings();
+			mosaSettings.AddStandardPlugs();
 			mosaSettings.UpdateFileAndPathSettings();
 
 			if (mosaSettings.SourceFiles == null && mosaSettings.SourceFiles.Count == 0)
 			{
-				throw new Exception("No input file(s) specified.");
+				NotifyStatus("ERROR: No input file(s) specified.");
+				return 1;
 			}
 
 			var compiler = new MosaCompiler(mosaSettings, CreateCompilerHooks(), new ClrModuleLoader(), new ClrTypeResolver());
 
 			if (string.IsNullOrEmpty(compiler.MosaSettings.OutputFile))
 			{
-				throw new Exception("No output file specified.");
+				NotifyStatus("ERROR: No output file specified.");
+				return 1;
 			}
 
 			if (compiler.MosaSettings.Platform == null)
 			{
-				throw new Exception("No Architecture specified.");
+				NotifyStatus("ERROR: No Architecture specified.");
+				return 1;
 			}
 
 			Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
 			Debug.AutoFlush = true;
 
-			Console.WriteLine($" > Input file(s): {string.Join(", ", new List<string>(compiler.MosaSettings.SourceFiles.ToArray()))}");
-			Console.WriteLine($" > Output file: {compiler.MosaSettings.OutputFile}");
-			Console.WriteLine($" > Platform: {compiler.MosaSettings.Platform}");
-
-			Console.WriteLine();
-			Console.WriteLine("Compiling ...");
-			Console.WriteLine();
+			NotifyStatus($"Input file(s): {string.Join(", ", new List<string>(compiler.MosaSettings.SourceFiles.ToArray()))}");
+			NotifyStatus($"Output file: {compiler.MosaSettings.OutputFile}");
+			NotifyStatus($"Platform: {compiler.MosaSettings.Platform}");
 
 			compiler.Load();
 
@@ -81,11 +82,12 @@ public class Compiler
 		}
 		catch (Exception ce)
 		{
-			Output($"Exception: {ce.Message}");
-			Output($"Exception: {ce.StackTrace}");
-			Environment.Exit(1);
-			return;
+			NotifyStatus($"Exception: {ce.Message}");
+			NotifyStatus($"Exception: {ce.StackTrace}");
+			return 1;
 		}
+
+		return 0;
 	}
 
 	private static void RegisterPlatforms()
@@ -106,8 +108,6 @@ public class Compiler
 
 	private CompilerHooks CreateCompilerHooks()
 	{
-		CompileStartTime = DateTime.Now;
-
 		var compilerHooks = new CompilerHooks
 		{
 			NotifyEvent = NotifyEvent,
@@ -127,13 +127,13 @@ public class Compiler
 			&& compilerEvent != CompilerEvent.FinalizationStageEnd)
 		{
 			message = string.IsNullOrWhiteSpace(message) ? string.Empty : $": {message}";
-			Output($"[{threadID}] {compilerEvent.ToText()}{message}");
+			NotifyStatus($"[{threadID}] {compilerEvent.ToText()}{message}");
 		}
 	}
 
-	private void Output(string log)
+	private static void NotifyStatus(string status)
 	{
-		Console.WriteLine($"{(DateTime.Now - CompileStartTime).TotalSeconds:0.00} | {log}");
+		System.Console.WriteLine($"{Stopwatch.Elapsed.TotalSeconds:00.00} | {status}");
 	}
 
 	#endregion Private Methods

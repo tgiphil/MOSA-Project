@@ -64,11 +64,11 @@ public class Builder : BaseLauncher
 			}
 			else if (!File.Exists(MosaSettings.SourceFiles[0]))
 			{
-				Output($"File {MosaSettings.SourceFiles[0]} does not exists");
+				Output($"ERROR: File {MosaSettings.SourceFiles[0]} does not exists");
 				return;
 			}
 
-			if (!Compile())
+			if (!Compile(GetMosaSettings()))
 			{
 				IsSucccessful = false;
 				return;
@@ -101,23 +101,37 @@ public class Builder : BaseLauncher
 		}
 	}
 
-	private bool Compile()
+	private MosaSettings GetMosaSettings()
+	{
+		return MosaSettings;
+	}
+
+	private bool Compile(MosaSettings mosaSettings)
 	{
 		var fileHunter = new FileHunter(Path.GetDirectoryName(MosaSettings.SourceFiles[0]));
 
 		if (MosaSettings.PlugKorlib)
 		{
 			var fileKorlib = fileHunter.HuntFile("Mosa.Plug.Korlib.dll");
-			if (fileKorlib != null) MosaSettings.AddSourceFile(fileKorlib.FullName);
+			if (fileKorlib != null)
+			{
+				MosaSettings.AddSourceFile(fileKorlib.FullName);
+			}
 
 			var fileKorlibPlatform = fileHunter.HuntFile($"Mosa.Plug.Korlib.{MosaSettings.Platform}.dll");
-			if (fileKorlibPlatform != null) MosaSettings.AddSourceFile(fileKorlibPlatform.FullName);
+			if (fileKorlibPlatform != null)
+			{
+				mosaSettings.AddSourceFile(fileKorlibPlatform.FullName);
+			}
 		}
 
 		if (MosaSettings.PlugKernel)
 		{
 			var fileKernelPlatform = fileHunter.HuntFile($"Mosa.Kernel.BareMetal.{MosaSettings.Platform}.dll");
-			if (fileKernelPlatform != null) MosaSettings.AddSourceFile(fileKernelPlatform.FullName);
+			if (fileKernelPlatform != null)
+			{
+				MosaSettings.AddSourceFile(fileKernelPlatform.FullName);
+			}
 		}
 
 		Output($"Compiling: {MosaSettings.SourceFiles[0]}");

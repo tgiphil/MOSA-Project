@@ -59,9 +59,10 @@ internal static class Program
 				}
 			}
 		}
-		catch (Exception e)
+		catch (Exception ce)
 		{
-			NotifyStatus($"Exception: {e}");
+			NotifyStatus($"Exception: {ce.Message}");
+			NotifyStatus($"Exception: {ce.StackTrace}");
 			return 1;
 		}
 
