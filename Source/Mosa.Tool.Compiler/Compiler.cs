@@ -32,7 +32,7 @@ public class Compiler
 		Console.WriteLine("MOSA Compiler, Version {0}.", CompilerVersion.VersionString);
 		Console.WriteLine("Copyright 2023 by the MOSA Project. Licensed under the New BSD License.");
 
-		Output($"Current Directory: {Environment.CurrentDirectory}");
+		OutputStatus($"Current Directory: {Environment.CurrentDirectory}");
 
 		Stopwatch.Start();
 
@@ -49,11 +49,11 @@ public class Compiler
 			mosaSettings.AddStandardPlugs();
 			mosaSettings.UpdateFileAndPathSettings();
 
-			Output($"Compiling: {mosaSettings.SourceFiles[0]}");
+			OutputStatus($"Compiling: {mosaSettings.SourceFiles[0]}");
 
 			if (mosaSettings.SourceFiles == null && mosaSettings.SourceFiles.Count == 0)
 			{
-				Output("ERROR: No input file(s) specified.");
+				OutputStatus("ERROR: No input file(s) specified.");
 				return 1;
 			}
 
@@ -61,22 +61,22 @@ public class Compiler
 
 			if (string.IsNullOrEmpty(compiler.MosaSettings.OutputFile))
 			{
-				Output("ERROR: No output file specified.");
+				OutputStatus("ERROR: No output file specified.");
 				return 1;
 			}
 
 			if (compiler.MosaSettings.Platform == null)
 			{
-				Output("ERROR: No Architecture specified.");
+				OutputStatus("ERROR: No Architecture specified.");
 				return 1;
 			}
 
 			Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
 			Debug.AutoFlush = true;
 
-			Output($"Input file(s): {string.Join(", ", new List<string>(compiler.MosaSettings.SourceFiles.ToArray()))}");
-			Output($"Output file: {compiler.MosaSettings.OutputFile}");
-			Output($"Platform: {compiler.MosaSettings.Platform}");
+			OutputStatus($"Input file(s): {string.Join(", ", new List<string>(compiler.MosaSettings.SourceFiles.ToArray()))}");
+			OutputStatus($"Output file: {compiler.MosaSettings.OutputFile}");
+			OutputStatus($"Platform: {compiler.MosaSettings.Platform}");
 
 			compiler.Load();
 
@@ -84,8 +84,8 @@ public class Compiler
 		}
 		catch (Exception ce)
 		{
-			Output($"Exception: {ce.Message}");
-			Output($"Exception: {ce.StackTrace}");
+			OutputStatus($"Exception: {ce.Message}");
+			OutputStatus($"Exception: {ce.StackTrace}");
 			return 1;
 		}
 
@@ -129,11 +129,11 @@ public class Compiler
 			&& compilerEvent != CompilerEvent.FinalizationStageEnd)
 		{
 			message = string.IsNullOrWhiteSpace(message) ? string.Empty : $": {message}";
-			Output($"{compilerEvent.ToText()}{message}");
+			OutputStatus($"{compilerEvent.ToText()}{message}");
 		}
 	}
 
-	private static void Output(string status)
+	private static void OutputStatus(string status)
 	{
 		Console.WriteLine($"{Stopwatch.Elapsed.TotalSeconds:00.00} | {status}");
 	}

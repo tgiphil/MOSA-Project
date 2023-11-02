@@ -303,7 +303,7 @@ public class UnitTestEngine : IDisposable
 
 	private void NotifyStatus(string status)
 	{
-		OutputStatus($"[{status}]");
+		OutputStatus($"{status}");
 	}
 
 	private void OutputStatus(string status)

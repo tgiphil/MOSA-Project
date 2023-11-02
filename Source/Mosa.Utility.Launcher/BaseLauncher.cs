@@ -26,7 +26,7 @@ public class BaseLauncher
 		MosaSettings.UpdateFileAndPathSettings();
 	}
 
-	protected void Output(string status)
+	protected void OutputStatus(string status)
 	{
 		if (string.IsNullOrEmpty(status)) return;
 
@@ -59,8 +59,8 @@ public class BaseLauncher
 
 	protected Process CreateApplicationProcess(string app, string args)
 	{
-		Output($"Starting Application: {app}");
-		Output($"Arguments: {args}");
+		OutputStatus($"Starting Application: {app}");
+		OutputStatus($"Arguments: {args}");
 
 		var process = new Process();
 
@@ -76,8 +76,8 @@ public class BaseLauncher
 
 	protected Process LaunchApplication(string app, string args)
 	{
-		Output($"Launching Application: {app}");
-		Output($"Arguments: {args}");
+		OutputStatus($"Launching Application: {app}");
+		OutputStatus($"Arguments: {args}");
 
 		var start = new ProcessStartInfo
 		{
@@ -94,8 +94,8 @@ public class BaseLauncher
 
 	protected Process LaunchConsoleApplication(string app, string args)
 	{
-		Output($"Launching Console Application: {app}");
-		Output($"Arguments: {args}");
+		OutputStatus($"Launching Console Application: {app}");
+		OutputStatus($"Arguments: {args}");
 
 		var start = new ProcessStartInfo
 		{
@@ -126,7 +126,7 @@ public class BaseLauncher
 		var process = LaunchApplication(app, arg);
 
 		var output = GetOutput(process);
-		Output(output);
+		OutputStatus(output);
 
 		return process;
 	}

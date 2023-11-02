@@ -59,12 +59,12 @@ public class Builder : BaseLauncher
 
 			if (string.IsNullOrEmpty(MosaSettings.SourceFiles[0]))
 			{
-				Output("ERROR: Missing source file");
+				OutputStatus("ERROR: Missing source file");
 				return;
 			}
 			else if (!File.Exists(MosaSettings.SourceFiles[0]))
 			{
-				Output($"ERROR: File {MosaSettings.SourceFiles[0]} does not exists");
+				OutputStatus($"ERROR: File {MosaSettings.SourceFiles[0]} does not exists");
 				return;
 			}
 
@@ -91,7 +91,7 @@ public class Builder : BaseLauncher
 		catch (Exception e)
 		{
 			IsSucccessful = false;
-			Output($"Exception: {e}");
+			OutputStatus($"Exception: {e}");
 		}
 		finally
 		{
@@ -108,7 +108,7 @@ public class Builder : BaseLauncher
 
 	private bool Compile(MosaSettings mosaSettings)
 	{
-		Output($"Compiling: {MosaSettings.SourceFiles[0]}");
+		OutputStatus($"Compiling: {MosaSettings.SourceFiles[0]}");
 
 		var compiler = new MosaCompiler(MosaSettings, CompilerHooks, new ClrModuleLoader(), new ClrTypeResolver());
 
@@ -127,7 +127,7 @@ public class Builder : BaseLauncher
 	{
 		if (string.IsNullOrWhiteSpace(MosaSettings.ImageFormat)) return;
 
-		Output($"Generating Image: {MosaSettings.ImageFormat}");
+		OutputStatus($"Generating Image: {MosaSettings.ImageFormat}");
 
 		switch (MosaSettings.ImageFormat)
 		{
@@ -177,7 +177,7 @@ public class Builder : BaseLauncher
 			{
 				var name = Path.GetFileName(file).ToUpper();
 
-				Output($"Adding file: {name}");
+				OutputStatus($"Adding file: {name}");
 				bootImageOptions.IncludeFiles.Add(new IncludeFile(name, File.ReadAllBytes(file)));
 			}
 		}
@@ -230,7 +230,7 @@ public class Builder : BaseLauncher
 
 	private void LaunchNDISASM()
 	{
-		Output($"Executing NDISASM: {MosaSettings.NasmFile}");
+		OutputStatus($"Executing NDISASM: {MosaSettings.NasmFile}");
 
 		//var textSection = Linker.Sections[(int)SectionKind.Text];
 		var startingAddress = MosaSettings.BaseAddress + MultibootHeaderLength;
@@ -249,7 +249,7 @@ public class Builder : BaseLauncher
 
 	private void GenerateASMFile()
 	{
-		Output($"Executing Reko Disassembler: {MosaSettings.AsmFile}");
+		OutputStatus($"Executing Reko Disassembler: {MosaSettings.AsmFile}");
 
 		var map = new Dictionary<ulong, List<string>>();
 
@@ -305,7 +305,7 @@ public class Builder : BaseLauncher
 		{
 			var status = $"[Exception] {message}";
 
-			Output(status);
+			OutputStatus(status);
 		}
 		else if (compilerEvent is CompilerEvent.CompilerStart or CompilerEvent.CompilerEnd or CompilerEvent.CompilingMethodsStart or CompilerEvent.CompilingMethodsCompleted or CompilerEvent.InlineMethodsScheduled or CompilerEvent.LinkingStart or CompilerEvent.LinkingEnd or CompilerEvent.Warning or CompilerEvent.Error)
 		{
@@ -314,7 +314,7 @@ public class Builder : BaseLauncher
 			if (!string.IsNullOrEmpty(message))
 				status += $" => {message}";
 
-			Output(status);
+			OutputStatus(status);
 		}
 		else if (compilerEvent == CompilerEvent.Counter)
 		{
