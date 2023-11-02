@@ -22,6 +22,7 @@ public class BaseLauncher
 		MosaSettings.SetDetfaultSettings();
 		MosaSettings.Merge(mosaSettings);
 		MosaSettings.NormalizeSettings();
+		MosaSettings.AddStandardPlugs();
 		MosaSettings.UpdateFileAndPathSettings();
 	}
 

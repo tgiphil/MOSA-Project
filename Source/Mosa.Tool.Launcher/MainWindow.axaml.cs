@@ -66,6 +66,7 @@ public partial class MainWindow : Window
 		SetRequiredSettings();
 		mosaSettings.ExpandSearchPaths();
 		mosaSettings.NormalizeSettings();
+		mosaSettings.AddStandardPlugs();
 		mosaSettings.UpdateFileAndPathSettings();
 
 		UpdateGuiSettings();

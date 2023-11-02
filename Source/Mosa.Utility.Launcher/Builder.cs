@@ -108,32 +108,6 @@ public class Builder : BaseLauncher
 
 	private bool Compile(MosaSettings mosaSettings)
 	{
-		var fileHunter = new FileHunter(Path.GetDirectoryName(MosaSettings.SourceFiles[0]));
-
-		if (MosaSettings.PlugKorlib)
-		{
-			var fileKorlib = fileHunter.HuntFile("Mosa.Plug.Korlib.dll");
-			if (fileKorlib != null)
-			{
-				MosaSettings.AddSourceFile(fileKorlib.FullName);
-			}
-
-			var fileKorlibPlatform = fileHunter.HuntFile($"Mosa.Plug.Korlib.{MosaSettings.Platform}.dll");
-			if (fileKorlibPlatform != null)
-			{
-				mosaSettings.AddSourceFile(fileKorlibPlatform.FullName);
-			}
-		}
-
-		if (MosaSettings.PlugKernel)
-		{
-			var fileKernelPlatform = fileHunter.HuntFile($"Mosa.Kernel.BareMetal.{MosaSettings.Platform}.dll");
-			if (fileKernelPlatform != null)
-			{
-				MosaSettings.AddSourceFile(fileKernelPlatform.FullName);
-			}
-		}
-
 		Output($"Compiling: {MosaSettings.SourceFiles[0]}");
 
 		var compiler = new MosaCompiler(MosaSettings, CompilerHooks, new ClrModuleLoader(), new ClrTypeResolver());
