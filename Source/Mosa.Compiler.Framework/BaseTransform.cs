@@ -1,6 +1,5 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using System.Diagnostics;
 using Mosa.Compiler.Common;
 using Mosa.Compiler.Common.Exceptions;
 
@@ -76,10 +75,7 @@ public abstract class BaseTransform : IComparable<BaseTransform>
 		if (operand1 == operand2)
 			return true;
 
-		if (operand1.IsVirtualRegister && operand1.IsVirtualRegister && operand1 == operand2)
-			return true;
-
-		if (operand1.IsPhysicalRegister && operand1.IsPhysicalRegister && operand1 == operand2)
+		if (operand1.IsPhysicalRegister && operand2.IsPhysicalRegister && operand1.Register == operand2.Register)
 			return true;
 
 		if (operand1.IsResolvedConstant && operand2.IsResolvedConstant)
