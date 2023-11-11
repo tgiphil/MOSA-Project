@@ -829,7 +829,7 @@ public partial class MosaSettings
 		return value.ToLowerInvariant().Trim();
 	}
 
-	public void UpdateFileAndPathSettings()
+	public void ResolveDefaults()
 	{
 		if (string.IsNullOrWhiteSpace(TemporaryFolder) || TemporaryFolder == "%DEFAULT%")
 		{
@@ -841,6 +841,33 @@ public partial class MosaSettings
 			ImageFolder = TemporaryFolder;
 		}
 
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+		{
+			if (ExplorerFilter == "%REGISTRY%")
+			{
+				ExplorerFilter = (string)Registry.CurrentUser
+					.OpenSubKey(WindowsRegistry.Software)
+					.OpenSubKey(WindowsRegistry.MosaApp)
+					.GetValue(WindowsRegistry.ExplorerFilter, string.Empty);
+			}
+
+			if (Platform == "%REGISTRY%")
+			{
+				Platform = (string)Registry.CurrentUser
+					.OpenSubKey(WindowsRegistry.Software)
+					.OpenSubKey(WindowsRegistry.MosaApp)
+					.GetValue(WindowsRegistry.ExplorerPlatform, string.Empty);
+			}
+		}
+
+		if (string.IsNullOrWhiteSpace(Platform) || Platform == "%DEFAULT%")
+		{
+			Platform = "x86";
+		}
+	}
+
+	public void ResolveFileAndPathSettings()
+	{
 		if (string.IsNullOrWhiteSpace(DefaultFolder) || DefaultFolder == "%DEFAULT%")
 		{
 			if (OutputFile != null && OutputFile != "%DEFAULT%")
@@ -927,30 +954,6 @@ public partial class MosaSettings
 		if (NasmFile == "%DEFAULT%")
 		{
 			NasmFile = Path.Combine(defaultFolder, $"{baseFilename}.nasm");
-		}
-
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-		{
-			if (ExplorerFilter == "%REGISTRY%")
-			{
-				ExplorerFilter = (string)Registry.CurrentUser
-					.OpenSubKey(WindowsRegistry.Software)
-					.OpenSubKey(WindowsRegistry.MosaApp)
-					.GetValue(WindowsRegistry.ExplorerFilter, string.Empty);
-			}
-
-			if (Platform == "%REGISTRY%")
-			{
-				Platform = (string)Registry.CurrentUser
-					.OpenSubKey(WindowsRegistry.Software)
-					.OpenSubKey(WindowsRegistry.MosaApp)
-					.GetValue(WindowsRegistry.ExplorerPlatform, string.Empty);
-			}
-		}
-
-		if (string.IsNullOrWhiteSpace(Platform) || Platform == "%DEFAULT%")
-		{
-			Platform = "x86";
 		}
 	}
 

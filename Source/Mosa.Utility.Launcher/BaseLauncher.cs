@@ -20,9 +20,10 @@ public class BaseLauncher
 		MosaSettings = new MosaSettings();
 		MosaSettings.LoadAppLocations();
 		MosaSettings.SetDefaultSettings();
+		MosaSettings.ResolveDefaults();
 		MosaSettings.Merge(mosaSettings);
 		MosaSettings.NormalizeSettings();
-		MosaSettings.UpdateFileAndPathSettings();
+		MosaSettings.ResolveFileAndPathSettings();
 		MosaSettings.AddStandardPlugs();
 	}
 

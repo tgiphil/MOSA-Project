@@ -12,6 +12,7 @@ public partial class MosaSettings
 		public const string MosaApp = "Mosa";
 		public const string ExplorerFilter = "ExplorerFilter";
 		public const string ExplorerPlatform = "ExplorerPlatform";
+		public const string LastOpened = "ExplorerLastOpened";
 	}
 
 	#endregion Constants

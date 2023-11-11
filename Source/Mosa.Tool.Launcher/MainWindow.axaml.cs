@@ -64,8 +64,9 @@ public partial class MainWindow : Window
 		mosaSettings.SetDefaultSettings();
 		mosaSettings.LoadArguments(args);
 		mosaSettings.NormalizeSettings();
-		mosaSettings.UpdateFileAndPathSettings();
+		mosaSettings.ResolveDefaults();
 		SetRequiredSettings();
+		mosaSettings.ResolveFileAndPathSettings();
 		mosaSettings.AddStandardPlugs();
 		mosaSettings.ExpandSearchPaths();
 

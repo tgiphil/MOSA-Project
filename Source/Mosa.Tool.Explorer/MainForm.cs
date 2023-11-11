@@ -109,12 +109,13 @@ public partial class MainForm : Form
 		MosaSettings.SetDefaultSettings();
 		MosaSettings.LoadAppLocations();
 		MosaSettings.LoadArguments(args);
+		MosaSettings.NormalizeSettings();
 
 		if (MosaSettings.Platform == "%DEFAULT%" && (MosaSettings.SourceFiles == null || MosaSettings.SourceFiles.Count == 0))
 			MosaSettings.Platform = "%REGISTRY%";
 
-		MosaSettings.NormalizeSettings();
-		MosaSettings.UpdateFileAndPathSettings();
+		MosaSettings.ResolveDefaults();
+
 		SetRequiredSettings();
 
 		GraphwizFound = File.Exists(MosaSettings.GraphwizApp);
@@ -1214,6 +1215,8 @@ public partial class MainForm : Form
 		// Search Paths
 		MosaSettings.ClearSearchPaths();
 		MosaSettings.AddSearchPath(Path.GetDirectoryName(filename));
+
+		MosaSettings.ResolveFileAndPathSettings();
 	}
 
 	private void UpdateTransformLabels()

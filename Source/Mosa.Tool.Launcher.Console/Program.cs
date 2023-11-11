@@ -32,8 +32,9 @@ internal static class Program
 			mosaSettings.SetDefaultSettings();
 			mosaSettings.LoadArguments(args);
 			mosaSettings.NormalizeSettings();
-			mosaSettings.UpdateFileAndPathSettings();
+			mosaSettings.ResolveDefaults();
 			SetRequiredSettings(mosaSettings);
+			mosaSettings.ResolveFileAndPathSettings();
 			mosaSettings.AddStandardPlugs();
 			mosaSettings.ExpandSearchPaths();
 
