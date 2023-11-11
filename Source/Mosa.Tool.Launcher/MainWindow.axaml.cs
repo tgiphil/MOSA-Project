@@ -61,13 +61,13 @@ public partial class MainWindow : Window
 	public void Initialize(string[] args)
 	{
 		mosaSettings.LoadAppLocations();
-		mosaSettings.SetDetfaultSettings();
+		mosaSettings.SetDefaultSettings();
 		mosaSettings.LoadArguments(args);
-		SetRequiredSettings();
-		mosaSettings.ExpandSearchPaths();
-		mosaSettings.AddStandardPlugs();
 		mosaSettings.NormalizeSettings();
 		mosaSettings.UpdateFileAndPathSettings();
+		SetRequiredSettings();
+		mosaSettings.AddStandardPlugs();
+		mosaSettings.ExpandSearchPaths();
 
 		UpdateGuiSettings();
 

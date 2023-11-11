@@ -102,7 +102,7 @@ public partial class MainForm : Form
 		launchView = new LaunchView(this);
 
 		MosaSettings.LoadAppLocations();
-		MosaSettings.SetDetfaultSettings();
+		MosaSettings.SetDefaultSettings();
 
 		SetDefaultSettings();
 

@@ -1,10 +1,12 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using Mosa.Compiler.Common.Configuration;
 
 namespace Mosa.Utility.Configuration;
 
-public class MosaSettings
+public partial class MosaSettings
 {
 	#region Constants
 
@@ -541,6 +543,12 @@ public class MosaSettings
 		set => Settings.SetValue(Name.Optimizations_LongExpansion, value);
 	}
 
+	public bool ReduceCodeSize
+	{
+		get => Settings.GetValue(Name.Optimizations_ReduceCodeSize, true);
+		set => Settings.SetValue(Name.Optimizations_ReduceCodeSize, value);
+	}
+
 	public bool TwoPassOptimization
 	{
 		get => Settings.GetValue(Name.Optimizations_TwoPass, true);
@@ -716,13 +724,13 @@ public class MosaSettings
 		Settings.Merge(settings);
 	}
 
-	public void SetDetfaultSettings()
+	public void SetDefaultSettings()
 	{
 		TemporaryFolder = Path.Combine(Path.GetTempPath(), "MOSA");
 
 		MethodScanner = false;
 		Multithreading = true;
-		Platform = "x86";
+		Platform = "%DEFAULT%";
 		Multithreading = true;
 		BaseAddress = 0x00400000;
 		EmitBinary = true;
@@ -755,6 +763,7 @@ public class MosaSettings
 		InlineAggressiveMaximum = 24;
 		InlineMaximum = 12;
 		OptimizationBasicWindow = 5;
+		ReduceCodeSize = false;
 
 		Emulator = "Qemu";
 		EmulatorDisplay = false;
@@ -795,16 +804,29 @@ public class MosaSettings
 		EmitShortSymbolNames = false;
 
 		LinkerFormat = "elf32";
+
+		ExplorerFilter = "%REGISTRY%";
 	}
 
 	public void NormalizeSettings()
 	{
-		ImageFormat = ImageFormat == null ? string.Empty : ImageFormat.ToLowerInvariant().Trim();
-		FileSystem = FileSystem == null ? string.Empty : FileSystem.ToLowerInvariant().Trim();
-		EmulatorSerial = EmulatorSerial == null ? string.Empty : EmulatorSerial.ToLowerInvariant().Trim();
-		Emulator = Emulator == null ? string.Empty : Emulator.ToLowerInvariant().Trim();
-		Platform = Platform == null ? string.Empty : Platform.ToLowerInvariant().Trim();
-		LinkerFormat = LinkerFormat == null ? string.Empty : LinkerFormat.ToLowerInvariant().Trim();
+		ImageFormat = ToLower(ImageFormat);
+		FileSystem = ToLower(FileSystem);
+		EmulatorSerial = ToLower(EmulatorSerial);
+		Emulator = ToLower(Emulator);
+		Platform = ToLower(Platform);
+		LinkerFormat = ToLower(LinkerFormat);
+	}
+
+	private string ToLower(string value)
+	{
+		if (value == null)
+			return string.Empty;
+
+		if (value == "%DEFAULT%" || value == "%REGISTRY%")
+			return value;
+
+		return value.ToLowerInvariant().Trim();
 	}
 
 	public void UpdateFileAndPathSettings()
@@ -905,6 +927,30 @@ public class MosaSettings
 		if (NasmFile == "%DEFAULT%")
 		{
 			NasmFile = Path.Combine(defaultFolder, $"{baseFilename}.nasm");
+		}
+
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+		{
+			if (ExplorerFilter == "%REGISTRY%")
+			{
+				ExplorerFilter = (string)Registry.CurrentUser
+					.OpenSubKey(WindowsRegistry.Software)
+					.OpenSubKey(WindowsRegistry.MosaApp)
+					.GetValue(WindowsRegistry.ExplorerFilter, string.Empty);
+			}
+
+			if (Platform == "%REGISTRY%")
+			{
+				Platform = (string)Registry.CurrentUser
+					.OpenSubKey(WindowsRegistry.Software)
+					.OpenSubKey(WindowsRegistry.MosaApp)
+					.GetValue(WindowsRegistry.ExplorerPlatform, string.Empty);
+			}
+		}
+
+		if (string.IsNullOrWhiteSpace(Platform) || Platform == "%DEFAULT%")
+		{
+			Platform = "x86";
 		}
 	}
 

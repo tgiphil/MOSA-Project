@@ -3,6 +3,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.Win32;
 using Mosa.Compiler.Common;
 using Mosa.Compiler.Framework;
 using Mosa.Compiler.Framework.CompilerStages;
@@ -10,7 +11,7 @@ using Mosa.Compiler.MosaTypeSystem;
 using Mosa.Compiler.MosaTypeSystem.CLR;
 using Mosa.Tool.Explorer.Stages;
 using Mosa.Utility.Configuration;
-using Mosa.Utility.Launcher;
+using static Mosa.Utility.Configuration.MosaSettings;
 
 namespace Mosa.Tool.Explorer;
 
@@ -62,7 +63,7 @@ public partial class MainForm : Form
 	{
 		InitializeComponent();
 
-		cbPlatform.SelectedIndex = 0;
+		//cbPlatform.SelectedIndex = 0;
 
 		gridMethodCounters.DataSource = MethodCounters;
 		gridMethodCounters.Columns[0].Width = 370;
@@ -78,7 +79,15 @@ public partial class MainForm : Form
 
 		RegisterPlatforms();
 
+		CreateRegistry();
+
 		Stopwatch.Restart();
+	}
+
+	protected void CreateRegistry()
+	{
+		var software = Registry.CurrentUser.OpenSubKey(WindowsRegistry.Software, RegistryKeyPermissionCheck.ReadWriteSubTree);
+		software.CreateSubKey(WindowsRegistry.MosaApp);
 	}
 
 	public void ClearAllLogs()
@@ -97,10 +106,15 @@ public partial class MainForm : Form
 
 	public void LoadArguments(string[] args)
 	{
-		MosaSettings.SetDetfaultSettings();
-		MosaSettings.LoadArguments(args);
+		MosaSettings.SetDefaultSettings();
 		MosaSettings.LoadAppLocations();
+		MosaSettings.LoadArguments(args);
 
+		if (MosaSettings.Platform == "%DEFAULT%" && (MosaSettings.SourceFiles == null || MosaSettings.SourceFiles.Count == 0))
+			MosaSettings.Platform = "%REGISTRY%";
+
+		MosaSettings.NormalizeSettings();
+		MosaSettings.UpdateFileAndPathSettings();
 		SetRequiredSettings();
 
 		GraphwizFound = File.Exists(MosaSettings.GraphwizApp);
@@ -383,6 +397,11 @@ public partial class MainForm : Form
 	private void cbPlatform_SelectedIndexChanged(object sender, EventArgs e)
 	{
 		ClearAll();
+
+		Registry.CurrentUser
+			.OpenSubKey(WindowsRegistry.Software)
+			.OpenSubKey(WindowsRegistry.MosaApp, RegistryKeyPermissionCheck.ReadWriteSubTree)
+			.SetValue(WindowsRegistry.ExplorerPlatform, cbPlatform.Text);
 	}
 
 	private void cbTransformLabels_SelectedIndexChanged(object sender, EventArgs e)
@@ -916,6 +935,11 @@ public partial class MainForm : Form
 	private void tbFilter_TextChanged(object sender, EventArgs e)
 	{
 		CreateTree();
+
+		Registry.CurrentUser
+			.OpenSubKey(WindowsRegistry.Software)
+			.OpenSubKey(WindowsRegistry.MosaApp, RegistryKeyPermissionCheck.ReadWriteSubTree)
+			.SetValue(WindowsRegistry.ExplorerFilter, tbFilter.Text);
 	}
 
 	private void tbMethodCounterFilter_TextChanged(object sender, EventArgs e)
@@ -946,6 +970,7 @@ public partial class MainForm : Form
 		cbLoopInvariantCodeMotion.Checked = state;
 		cbPlatformOptimizations.Checked = state;
 		cbEnableDevirtualization.Checked = state;
+		cbEnableCodeSizeReduction.Checked = false;
 	}
 
 	private void ToolStripButton1_Click(object sender, EventArgs e)
@@ -1051,6 +1076,7 @@ public partial class MainForm : Form
 		cbEnableMultithreading.Checked = MosaSettings.Multithreading;
 		tbFilter.Text = MosaSettings.ExplorerFilter; ;
 		cbEnableDebugDiagnostic.Checked = MosaSettings.DebugDiagnostic;
+		cbEnableCodeSizeReduction.Checked = MosaSettings.ReduceCodeSize;
 
 		cbPlatform.SelectedIndex = MosaSettings.Platform.ToLowerInvariant() switch
 		{
@@ -1171,6 +1197,7 @@ public partial class MainForm : Form
 		MosaSettings.PlatformOptimizations = cbPlatformOptimizations.Checked;
 		MosaSettings.InlineMethods = cbEnableInline.Checked;
 		MosaSettings.InlineExplicit = cbInlineExplicit.Checked;
+		MosaSettings.ReduceCodeSize = cbEnableCodeSizeReduction.Checked;
 
 		MosaSettings.TraceLevel = 10;
 		//MosaSettings.InlineMaximum = 12;
