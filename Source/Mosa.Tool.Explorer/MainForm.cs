@@ -111,8 +111,13 @@ public partial class MainForm : Form
 		MosaSettings.LoadArguments(args);
 		MosaSettings.NormalizeSettings();
 
-		if (MosaSettings.Platform == "%DEFAULT%" && (MosaSettings.SourceFiles == null || MosaSettings.SourceFiles.Count == 0))
-			MosaSettings.Platform = "%REGISTRY%";
+		if (MosaSettings.SourceFiles == null || MosaSettings.SourceFiles.Count == 0)
+		{
+			if (MosaSettings.Platform == "%DEFAULT%")
+				MosaSettings.Platform = "%REGISTRY%";
+
+			openFileDialog.FileName = MosaSettings.GetRegistry(WindowsRegistry.LastOpened, null);
+		}
 
 		MosaSettings.ResolveDefaults();
 
@@ -400,7 +405,7 @@ public partial class MainForm : Form
 	{
 		ClearAll();
 
-		SetRegistry(WindowsRegistry.ExplorerPlatform, cbPlatform.Text);
+		MosaSettings.SetRegistry(WindowsRegistry.ExplorerPlatform, cbPlatform.Text);
 	}
 
 	private void cbTransformLabels_SelectedIndexChanged(object sender, EventArgs e)
@@ -681,7 +686,7 @@ public partial class MainForm : Form
 
 		SetStatus("Ready!");
 
-		if (MosaSettings.SourceFiles != null && MosaSettings.SourceFiles.Count >= 1)
+		if (MosaSettings.SourceFiles != null && MosaSettings.SourceFiles.Count != 0)
 		{
 			var filename = Path.GetFullPath(MosaSettings.SourceFiles[0]);
 
@@ -806,16 +811,8 @@ public partial class MainForm : Form
 		{
 			OpenFile();
 
-			SetRegistry(WindowsRegistry.LastOpened, openFileDialog.FileName);
+			MosaSettings.SetRegistry(WindowsRegistry.LastOpened, openFileDialog.FileName);
 		}
-	}
-
-	private void SetRegistry(string name, string value)
-	{
-		Registry.CurrentUser
-			.OpenSubKey(WindowsRegistry.Software)
-			.OpenSubKey(WindowsRegistry.MosaApp, RegistryKeyPermissionCheck.ReadWriteSubTree)
-			.SetValue(name, value);
 	}
 
 	private void OpenFile()
@@ -945,7 +942,7 @@ public partial class MainForm : Form
 	{
 		CreateTree();
 
-		SetRegistry(WindowsRegistry.ExplorerFilter, tbFilter.Text);
+		MosaSettings.SetRegistry(WindowsRegistry.ExplorerFilter, tbFilter.Text);
 	}
 
 	private void tbMethodCounterFilter_TextChanged(object sender, EventArgs e)

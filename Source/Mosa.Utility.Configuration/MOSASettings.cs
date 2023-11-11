@@ -862,17 +862,35 @@ public partial class MosaSettings
 		}
 	}
 
-	protected string GetRegistry(string name, string defaultValue)
+	public static string GetRegistry(string name, string defaultValue)
 	{
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 		{
-			return (string)Registry.CurrentUser
-					.OpenSubKey(WindowsRegistry.Software)
-					.OpenSubKey(WindowsRegistry.MosaApp)
-					.GetValue(name, defaultValue);
+			try
+			{
+				return (string)Registry.CurrentUser
+						.OpenSubKey(WindowsRegistry.Software)
+						.OpenSubKey(WindowsRegistry.MosaApp)
+						.GetValue(name, defaultValue);
+			}
+			catch
+			{
+				return defaultValue;
+			}
 		}
 
 		return defaultValue;
+	}
+
+	public static void SetRegistry(string name, string value)
+	{
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+		{
+			Registry.CurrentUser
+			.OpenSubKey(WindowsRegistry.Software)
+			.OpenSubKey(WindowsRegistry.MosaApp, RegistryKeyPermissionCheck.ReadWriteSubTree)
+			.SetValue(name, value);
+		}
 	}
 
 	public void ResolveFileAndPathSettings()
