@@ -79,12 +79,12 @@ public partial class MainForm : Form
 
 		RegisterPlatforms();
 
-		CreateRegistry();
+		CreateAppRegistryKey();
 
 		Stopwatch.Restart();
 	}
 
-	protected void CreateRegistry()
+	protected void CreateAppRegistryKey()
 	{
 		var software = Registry.CurrentUser.OpenSubKey(WindowsRegistry.Software, RegistryKeyPermissionCheck.ReadWriteSubTree);
 		software.CreateSubKey(WindowsRegistry.MosaApp);
@@ -328,6 +328,7 @@ public partial class MainForm : Form
 		PlatformRegistry.Add(new Compiler.x86.Architecture());
 		PlatformRegistry.Add(new Compiler.x64.Architecture());
 		PlatformRegistry.Add(new Compiler.ARM32.Architecture());
+		//PlatformRegistry.Add(new Compiler.ARM64.Architecture());
 	}
 
 	private void btnFirst_Click(object sender, EventArgs e)
@@ -399,10 +400,7 @@ public partial class MainForm : Form
 	{
 		ClearAll();
 
-		Registry.CurrentUser
-			.OpenSubKey(WindowsRegistry.Software)
-			.OpenSubKey(WindowsRegistry.MosaApp, RegistryKeyPermissionCheck.ReadWriteSubTree)
-			.SetValue(WindowsRegistry.ExplorerPlatform, cbPlatform.Text);
+		SetRegistry(WindowsRegistry.ExplorerPlatform, cbPlatform.Text);
 	}
 
 	private void cbTransformLabels_SelectedIndexChanged(object sender, EventArgs e)
@@ -807,7 +805,17 @@ public partial class MainForm : Form
 		if (openFileDialog.ShowDialog() == DialogResult.OK)
 		{
 			OpenFile();
+
+			SetRegistry(WindowsRegistry.LastOpened, openFileDialog.FileName);
 		}
+	}
+
+	private void SetRegistry(string name, string value)
+	{
+		Registry.CurrentUser
+			.OpenSubKey(WindowsRegistry.Software)
+			.OpenSubKey(WindowsRegistry.MosaApp, RegistryKeyPermissionCheck.ReadWriteSubTree)
+			.SetValue(name, value);
 	}
 
 	private void OpenFile()
@@ -937,10 +945,7 @@ public partial class MainForm : Form
 	{
 		CreateTree();
 
-		Registry.CurrentUser
-			.OpenSubKey(WindowsRegistry.Software)
-			.OpenSubKey(WindowsRegistry.MosaApp, RegistryKeyPermissionCheck.ReadWriteSubTree)
-			.SetValue(WindowsRegistry.ExplorerFilter, tbFilter.Text);
+		SetRegistry(WindowsRegistry.ExplorerFilter, tbFilter.Text);
 	}
 
 	private void tbMethodCounterFilter_TextChanged(object sender, EventArgs e)
