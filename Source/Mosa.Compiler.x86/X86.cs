@@ -57,6 +57,7 @@ public static class X86
 	public static readonly BaseInstruction Jmp = new Jmp();
 	public static readonly BaseInstruction JmpExternal = new JmpExternal();
 	public static readonly BaseInstruction Lea32 = new Lea32();
+	public static readonly BaseInstruction Lea32Ext = new Lea32Ext();
 	public static readonly BaseInstruction Leave = new Leave();
 	public static readonly BaseInstruction Lgdt = new Lgdt();
 	public static readonly BaseInstruction Lidt = new Lidt();

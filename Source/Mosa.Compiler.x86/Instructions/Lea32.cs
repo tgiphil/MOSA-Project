@@ -108,16 +108,6 @@ public sealed class Lea32 : X86Instruction
 			return;
 		}
 
-		if (node.Operand1.IsConstant && node.Operand2.IsConstantZero)
-		{
-			opcodeEncoder.Append8Bits(0x8D);
-			opcodeEncoder.Append2Bits(0b00);
-			opcodeEncoder.Append3Bits(node.Result.Register.RegisterCode);
-			opcodeEncoder.Append3Bits(0b101);
-			opcodeEncoder.Append32BitImmediate(node.Operand1);
-			return;
-		}
-
 		throw new Compiler.Common.Exceptions.CompilerException("Invalid Opcode");
 	}
 }

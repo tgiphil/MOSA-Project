@@ -58,6 +58,7 @@ public static class X86Instructions
 		X86.Jmp,
 		X86.JmpExternal,
 		X86.Lea32,
+		X86.Lea32Ext,
 		X86.Leave,
 		X86.Lgdt,
 		X86.Lidt,
