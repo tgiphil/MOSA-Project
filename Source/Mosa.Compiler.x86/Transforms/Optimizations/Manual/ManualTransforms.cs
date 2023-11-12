@@ -12,12 +12,13 @@ public static class ManualTransforms
 	public static readonly List<BaseTransform> List = new()
 	{
 		new Rewrite.Add32ToInc32(),
-		new Rewrite.Add32ToLea32(), //
+		new Rewrite.Add32ToLea32(),
 		new Rewrite.Cmp32ToTest32(),
 		new Rewrite.Cmp32ToZero(),
 		new Rewrite.Lea32ToInc32(),
 		new Rewrite.Lea32ToDec32(),
 		new Rewrite.Lea32ToMov32(),
+		new Rewrite.Lea32ToMov32Constant(),
 		new Rewrite.Sub32ToDec32(),
 		new Rewrite.Sub32ToLea32(),
 		new Rewrite.Test32ToZero(),

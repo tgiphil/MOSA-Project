@@ -38,6 +38,17 @@ public sealed class Add32ToLea32 : BaseTransform
 
 	public override void Transform(Context context, Transform transform)
 	{
-		context.SetInstruction(X86.Lea32, context.Result, context.Operand1, context.Operand2);
+		var result = context.Result;
+		var operand1 = context.Operand1;
+		var operand2 = context.Operand2;
+
+		if (operand2.IsConstant)
+		{
+			context.SetInstruction(X86.Lea32Ext, result, operand1, Operand.Constant32_0, Operand.Constant32_1, operand2);
+		}
+		else
+		{
+			context.SetInstruction(X86.Lea32Ext, result, operand1, operand2, Operand.Constant32_1, Operand.Constant32_0);
+		}
 	}
 }

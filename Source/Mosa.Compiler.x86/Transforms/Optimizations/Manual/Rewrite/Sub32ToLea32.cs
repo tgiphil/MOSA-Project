@@ -40,6 +40,6 @@ public sealed class Sub32ToLea32 : BaseTransform
 	{
 		var constant = Operand.CreateConstant(-context.Operand2.ConstantSigned32);
 
-		context.SetInstruction(X86.Lea32, context.Result, context.Operand1, constant);
+		context.SetInstruction(X86.Lea32Ext, context.Result, context.Operand1, Operand.Constant32_0, Operand.Constant32_1, constant);
 	}
 }

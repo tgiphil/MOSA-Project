@@ -9,16 +9,19 @@ namespace Mosa.Compiler.x86.Transforms.Optimizations.Manual.Rewrite;
 [Transform("x86.Optimizations.Manual.Rewrite")]
 public sealed class Lea32ToInc32 : BaseTransform
 {
-	public Lea32ToInc32() : base(X86.Lea32, TransformType.Manual | TransformType.Optimization)
+	public Lea32ToInc32() : base(X86.Lea32Ext, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 
 	public override bool Match(Context context, Transform transform)
 	{
-		if (!context.Operand2.IsResolvedConstant)
+		if (!context.Operand4.IsResolvedConstant)
 			return false;
 
-		if (context.Operand2.ConstantUnsigned64 != 1)
+		if (!context.Operand2.IsConstantZero)
+			return false;
+
+		if (context.Operand4.ConstantUnsigned64 != 1)
 			return false;
 
 		if (!AreSame(context.Operand1, context.Result))
