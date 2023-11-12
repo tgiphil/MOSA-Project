@@ -163,6 +163,10 @@ public sealed class Architecture : BaseArchitecture
 		pipeline.InsertBefore<CodeGenerationStage>(
 			new JumpOptimizationStage()
 		);
+
+		pipeline.InsertBefore<CodeGenerationStage>(
+			new TempStage()
+		);
 	}
 
 	/// <summary>

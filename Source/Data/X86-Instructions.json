@@ -1099,11 +1099,11 @@
 				},
 				{
 					"Condition": "[ESP][0][constant_0or1][constant_imm8]",
-					"Encoding": "[x86-common-load-esp+constant8]"
+					"Encoding": "[x86-base-load-esp+constant8],dest=r,offset=o4"
 				},
 				{
 					"Condition": "[ESP][0][constant_0or1][constant]",
-					"Encoding": "[x86-common-load-esp+constant]"
+					"Encoding": "[x86-base-load-esp+constant],dest=r,offset=o4"
 				},
 				{
 					"Condition": "[register][register][1][0]",
@@ -1115,11 +1115,11 @@
 				},
 				{
 					"Condition": "[register][0][constant_0or1][constant_imm8]",
-					"Encoding": "[x86-common-load-register+constant8]"
+					"Encoding": "[x86-base-load-register+constant8],dest=r,membase=o1,offset=o4"
 				},
 				{
 					"Condition": "[register][0][constant_0or1][constant]",
-					"Encoding": "[x86-common-load-register+constant]"
+					"Encoding": "[x86-base-load-register+constant],dest=r,membase=o1,offset=o4"
 				},
 				{
 					"Condition": "[register][register][constant_1to4][zero]",
