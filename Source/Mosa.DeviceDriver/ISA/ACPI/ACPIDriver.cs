@@ -45,6 +45,14 @@ public unsafe class ACPIDriver : BaseDeviceDriver, IACPI
 	{
 		Device.Name = "ACPI";
 
+		// TODO: Find the multiboot service
+		// or have the multiboot service spin up ACPI with RSDPv1 or v2
+
+		//Multiboot.V2.RSDPv1
+
+		if (true)
+			return;
+
 		var rsdp = HAL.GetRSDP();
 		var version2 = HAL.IsACPIVersion2();
 

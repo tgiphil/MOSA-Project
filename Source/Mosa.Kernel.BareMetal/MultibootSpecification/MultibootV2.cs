@@ -10,7 +10,7 @@ public struct MultibootV2
 
 	private readonly Pointer Pointer;
 
-	public bool IsAvailable => !Pointer.IsNull;
+	public readonly bool IsAvailable => !Pointer.IsNull;
 
 	public Pointer BootLine => GetEntryValuePointer(1, 8);
 
@@ -39,7 +39,17 @@ public struct MultibootV2
 
 	public MultibootV2MemoryMapEntry FirstEntry => new(GetEntryValuePointer(6, 16));
 
-	public Pointer Framebuffer => GetEntryValuePointer(8, 8);
+	public Pointer FrameBuffer => GetEntryValuePointer(8, 8);
+
+	public Pointer FrameBufferWidth => GetEntryValuePointer(8, 20);
+
+	public Pointer FrameBufferHeight => GetEntryValuePointer(8, 24);
+
+	public Pointer FrameBufferPitch => GetEntryValuePointer(8, 16);
+
+	public Pointer FrameBufferBitPerPixel => GetEntryValuePointer(8, 28);
+
+	public Pointer FrameBufferType => GetEntryValuePointer(8, 29);
 
 	public Pointer RSDPv1 => GetEntryValuePointer(14, 8);
 
@@ -71,7 +81,7 @@ public struct MultibootV2
 		if (entry.IsNull)
 			return Pointer.Zero;
 
-		return entry + 8;
+		return entry + offset;
 	}
 
 	private uint GetEntryValue32(int type, int offset)
