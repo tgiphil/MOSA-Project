@@ -4,7 +4,7 @@ using Mosa.Compiler.Framework;
 
 namespace Mosa.Compiler.x64.CompilerStages;
 
-public sealed class MultibootStage : Mosa.Compiler.Framework.Platform.BaseMultibootStage
+public sealed class MultibootStage : Framework.Platform.BaseMultibootStage
 {
 	protected override void Finalization()
 	{
@@ -34,8 +34,8 @@ public sealed class MultibootStage : Mosa.Compiler.Framework.Platform.BaseMultib
 		var rbp = transform.PhysicalRegisters.Allocate64(CPURegister.RBP);
 		var rsp = transform.PhysicalRegisters.Allocate64(CPURegister.RSP);
 
-		var multibootEAX = Operand.CreateLabel(MultibootEAX, Architecture.Is32BitPlatform);
-		var multibootEBX = Operand.CreateLabel(MultibootEBX, Architecture.Is32BitPlatform);
+		var multibootRegister1 = Operand.CreateLabel(MultibootRegister1, Architecture.Is32BitPlatform);
+		var multibootRegister2 = Operand.CreateLabel(MultibootRegister2, Architecture.Is32BitPlatform);
 		var stackBottom = Operand.CreateLabel(MultibootInitialStack, Architecture.Is32BitPlatform);
 
 		var stackTopOffset = CreateConstant(StackSize - 16);
@@ -53,12 +53,12 @@ public sealed class MultibootStage : Mosa.Compiler.Framework.Platform.BaseMultib
 		context.AppendInstruction(X64.MovStore64, null, rsp, Operand.Constant64_16, Operand.Constant64_0);
 
 		// Place the multiboot address into a static field
-		context.AppendInstruction(X64.MovStore64, null, multibootEAX, Operand.Constant64_0, rax);
-		context.AppendInstruction(X64.MovStore64, null, multibootEBX, Operand.Constant64_0, rbx);
+		context.AppendInstruction(X64.MovStore64, null, multibootRegister1, Operand.Constant64_0, rax);
+		context.AppendInstruction(X64.MovStore64, null, multibootRegister2, Operand.Constant64_0, rbx);
 
 		context.AppendInstruction(X64.Call, null, entryPoint);
 		context.AppendInstruction(X64.Ret);
 
-		Compiler.CompileMethod(multibootMethod, basicBlocks);
+		Compiler.CompileMethod(multibootMethod);
 	}
 }
