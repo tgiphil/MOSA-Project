@@ -24,9 +24,7 @@ public sealed class MultibootStage : Framework.Platform.BaseMultibootStage
 		transform.SetCompiler(Compiler);
 		transform.SetMethodCompiler(methodCompiler);
 
-		var startUpType = TypeSystem.GetTypeByName("Mosa.Runtime.StartUp");
-		var initializeMethod = startUpType.FindMethodByName("Initialize");
-
+		var initializeMethod = TypeSystem.GetMethod("Mosa.Runtime.StartUp", "Initialize");
 		var entryPoint = Operand.CreateLabel(initializeMethod, Architecture.Is32BitPlatform);
 
 		var eax = transform.PhysicalRegisters.Allocate32(CPURegister.EAX);
@@ -44,17 +42,16 @@ public sealed class MultibootStage : Framework.Platform.BaseMultibootStage
 
 		var context = new Context(prologueBlock);
 
-		// Setup the stack and place the sentinel on the stack to indicate the start of the stack
-		context.AppendInstruction(X86.Mov32, esp, stackBottom);
-		context.AppendInstruction(X86.Add32, esp, esp, stackTopOffset);
-		context.AppendInstruction(X86.Mov32, ebp, stackBottom);
-		context.AppendInstruction(X86.Add32, ebp, ebp, stackTopOffset);
-		context.AppendInstruction(X86.MovStore32, null, esp, Operand.Constant32_0, Operand.Constant32_0);
-		context.AppendInstruction(X86.MovStore32, null, esp, Operand.Constant32_8, Operand.Constant32_0);
-
 		// Place the multiboot address into a static field
 		context.AppendInstruction(X86.MovStore32, null, multibootRegister1, Operand.Constant32_0, eax);
 		context.AppendInstruction(X86.MovStore32, null, multibootRegister2, Operand.Constant32_0, ebx);
+
+		// Setup the stack and place the sentinel on the stack to indicate the start of the stack
+		context.AppendInstruction(X86.Mov32, esp, stackBottom);
+		context.AppendInstruction(X86.Add32, esp, esp, stackTopOffset);
+		context.AppendInstruction(X86.Mov32, ebp, esp);
+		context.AppendInstruction(X86.MovStore32, null, esp, Operand.Constant32_0, Operand.Constant32_0);
+		context.AppendInstruction(X86.MovStore32, null, esp, Operand.Constant32_8, Operand.Constant32_0);
 
 		context.AppendInstruction(X86.Call, null, entryPoint);
 		context.AppendInstruction(X86.Ret);
