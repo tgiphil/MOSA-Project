@@ -127,8 +127,7 @@ public abstract class BaseMultibootStage : BaseCompilerStage
 
 		MethodScanner.MethodInvoked(multibootMethod, multibootMethod);
 
-		var startUpType = TypeSystem.GetType("Mosa.Runtime.StartUp");
-		var initializeMethod = startUpType?.FindMethodByName("Initialize");
+		var initializeMethod = TypeSystem.GetMethod("Mosa.Runtime.StartUp", "Initialize");
 
 		Compiler.GetMethodData(initializeMethod).DoNotInline = true;
 

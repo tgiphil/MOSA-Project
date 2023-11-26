@@ -13,23 +13,23 @@ using Mosa.Runtime.Plug;
 
 namespace Mosa.Kernel.BareMetal;
 
-public static class Boot
+public static class Startup
 {
-	[Plug("Mosa.Runtime.StartUp::PlatformInitialization")]
-	public static void PlatformInitialization()
+	[Plug("Mosa.Runtime.StartUp::InitializePlatform")]
+	public static void Initialize(Pointer stackFrame)
 	{
 		Platform.Interrupt.Disable();
 
-		Debug.WriteLine("[Platform Initialization]");
+		Platform.Setup(stackFrame);
 
+		Debug.WriteLine("[Platform Initialization]");
 		BootStatus.Initalize();
 
 		Console.BackgroundColor = ConsoleColor.Black;
 		Console.ForegroundColor = ConsoleColor.Yellow;
 		Console.Clear();
 
-		Console.WriteLine("MOSA BareMetal v2.4");
-
+		Console.WriteLine("MOSA BareMetal v2.5");
 		Console.WriteLine();
 
 		Console.WriteLine("Initializing kernel...");
@@ -49,7 +49,7 @@ public static class Boot
 
 		Console.ForegroundColor = ConsoleColor.LightGreen;
 		Console.Write("> Platform initialization...");
-		Platform.Initialization();
+		Platform.Initialize();
 		Console.ForegroundColor = ConsoleColor.DarkGray;
 		Console.WriteLine(" [Completed]");
 	}
@@ -130,12 +130,6 @@ public static class Boot
 		var hardware = new HardwareAbstractionLayer();
 		var deviceService = new DeviceService();
 		DeviceSystem.Setup.Initialize(hardware, deviceService.ProcessInterrupt);
-		Console.ForegroundColor = ConsoleColor.DarkGray;
-		Console.WriteLine(" [Completed]");
-
-		Console.ForegroundColor = ConsoleColor.LightGreen;
-		Console.Write("> Setting ACPI RSDP address...");
-		HAL.SetRSDP(Multiboot.V2.RSDP, Multiboot.V2.ACPIv2);
 		Console.ForegroundColor = ConsoleColor.DarkGray;
 		Console.WriteLine(" [Completed]");
 
