@@ -28,10 +28,16 @@ public class PCService : BaseService
 
 	public bool Reset()
 	{
-		ACPI ??= DeviceService.GetFirstDevice<IACPI>(DeviceStatus.Online).DeviceDriver as IACPI;
+		var device = DeviceService.GetFirstDevice<IACPI>(DeviceStatus.Online);
+
+		if (device == null)
+			return false;
+
+		ACPI ??= device.DeviceDriver as IACPI;
 
 		if (ACPI == null)
 			return false;
+
 		var address = ACPI.ResetAddress;
 		var value = ACPI.ResetValue;
 
@@ -58,7 +64,12 @@ public class PCService : BaseService
 
 	public bool Shutdown()
 	{
-		ACPI ??= DeviceService.GetFirstDevice<IACPI>(DeviceStatus.Online).DeviceDriver as IACPI;
+		var device = DeviceService.GetFirstDevice<IACPI>(DeviceStatus.Online);
+
+		if (device == null)
+			return false;
+
+		ACPI ??= device.DeviceDriver as IACPI;
 
 		if (ACPI == null)
 			return false;
