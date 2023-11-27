@@ -44,17 +44,45 @@ public unsafe class ACPIDriver : BaseDeviceDriver, IACPI
 	public override void Initialize()
 	{
 		Device.Name = "ACPI";
+	}
 
-		// TODO: Find the multiboot service
-		// or have the multiboot service spin up ACPI with RSDPv1 or v2
+	/// <summary>
+	/// Probes this instance.
+	/// </summary>
+	/// <remarks>
+	/// Override for ISA devices, if example
+	/// </remarks>
+	public override void Probe() => Device.Status = DeviceStatus.Available;
 
-		//Multiboot.V2.RSDPv1
+	/// <summary>
+	/// Starts this hardware device.
+	/// </summary>
+	public override void Start()
+	{
+		Setup();
 
-		if (true)
-			return;
+		SMI_CommandPort.Write8(FADT.AcpiEnable);
+		HAL.Sleep(3000);
+		Device.Status = DeviceStatus.Online;
+	}
 
-		var rsdp = HAL.GetRSDP();
-		var version2 = HAL.IsACPIVersion2();
+	/// <summary>
+	/// Stops this hardware device.
+	/// </summary>
+	public override void Stop()
+	{
+		SMI_CommandPort.Write8(FADT.AcpiDisable);
+		HAL.Sleep(3000);
+		Device.Status = DeviceStatus.Offline;
+	}
+
+	private void Setup()
+	{
+		// TODO: Find the multiboot service or Multiboot spins up the ACPI with RSDPv1 or v2
+		// Multiboot.V2.RSDPv1
+
+		var rsdp = Pointer.Zero; // HAL.GetRSDP();
+		var version2 = true; // HAL.IsACPIVersion2();
 
 		if (version2)
 		{
@@ -163,34 +191,6 @@ public unsafe class ACPIDriver : BaseDeviceDriver, IACPI
 				}
 			}
 		}
-	}
-
-	/// <summary>
-	/// Probes this instance.
-	/// </summary>
-	/// <remarks>
-	/// Override for ISA devices, if example
-	/// </remarks>
-	public override void Probe() => Device.Status = DeviceStatus.Available;
-
-	/// <summary>
-	/// Starts this hardware device.
-	/// </summary>
-	public override void Start()
-	{
-		SMI_CommandPort.Write8(FADT.AcpiEnable);
-		HAL.Sleep(3000);
-		Device.Status = DeviceStatus.Online;
-	}
-
-	/// <summary>
-	/// Stops this hardware device.
-	/// </summary>
-	public override void Stop()
-	{
-		SMI_CommandPort.Write8(FADT.AcpiDisable);
-		HAL.Sleep(3000);
-		Device.Status = DeviceStatus.Offline;
 	}
 
 	private Pointer FindBySignature(string signature)
