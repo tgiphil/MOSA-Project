@@ -39,7 +39,7 @@ public sealed class MultibootStage : Framework.Platform.BaseMultibootStage
 
 		var context = new Context(prologueBlock);
 
-		// Create stack frame
+		// Set stack location
 		context.AppendInstruction(ARM32.Movw, sp, stackBottom);
 		context.AppendInstruction(ARM32.Movt, sp, sp, stackBottom);
 
@@ -53,9 +53,9 @@ public sealed class MultibootStage : Framework.Platform.BaseMultibootStage
 		context.AppendInstruction(ARM32.Stm, null, sp, Operand.Constant32_0, Operand.Constant32_FFFF);
 		context.AppendInstruction(ARM32.Stm, null, sp, Operand.Constant32_0, sp);
 
-		//// Call entry point
-		//context.AppendInstruction(X86.Call, null, entryPoint);
-		//context.AppendInstruction(X86.Ret);
+		// Call entry point
+		context.AppendInstruction(ARM32.Bl, null, entryPoint);
+		context.AppendInstruction(ARM32.Pop, null, Operand.Constant32_0);
 
 		Compiler.CompileMethod(multibootMethod);
 	}
