@@ -1386,7 +1386,11 @@
 			"OpcodeEncoding": [
 				{
 					"Condition": "[register][constant][constant]",
-					"Encoding": "[arm-block-transfer],p=1,u=updir:status,s=imm1:o2,w=0,l=0,rn=reg4:o1,list=imm16:o2"
+					"Encoding": "[arm-block-transfer],p=1,u=updir:status,s=imm1:o2,w=0,l=0,rn=reg4:o1,list=imm16:o3"
+				},
+				{
+					"Condition": "[register][constant][register]",
+					"Encoding": "[arm-block-transfer],p=1,u=updir:status,s=imm1:o2,w=0,l=0,rn=reg4:o1,list=reg16pow2:o3"
 				}
 			]
 		},

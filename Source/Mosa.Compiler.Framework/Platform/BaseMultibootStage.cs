@@ -21,13 +21,11 @@ namespace Mosa.Compiler.Framework.Platform;
 /// </remarks>
 public abstract class BaseMultibootStage : BaseCompilerStage
 {
-	private const string MultibootHeaderSymbolName = "<$>mosa-multiboot-header";
+	#region Constants
 
-	public const string MultibootRegister1 = "<$>mosa-multiboot-register-1";
-	public const string MultibootRegister2 = "<$>mosa-multiboot-register-2";
 	public const string MultibootInitialStack = "<$>mosa-multiboot-initial-stack";
 
-	#region Constants
+	private const string MultibootHeaderSymbolName = "<$>mosa-multiboot-header";
 
 	/// <summary>
 	/// This is the size of the initial kernel stack. (8KiB)
@@ -113,8 +111,6 @@ public abstract class BaseMultibootStage : BaseCompilerStage
 	{
 		multibootHeader = Linker.DefineSymbol(MultibootHeaderSymbolName, SectionKind.Text, 1, 0x30);
 
-		Linker.DefineSymbol(MultibootRegister1, SectionKind.BSS, Architecture.NativeAlignment, Architecture.NativePointerSize);
-		Linker.DefineSymbol(MultibootRegister2, SectionKind.BSS, Architecture.NativeAlignment, Architecture.NativePointerSize);
 		Linker.DefineSymbol(MultibootInitialStack, SectionKind.BSS, Architecture.NativeAlignment, StackSize);
 
 		multibootMethod = Compiler.CreateLinkerMethod("MultibootInit");

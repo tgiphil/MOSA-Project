@@ -20,10 +20,10 @@ public static class PlatformPlug
 	[Plug("Mosa.Kernel.BareMetal.Platform::Setup")]
 	public static void Setup(Pointer stackFrame)
 	{
-		var eax = stackFrame.Load32(0);
-		var ebx = stackFrame.Load32(-4);
+		var eax = stackFrame.Load32(-4);
+		var ebx = stackFrame.LoadPointer(-16);
 
-		Multiboot.Setup(new Pointer(ebx), eax);
+		Multiboot.Setup(ebx, eax);
 	}
 
 	[Plug("Mosa.Kernel.BareMetal.Platform::Initialize")]

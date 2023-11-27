@@ -12,4 +12,6 @@ public enum InstructionOption
 	SetFlags = 1,
 	UpDirection = 2,
 	Marked = 4,
+	PrefixAdd = 8,
+	Writeback = 16,
 };

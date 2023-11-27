@@ -32,7 +32,7 @@ public struct MultibootV2
 
 			if (size == 0)
 				return 0;
-			
+
 			return (size - 16) / EntrySize;
 		}
 	}
@@ -57,12 +57,13 @@ public struct MultibootV2
 
 	private Pointer GetStructurePointer(int type)
 	{
-		var at = Pointer + 16;
+		var len = Pointer.Load32(8);
+		var end = Pointer + len;
 
-		uint entryType;
-
-		while ((entryType = at.Load32()) != 0)
+		for (var at = Pointer + 16; at < end;)
 		{
+			var entryType = at.Load32();
+
 			if (entryType == type)
 				return at;
 
@@ -108,5 +109,4 @@ public struct MultibootV2
 	{
 		Pointer = entry;
 	}
-
 }
