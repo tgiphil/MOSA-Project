@@ -36,8 +36,10 @@ public sealed class MultibootStage : Framework.Platform.BaseMultibootStage
 
 		var context = new Context(prologueBlock);
 
-		// Create psuedo/sentiel stack frame
+		// Create stack frame
 		context.AppendInstruction(X64.Mov32, rsp, stackBottom);
+
+		// Create stack sentinel
 		context.AppendInstruction(X64.Push64, null, Operand.Constant32_0);
 		context.AppendInstruction(X64.Push64, null, Operand.Constant32_0);
 

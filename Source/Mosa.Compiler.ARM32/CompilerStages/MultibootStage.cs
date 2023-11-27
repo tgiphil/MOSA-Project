@@ -39,16 +39,19 @@ public sealed class MultibootStage : Framework.Platform.BaseMultibootStage
 
 		var context = new Context(prologueBlock);
 
-		// Create psuedo/sentiel stack frame
+		// Create stack frame
 		context.AppendInstruction(ARM32.Movw, sp, stackBottom);
 		context.AppendInstruction(ARM32.Movt, sp, sp, stackBottom);
-		//context.AppendInstruction(X86.Push32, null, Operand.Constant32_0);
-		//context.AppendInstruction(X86.Push32, null, Operand.Constant32_0);
+
+		// Create stack sentinel
+		context.AppendInstruction(ARM32.Movw, lr, Operand.Constant32_0);
+		context.AppendInstruction(ARM32.Stm, null, sp, Operand.Constant32_0, lr);
+		context.AppendInstruction(ARM32.Stm, null, sp, Operand.Constant32_0, lr);
 
 		//// Push registers onto the new stack
-		context.AppendInstruction(ARM32.Mov, sp, lr);
-		context.AppendInstruction(ARM32.Stm);
-		//context.AppendInstruction(X86.Push32, null, ebp);
+		context.AppendInstruction(ARM32.Mov, lr, sp);
+		context.AppendInstruction(ARM32.Stm, null, sp, Operand.Constant32_0, Operand.Constant32_FFFF);
+		context.AppendInstruction(ARM32.Stm, null, sp, Operand.Constant32_0, sp);
 
 		//// Call entry point
 		//context.AppendInstruction(X86.Call, null, entryPoint);
