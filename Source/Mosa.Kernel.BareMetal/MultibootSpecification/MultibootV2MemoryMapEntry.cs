@@ -4,20 +4,20 @@ using Mosa.Runtime;
 
 namespace Mosa.Kernel.BareMetal.MultibootSpecification;
 
-public  struct MultibootV2MemoryMapEntry
+public struct MultibootV2MemoryMapEntry
 {
 	private readonly Pointer Pointer;
 
-	public  Pointer BaseAddress => Pointer;
+	public Pointer BaseAddress => Pointer;
 
-	public  ulong Length => Pointer.Load64(8);
+	public ulong Length => Pointer.Load64(8);
 
-	public  uint Type => Pointer.Load32(16);
+	public uint Type => Pointer.Load32(16);
 
 	public MultibootV2MemoryMapEntry(Pointer entry)
 	{
 		Pointer = entry;
 	}
 
-	public  MultibootV2MemoryMapEntry GetNext() => new(Pointer + Multiboot.V2.EntrySize);
+	public MultibootV2MemoryMapEntry GetNext() => new(Pointer + Multiboot.V2.EntrySize);
 }

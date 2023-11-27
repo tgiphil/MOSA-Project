@@ -12,17 +12,17 @@ public struct MultibootV2
 
 	public readonly bool IsAvailable => !Pointer.IsNull;
 
-	public Pointer BootLine => GetEntryValuePointer(1, 4);
+	public Pointer CommandLine => GetEntryValuePointer(1, 12);
 
-	public Pointer BootloaderNamePointer => GetEntryValuePointer(2, 4);
+	public Pointer BootloaderName => GetEntryValuePointer(2, 8);
 
-	public uint MemoryLower => GetEntryValue32(4, 4);
+	public uint MemoryLower => GetEntryValue32(4, 8);
 
-	public uint MemoryUpper => GetEntryValue32(4, 8);
+	public uint MemoryUpper => GetEntryValue32(4, 12);
 
-	public uint EntrySize => GetEntryValue32(6, 4);
+	public uint EntrySize => GetEntryValue32(6, 8);
 
-	public uint EntryVersion => GetEntryValue32(6, 8);
+	public uint EntryVersion => GetEntryValue32(6, 12);
 
 	public uint Entries
 	{
@@ -37,23 +37,23 @@ public struct MultibootV2
 		}
 	}
 
-	public MultibootV2MemoryMapEntry FirstEntry => new(GetEntryValuePointer(6, 12));
+	public MultibootV2MemoryMapEntry FirstEntry => new(GetEntryValuePointer(6, 16));
 
-	public Pointer FrameBuffer => GetEntryValuePointer(8, 4);
+	public Pointer FrameBuffer => GetEntryValuePointer(8, 8);
 
-	public Pointer FrameBufferWidth => GetEntryValuePointer(8, 16);
+	public uint FrameBufferPitch => GetEntryValue32(8, 12);
 
-	public Pointer FrameBufferHeight => GetEntryValuePointer(8, 20);
+	public uint FrameBufferWidth => GetEntryValue32(8, 16);
 
-	public Pointer FrameBufferPitch => GetEntryValuePointer(8, 12);
+	public uint FrameBufferHeight => GetEntryValue32(8, 20);
 
-	public Pointer FrameBufferBitPerPixel => GetEntryValuePointer(8, 24);
+	public byte FrameBufferBitPerPixel => GetEntryValue8(8, 24);
 
-	public Pointer FrameBufferType => GetEntryValuePointer(8, 25);
+	public byte FrameBufferType => GetEntryValue8(8, 25);
 
-	public Pointer RSDPv1 => GetEntryValuePointer(14, 4);
+	public Pointer RSDPv1 => GetEntryValuePointer(14, 8);
 
-	public Pointer RSDPv2 => GetEntryValuePointer(15, 4);
+	public Pointer RSDPv2 => GetEntryValuePointer(15, 8);
 
 	public MultibootV2(Pointer entry)
 	{
@@ -96,6 +96,16 @@ public struct MultibootV2
 			return 0;
 
 		return entry.Load32();
+	}
+
+	private byte GetEntryValue8(int type, int offset)
+	{
+		var entry = GetStructureEntryPointer(type, offset);
+
+		if (entry.IsNull)
+			return 0;
+
+		return entry.Load8();
 	}
 
 	private Pointer GetEntryValuePointer(int type, int offset)

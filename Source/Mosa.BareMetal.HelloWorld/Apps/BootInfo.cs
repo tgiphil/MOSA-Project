@@ -15,8 +15,8 @@ public class BootInfo : IApp
 
 	public void Execute()
 	{
-		Console.WriteLine("Command line           : " + NullTermString(Multiboot.V2.BootLine));
-		Console.WriteLine("Bootloader name        : " + NullTermString(Multiboot.V2.BootloaderNamePointer));
+		Console.WriteLine("Command line           : " + NullTermString(Multiboot.V2.CommandLine));
+		Console.WriteLine("Bootloader name        : " + NullTermString(Multiboot.V2.BootloaderName));
 		Console.WriteLine("Memory lower           : " + Multiboot.V2.MemoryLower / 1024 + " MiB");
 		Console.WriteLine("Memory upper           : " + Multiboot.V2.MemoryUpper / 1024 + " MiB");
 		Console.WriteLine("Memory map entries     : " + Multiboot.V2.Entries);
