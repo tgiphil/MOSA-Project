@@ -13,27 +13,26 @@ using Mosa.Runtime.Plug;
 
 namespace Mosa.Kernel.BareMetal;
 
-public static class Boot
+public static class Startup
 {
-	[Plug("Mosa.Runtime.StartUp::PlatformInitialization")]
-	public static void PlatformInitialization()
+	[Plug("Mosa.Runtime.StartUp::InitializePlatform")]
+	public static void Initialize(Pointer stackFrame)
 	{
 		Platform.Interrupt.Disable();
+		Platform.Setup(stackFrame);
+		BootOptions.Setup();
+		Debug.Setup();
 
 		Debug.WriteLine("[Platform Initialization]");
-
 		BootStatus.Initalize();
 
 		Console.BackgroundColor = ConsoleColor.Black;
 		Console.ForegroundColor = ConsoleColor.Yellow;
 		Console.Clear();
 
-		Console.WriteLine("MOSA BareMetal v2.4");
-
+		Console.WriteLine("MOSA BareMetal v2.5");
 		Console.WriteLine();
-
 		Console.WriteLine("Initializing kernel...");
-		Debug.Setup(true);
 
 		Console.ForegroundColor = ConsoleColor.LightGreen;
 		Console.Write("> Initial garbage collection...");
@@ -42,16 +41,12 @@ public static class Boot
 		Console.WriteLine(" [Completed]");
 
 		Console.ForegroundColor = ConsoleColor.LightGreen;
-		Console.Write("> Boot options...");
-		BootOptions.Setup();
+		Console.Write("> Platform initialization...");
+		Platform.Initialize();
 		Console.ForegroundColor = ConsoleColor.DarkGray;
 		Console.WriteLine(" [Completed]");
 
-		Console.ForegroundColor = ConsoleColor.LightGreen;
-		Console.Write("> Platform initialization...");
-		Platform.Initialization();
-		Console.ForegroundColor = ConsoleColor.DarkGray;
-		Console.WriteLine(" [Completed]");
+		Debug.WriteLine("[Platform Initialization - Completed]");
 	}
 
 	[Plug("Mosa.Runtime.StartUp::KernelEntryPoint")]
@@ -61,7 +56,7 @@ public static class Boot
 
 		Console.ForegroundColor = ConsoleColor.LightGreen;
 		Console.Write("> Enabling debug logging...");
-		Debug.Setup(true);
+		Debug.Setup();
 		Console.ForegroundColor = ConsoleColor.DarkGray;
 		Console.WriteLine(" [Completed]");
 
@@ -130,12 +125,6 @@ public static class Boot
 		var hardware = new HardwareAbstractionLayer();
 		var deviceService = new DeviceService();
 		DeviceSystem.Setup.Initialize(hardware, deviceService.ProcessInterrupt);
-		Console.ForegroundColor = ConsoleColor.DarkGray;
-		Console.WriteLine(" [Completed]");
-
-		Console.ForegroundColor = ConsoleColor.LightGreen;
-		Console.Write("> Setting ACPI RSDP address...");
-		HAL.SetRSDP(Multiboot.V2.RSDP, Multiboot.V2.ACPIv2);
 		Console.ForegroundColor = ConsoleColor.DarkGray;
 		Console.WriteLine(" [Completed]");
 

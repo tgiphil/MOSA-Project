@@ -17,14 +17,18 @@ public static class PlatformPlug
 	public static void ForceInclude()
 	{ }
 
-	[Plug("Mosa.Kernel.BareMetal.Platform::Initialization")]
-	public static void Initialization()
+	[Plug("Mosa.Kernel.BareMetal.Platform::Setup")]
+	public static void Setup(Pointer stackFrame)
 	{
-		var eax = Native.GetMultibootEAX();
-		var ebx = Native.GetMultibootEBX();
+		var eax = stackFrame.Load32(-4);
+		var ebx = stackFrame.LoadPointer(-16);
 
-		Multiboot.Setup(new Pointer(ebx), eax);
+		Multiboot.Setup(ebx, eax);
+	}
 
+	[Plug("Mosa.Kernel.BareMetal.Platform::Initialize")]
+	public static void Initialize()
+	{
 		SSE.Setup();
 		PIC.Setup();
 		RTC.Setup();
