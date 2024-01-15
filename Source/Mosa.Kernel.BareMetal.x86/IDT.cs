@@ -2170,7 +2170,6 @@ public static class IDT
 	/// Interrupts the handler.
 	/// </summary>
 	/// <param name="stackStatePointer">The stack state pointer.</param>
-	[Plug("Mosa.Runtime.Interrupt::Process")]
 	private static unsafe void ProcessInterrupt(Pointer stackStatePointer)
 	{
 		var stack = new IDTStackEntry(stackStatePointer);
