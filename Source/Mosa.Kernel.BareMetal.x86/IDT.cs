@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using Mosa.Kernel.BareMetal.BootMemory;
 using Mosa.Kernel.BareMetal.Intel;
 using Mosa.Runtime;
-using Mosa.Runtime.Plug;
 using Mosa.Runtime.x86;
 
 namespace Mosa.Kernel.BareMetal.x86;
@@ -2269,6 +2268,7 @@ public static class IDT
 
 			default:
 				Interrupt?.Invoke(stack.Interrupt, stack.ErrorCode);
+				BareMetal.InterruptManager.ProcessInterrupt(stack.Interrupt, stack.ErrorCode);
 				break;
 		}
 
