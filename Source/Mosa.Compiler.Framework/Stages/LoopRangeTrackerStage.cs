@@ -109,38 +109,99 @@ public sealed class LoopRangeTrackerStage : BaseMethodCompilerStage
 
 		var d = y.Definitions[0];
 
-		// Future: determine direction base on IR.Add or IR.Sub and constant
-
-		if (!(d.Instruction == IR.Add32 || d.Instruction == IR.Add64))
+		if (!(d.Instruction == IR.Add32
+			|| d.Instruction == IR.Add64
+			|| d.Instruction == IR.Sub32
+			|| d.Instruction == IR.Sub64))
 			return;
+
+		var direction = d.Instruction == IR.Add32 || d.Instruction == IR.Add64; // true=increment
+
+		var incrementValueOperand = d.Operand2;
+		var incrementVariableOperand = d.Operand1;
 
 		if (d.Result != y)
 			return;
 
-		if (d.Operand1 != result)
+		if (incrementVariableOperand != result)
 			return;
 
-		if (!d.Operand2.IsResolvedConstant)
-			return;
-
-		if (d.Operand2.ConstantUnsigned64 <= 0)
+		if (!incrementValueOperand.IsResolvedConstant)
 			return;
 
 		if (!loop.LoopBlocks.Contains(d.Block))
 			return;
 
-		result.BitValue.NarrowMin(x.ConstantUnsigned64);
+		if (incrementValueOperand.ConstantSigned64 == 0)
+			return;
 
-		trace?.Log($"{result} MinValue = {x.ConstantUnsigned64}");
-		MinDetermined.Increment();
+		var signedAnalysis = DetermineSignUsage(incrementVariableOperand);
 
-		if (DetermineMaxOut(d.Operand1, d.Operand2, loop, out var max))
+		if (signedAnalysis == SignedAnalysis.Unknown || signedAnalysis == SignedAnalysis.Both)
+			return;
+
+		if ((signedAnalysis == SignedAnalysis.Signed && incrementValueOperand.ConstantSigned64 < 0)
+			|| (signedAnalysis == SignedAnalysis.NotSigned && incrementValueOperand.ConstantUnsigned64 > 0))
+			direction = !direction;
+
+		var start = x.ConstantUnsigned64;
+
+		if (direction)
 		{
-			result.BitValue.NarrowMax((ulong)max);
+			result.BitValue.NarrowMin(start);
 
-			trace?.Log($"{result} MaxValue = {max}");
+			trace?.Log($"{result} MinValue = {start}");
+			MinDetermined.Increment();
+
+			if (DetermineMaxOut(incrementVariableOperand, incrementValueOperand, loop, out var max))
+			{
+				result.BitValue.NarrowMax((ulong)max);
+
+				trace?.Log($"{result} MaxValue = {max}");
+				MaxDetermined.Increment();
+			}
+		}
+		else
+		{
+			result.BitValue.NarrowMax(start);
+
+			trace?.Log($"{result} MaxValue = {start}");
 			MaxDetermined.Increment();
 		}
+	}
+
+	private enum SignedAnalysis
+	{ Unknown, Signed, NotSigned, Both };
+
+	private static SignedAnalysis DetermineSignUsage(Operand value)
+	{
+		var signAnalysis = SignedAnalysis.Unknown;
+
+		foreach (var b in value.Uses)
+		{
+			if (!(b.Instruction == IR.Branch32 || b.Instruction == IR.Branch64))
+				continue;
+
+			var condition = b.ConditionCode;
+			var signed = condition.IsSigned();
+
+			if (signAnalysis == SignedAnalysis.Unknown)
+			{
+				signAnalysis = signed ? SignedAnalysis.Signed : SignedAnalysis.NotSigned;
+			}
+			else
+			{
+				if (signed && signAnalysis == SignedAnalysis.Signed)
+					continue;
+
+				if (!signed && signAnalysis != SignedAnalysis.NotSigned)
+					continue;
+
+				return SignedAnalysis.Both;
+			}
+		}
+
+		return signAnalysis;
 	}
 
 	private static bool DetermineMaxOut(Operand incrementVariable, Operand incrementValue, Loop loop, out long max)
@@ -153,7 +214,7 @@ public sealed class LoopRangeTrackerStage : BaseMethodCompilerStage
 			if (!(b.Instruction == IR.Branch32 || b.Instruction == IR.Branch64))
 				continue;
 
-			// only that are the header or backedge (if only one)
+			// only analysis the header or backedge (if only one)
 			if (!(b.Block == loop.Header || (loop.Backedges.Count == 1 && loop.Backedges.Contains(b.Block))))
 				continue;
 
