@@ -73,7 +73,7 @@ jobs:
           path: bin\nupkg
 
   windows-build-packaging:
-    name: Windows Build Packaging
+    name: Build Windows Packaging
     needs: [windows-build, linux-build, macos-build, windows-unit-testing, linux-unit-testing, macos-unit-testing, windows-demo-testing, linux-demo-testing, macos-demo-testing]
     runs-on: windows-latest
     timeout-minutes: 15
