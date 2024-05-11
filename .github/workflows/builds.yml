@@ -191,11 +191,11 @@ jobs:
       - name: Make Artifact Folder
         run: mkdir artifact
       - name: Unit Test
-        run: bin\Mosa.Utility.UnitTests.exe -check -o${{ matrix.optimization }} -counters artifact\windows-counters-unittests-o${{ matrix.optimization }}.txt
+        run: bin\Mosa.Utility.UnitTests.exe -check -o${{ matrix.optimization }} -counters artifact\counters-unittests-o${{ matrix.optimization }}.txt
       - name: Store Counter Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-counters-unittests-o${{ matrix.optimization }}
+          name: counters-windows-unittests-o${{ matrix.optimization }}
           path: artifact
 
   linux-unit-testing:
@@ -228,11 +228,11 @@ jobs:
       - name: Make Artifact Folder
         run: mkdir artifact
       - name: Perform Unit Testing
-        run: dotnet bin/Mosa.Utility.UnitTests.dll -check -o${{ matrix.optimization }} -counters artifact/linux-counters-unittests-o${{ matrix.optimization }}.txt
+        run: dotnet bin/Mosa.Utility.UnitTests.dll -check -o${{ matrix.optimization }} -counters artifact/counters-linux-unittests-o${{ matrix.optimization }}.txt
       - name: Store Counter Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-counters-unittests-o${{ matrix.optimization }}
+          name: counters-linux-unittests-o${{ matrix.optimization }}
           path: artifact
           
   macos-unit-testing:
@@ -263,11 +263,11 @@ jobs:
       - name: Make Artifact Folder
         run: mkdir artifact
       - name: Unit Test 
-        run: dotnet bin/Mosa.Utility.UnitTests.dll -check -o${{ matrix.optimization }} -counters artifact/macos-counters-unittests-o${{ matrix.optimization }}.txt
+        run: dotnet bin/Mosa.Utility.UnitTests.dll -check -o${{ matrix.optimization }} -counters artifact/counters-macos-unittests-o${{ matrix.optimization }}.txt
       - name: Store Counter Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: macos-counters-unittests-o${{ matrix.optimization }}
+          name: counters-macos-unittests-o${{ matrix.optimization }}
           path: artifact
 
   windows-demo-testing:
@@ -458,4 +458,4 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
             name: counters-unit-tests
-            pattern: *-counters-*
+            pattern: counters-*
