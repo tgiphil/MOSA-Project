@@ -42,13 +42,13 @@ public static class U4
 
 		list = list.Distinct().ToList();
 
-		//for (var i = 0; i < 31; i++)
-		//{
-		//	var v = 1u << i;
-		//	list.AddIfNew(v);
-		//	list.AddIfNew(v + 1);
-		//	list.AddIfNew(v - 2);
-		//}
+		for (var i = 0; i < 31; i++)
+		{
+			var v = 1u << i;
+			list.AddIfNew(v);
+			list.AddIfNew(v + 1);
+			list.AddIfNew(v - 2);
+		}
 
 		list.Sort();
 

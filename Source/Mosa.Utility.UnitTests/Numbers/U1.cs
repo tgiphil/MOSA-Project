@@ -34,13 +34,13 @@ public static class U1
 
 		list = list.Distinct().ToList();
 
-		//for (var i = 0; i < 7; i++)
-		//{
-		//	var v = 1 << i;
-		//	list.AddIfNew((byte)v);
-		//	list.AddIfNew((byte)(v + 1));
-		//	list.AddIfNew((byte)(v - 2));
-		//}
+		for (var i = 0; i < 7; i++)
+		{
+			var v = 1 << i;
+			list.AddIfNew((byte)v);
+			list.AddIfNew((byte)(v + 1));
+			list.AddIfNew((byte)(v - 2));
+		}
 
 		list.Sort();
 		return list;

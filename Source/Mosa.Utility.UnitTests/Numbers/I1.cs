@@ -36,13 +36,13 @@ public static class I1
 
 		list = list.Distinct().ToList();
 
-		//for (var i = 0; i < 7; i++)
-		//{
-		//	var v = 1 << i;
-		//	list.AddIfNew((sbyte)v);
-		//	list.AddIfNew((sbyte)(v + 1));
-		//	list.AddIfNew((sbyte)(v - 2));
-		//}
+		for (var i = 0; i < 7; i++)
+		{
+			var v = 1 << i;
+			list.AddIfNew((sbyte)v);
+			list.AddIfNew((sbyte)(v + 1));
+			list.AddIfNew((sbyte)(v - 2));
+		}
 
 		list.Sort();
 

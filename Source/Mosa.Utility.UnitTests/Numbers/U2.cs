@@ -38,13 +38,13 @@ public static class U2
 
 		list = list.Distinct().ToList();
 
-		//for (var i = 0; i < 15; i++)
-		//{
-		//	var v = 1 << i;
-		//	list.AddIfNew((ushort)v);
-		//	list.AddIfNew((ushort)(v + 1));
-		//	list.AddIfNew((ushort)(v - 2));
-		//}
+		for (var i = 0; i < 15; i++)
+		{
+			var v = 1 << i;
+			list.AddIfNew((ushort)v);
+			list.AddIfNew((ushort)(v + 1));
+			list.AddIfNew((ushort)(v - 2));
+		}
 
 		list.Sort();
 

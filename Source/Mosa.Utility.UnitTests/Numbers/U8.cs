@@ -46,13 +46,13 @@ public static class U8
 
 		list = list.Distinct().ToList();
 
-		//for (var i = 0; i < 63; i++)
-		//{
-		//	var v = 1ul << i;
-		//	list.AddIfNew(v);
-		//	list.AddIfNew(v + 1);
-		//	list.AddIfNew(v - 2);
-		//}
+		for (var i = 0; i < 63; i++)
+		{
+			var v = 1ul << i;
+			list.AddIfNew(v);
+			list.AddIfNew(v + 1);
+			list.AddIfNew(v - 2);
+		}
 
 		list.Sort();
 
