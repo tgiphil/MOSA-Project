@@ -47,7 +47,7 @@ public static class I4
 
 		list = list.Distinct().ToList();
 
-		for (var i = 0; i < 31; i++)
+		for (var i = 0; i < 32; i++)
 		{
 			var v = 1 << i;
 			list.AddIfNew(v);

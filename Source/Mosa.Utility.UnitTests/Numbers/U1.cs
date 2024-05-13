@@ -34,7 +34,7 @@ public static class U1
 
 		list = list.Distinct().ToList();
 
-		for (var i = 0; i < 7; i++)
+		for (var i = 0; i < 8; i++)
 		{
 			var v = 1 << i;
 			list.AddIfNew((byte)v);

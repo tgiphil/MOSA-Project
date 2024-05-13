@@ -46,7 +46,7 @@ public static class U8
 
 		list = list.Distinct().ToList();
 
-		for (var i = 0; i < 63; i++)
+		for (var i = 0; i < 64; i++)
 		{
 			var v = 1ul << i;
 			list.AddIfNew(v);
