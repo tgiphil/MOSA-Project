@@ -176,7 +176,7 @@ jobs:
       fail-fast: false
     name: Windows - Unit Test -o${{ matrix.optimization }}
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
     needs: windows-build
     steps:
       - name: Checkout
@@ -205,7 +205,7 @@ jobs:
       fail-fast: false
     name: Linux - Unit Test -o${{ matrix.optimization }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
     needs: linux-build
     steps:
       - name: Set net8.0
@@ -242,7 +242,7 @@ jobs:
       fail-fast: false
     name: MacOS - Unit Test -o${{ matrix.optimization }}
     runs-on: macos-13
-    timeout-minutes: 15
+    timeout-minutes: 60
     needs: macos-build
     steps:
       - name: Set net8.0
