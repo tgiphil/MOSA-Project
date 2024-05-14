@@ -17,6 +17,8 @@ public sealed class LinkerLayoutStage : BaseCompilerStage
 
 		Linker.FinalizeLayout();
 
+		Compiler.LinkerTime.Reset();
+
 		Compiler.GlobalCounters.Update("Linker.Text", (int)Linker.Sections[(int)SectionKind.Text].Size);
 		Compiler.GlobalCounters.Update("Linker.Data", (int)Linker.Sections[(int)SectionKind.Data].Size);
 		Compiler.GlobalCounters.Update("Linker.ROData", (int)Linker.Sections[(int)SectionKind.ROData].Size);
