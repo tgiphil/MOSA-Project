@@ -49,13 +49,13 @@ public static class I8
 		AddNegatives(list);
 		list = list.Distinct().ToList();
 
-		for (var i = 0; i < 64; i++)
-		{
-			var v = 1 << i;
-			list.AddIfNew(v);
-			list.AddIfNew(v + 1);
-			list.AddIfNew(v - 2);
-		}
+		//for (var i = 0; i < 64; i++)
+		//{
+		//	var v = 1 << i;
+		//	list.AddIfNew(v);
+		//	list.AddIfNew(v + 1);
+		//	list.AddIfNew(v - 2);
+		//}
 
 		list.Sort();
 
