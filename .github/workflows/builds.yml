@@ -52,6 +52,7 @@ jobs:
         with:
           name: windows-build-artifact
           path: bin
+          compression-level: 9
       - name: Create Package - Mosa.Tools.Package
         run: nuget pack Source\Mosa.Packages\Mosa.Tools.Package.nuspec -Tool -OutputDirectory bin\nupkg -Version ${{ env.BUILD_VERSION }}
       - name: Create Package - Mosa.Tools.Package.Qemu
@@ -139,6 +140,7 @@ jobs:
         with:
           name: linux-build-artifact
           path: bin
+          compression-level: 9
          
   macos-build:
     name: MacOS Build
@@ -168,6 +170,7 @@ jobs:
         with:
           name: macos-build-artifact
           path: bin
+          compression-level: 9
 
   windows-unit-testing:
     strategy:
@@ -191,12 +194,13 @@ jobs:
       - name: Make Artifact Folder
         run: mkdir artifact
       - name: Unit Test
-        run: bin\Mosa.Utility.UnitTests.exe -check -o${{ matrix.optimization }} -counters artifact\counters-unittests-o${{ matrix.optimization }}.txt
+        run: bin\Mosa.Utility.UnitTests.exe -check -o${{ matrix.optimization }} -counters artifact\counters-windows-unittests-o${{ matrix.optimization }}.txt
       - name: Store Counter Artifact
         uses: actions/upload-artifact@v4
         with:
           name: counters-windows-unittests-o${{ matrix.optimization }}
           path: artifact
+          retention-days: 2
 
   linux-unit-testing:
     strategy:
@@ -234,6 +238,7 @@ jobs:
         with:
           name: counters-linux-unittests-o${{ matrix.optimization }}
           path: artifact
+          retention-days: 2
           
   macos-unit-testing:
     strategy:
@@ -269,6 +274,7 @@ jobs:
         with:
           name: counters-macos-unittests-o${{ matrix.optimization }}
           path: artifact
+          retention-days: 2
 
   windows-demo-testing:
     strategy:
@@ -459,3 +465,5 @@ jobs:
         with:
             name: counters-unit-tests
             pattern: counters-*
+            compression-level: 9
+

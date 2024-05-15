@@ -454,7 +454,7 @@ public sealed class Compiler
 
 	public void ExecuteCompile(int maxThreads)
 	{
-		GlobalCounters.Update("Compiler.MaxThreads", maxThreads);
+		GlobalCounters.Set("Compiler.MaxThreads", maxThreads);
 
 		PostEvent(CompilerEvent.CompilingMethodsStart);
 
@@ -504,7 +504,7 @@ public sealed class Compiler
 	internal void Finalization()
 	{
 		CompileTime.Stop();
-		GlobalCounters.Update("Elapsed.Total.Milliseconds", (int)CompileTime.ElapsedMilliseconds);
+		GlobalCounters.Set("Elapsed.Total.Milliseconds", (int)CompileTime.ElapsedMilliseconds);
 
 		PostEvent(CompilerEvent.FinalizationStart);
 
@@ -537,8 +537,8 @@ public sealed class Compiler
 		}
 
 		TotalCompileTime.Stop();
-		GlobalCounters.Update("Elapsed.TotalCompile.Milliseconds", (int)TotalCompileTime.ElapsedMilliseconds);
-		GlobalCounters.Update("Compiler.TotalMethods", MethodScheduler.TotalMethods);
+		GlobalCounters.Set("Elapsed.TotalCompile.Milliseconds", (int)TotalCompileTime.ElapsedMilliseconds);
+		GlobalCounters.Set("Compiler.TotalMethods", MethodScheduler.TotalMethods);
 
 		MethodScanner.Complete();
 
