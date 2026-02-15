@@ -43,7 +43,7 @@ internal class PathSplitter
 			if (path[i] == Path.DirectorySeparatorChar || path[i] == Path.AltDirectorySeparatorChar)
 				seperators[count++] = i;
 
-		if (seperators[count - 1] == path.Length - 1)
+		if (count > 0 && seperators[count - 1] == path.Length - 1)
 			length = count;
 		else
 			length = count + 1;
