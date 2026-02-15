@@ -27,7 +27,7 @@ public static class FileManager
 		if (!entry.IsValid)
 			return null;
 
-		var stream = new FatFileStream(fat, entry);
+		using var stream = new FatFileStream(fat, entry);
 		var bytes = new byte[stream.Length];
 
 		stream.Read(bytes, 0, bytes.Length);
@@ -46,7 +46,7 @@ public static class FileManager
 		var existing = fat.FindEntry(upper);
 
 		var entry = existing.IsValid ? existing : fat.CreateFile(upper, FatFileAttributes.Unused);
-		var stream = new FatFileStream(fat, entry);
+		using var stream = new FatFileStream(fat, entry);
 
 		stream.Write(bytes, 0, bytes.Length);
 	}
@@ -62,7 +62,7 @@ public static class FileManager
 		var existing = fat.FindEntry(upper);
 
 		var entry = existing.IsValid ? existing : fat.CreateFile(upper, FatFileAttributes.Unused);
-		var stream = new FatFileStream(fat, entry);
+		using var stream = new FatFileStream(fat, entry);
 
 		var list = new List<byte>();
 		foreach (var str in lines)
@@ -88,7 +88,7 @@ public static class FileManager
 		var existing = fat.FindEntry(upper);
 
 		var entry = existing.IsValid ? existing : fat.CreateFile(upper, FatFileAttributes.Unused);
-		var stream = new FatFileStream(fat, entry);
+		using var stream = new FatFileStream(fat, entry);
 
 		var list = new List<byte>();
 		foreach (var c in text)
