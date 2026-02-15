@@ -507,7 +507,12 @@ public partial class MainForm : Form
 
 	public void OnAddBreakPoint(Object sender, EventArgs e)
 	{
-		var args = (sender as ToolStripMenuItem).Tag as AddBreakPointArgs;
+		if (sender is not ToolStripMenuItem menuItem)
+			return;
+
+		var args = menuItem.Tag as AddBreakPointArgs;
+		if (args == null)
+			return;
 
 		if (string.IsNullOrWhiteSpace(args.Name))
 		{
@@ -521,35 +526,55 @@ public partial class MainForm : Form
 
 	public void OnCopyToClipboardAsBreakPoint(Object sender, EventArgs e)
 	{
-		var text = (((sender as ToolStripMenuItem).Tag) as BreakPoint).Name;
+		if (sender is not ToolStripMenuItem menuItem)
+			return;
 
-		Clipboard.SetText(text);
+		if (menuItem.Tag is not BreakPoint breakpoint)
+			return;
+
+		Clipboard.SetText(breakpoint.Name);
 	}
 
 	public void OnCopyToClipboard(Object sender, EventArgs e)
 	{
-		var text = (((sender as ToolStripMenuItem).Tag) as string);
+		if (sender is not ToolStripMenuItem menuItem)
+			return;
+
+		if (menuItem.Tag is not string text)
+			return;
 
 		Clipboard.SetText(text);
 	}
 
 	public void OnRemoveBreakPoint(Object sender, EventArgs e)
 	{
-		var breakpoint = (sender as ToolStripMenuItem).Tag as BreakPoint;
+		if (sender is not ToolStripMenuItem menuItem)
+			return;
+
+		if (menuItem.Tag is not BreakPoint breakpoint)
+			return;
 
 		RemoveBreakPoint(breakpoint);
 	}
 
 	public void OnAddWatch(Object sender, EventArgs e)
 	{
-		var args = (sender as ToolStripMenuItem).Tag as AddWatchArgs;
+		if (sender is not ToolStripMenuItem menuItem)
+			return;
+
+		if (menuItem.Tag is not AddWatchArgs args)
+			return;
 
 		AddWatch(args.Name, args.Address, args.Length);
 	}
 
 	public void OnRemoveWatch(Object sender, EventArgs e)
 	{
-		var watch = (sender as ToolStripMenuItem).Tag as Watch;
+		if (sender is not ToolStripMenuItem menuItem)
+			return;
+
+		if (menuItem.Tag is not Watch watch)
+			return;
 
 		RemoveWatch(watch);
 	}
