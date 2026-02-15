@@ -6,7 +6,7 @@ namespace System.Threading;
 
 public struct SpinLock
 {
-	private /*volatile*/ int m_owner;
+	private volatile int m_owner;
 
 	private const int LOCK_UNOWNED = 0;
 	private const int LOCK_ANONYMOUS_OWNED = 0x1;
