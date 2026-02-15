@@ -54,7 +54,12 @@ public class GuidPartitionTable
 		partitionTableHeader.SetULong(24, tableHeaderLba);
 		partitionTableHeader.SetULong(32, backupTableHeaderLba);
 		partitionTableHeader.SetULong(40, (uint)(partitionEntriesLba + partitionEntries.Length + 1)); // First usable LBA
-		partitionTableHeader.SetULong(48, (uint)(backupPartitionEntriesLba - partitionEntries.Length - 1)); // Last usable LBA
+		
+		// Ensure we don't underflow when calculating last usable LBA
+		var lastUsableLba = backupPartitionEntriesLba > (uint)(partitionEntries.Length + 1) 
+			? backupPartitionEntriesLba - (uint)(partitionEntries.Length + 1)
+			: 0u;
+		partitionTableHeader.SetULong(48, lastUsableLba); // Last usable LBA
 		partitionTableHeader.SetBytes(56, Guid.NewGuid().ToByteArray()); // Disk GUID
 		partitionTableHeader.SetULong(72, partitionEntriesLba);
 		partitionTableHeader.SetUInt32(80, (uint)partitionEntries.Length);
