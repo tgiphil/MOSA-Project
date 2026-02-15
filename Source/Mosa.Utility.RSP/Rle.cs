@@ -24,6 +24,9 @@ internal static class Rle
 			if (i == 0)
 				return null; // error --- repeat character can not at the start
 
+			if (i + 1 >= length)
+				return null; // error --- repeat character at end without length byte
+
 			var repeated = data[i - 1];
 			var len = data[i + 1] - 28;
 
