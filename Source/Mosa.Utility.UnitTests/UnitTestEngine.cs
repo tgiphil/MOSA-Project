@@ -382,9 +382,19 @@ public class UnitTestEngine : IDisposable
 
 			case "pipe":
 				{
-					var pipeStream = new NamedPipeClientStream(".", MosaSettings.EmulatorSerialPipe, PipeDirection.InOut);
-					pipeStream.Connect();
-					DebugServerEngine.Stream = pipeStream;
+					NamedPipeClientStream pipeStream = null;
+					try
+					{
+						pipeStream = new NamedPipeClientStream(".", MosaSettings.EmulatorSerialPipe, PipeDirection.InOut);
+						pipeStream.Connect();
+						DebugServerEngine.Stream = pipeStream;
+						pipeStream = null; // Ownership transferred
+					}
+					catch
+					{
+						pipeStream?.Dispose();
+						throw;
+					}
 					break;
 				}
 		}
