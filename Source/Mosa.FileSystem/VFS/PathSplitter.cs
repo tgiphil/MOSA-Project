@@ -51,14 +51,14 @@ internal class PathSplitter
 
 	public string GetPath(int index)
 	{
-		if (index > length || length == 0)
+		if (index >= length || length == 0)
 			return string.Empty;
 
 		//if ((length == 0) && (seperators.Length == 0))
 		//    return path;
 
-		int start = index == 0 ? 0 : seperators[index - 1] + 1;
-		int end = index == seperators.Length ? path.Length : seperators[index];
+		int start = index == 0 ? 0 : (index - 1 < seperators.Length ? seperators[index - 1] + 1 : path.Length);
+		int end = index < seperators.Length ? seperators[index] : path.Length;
 
 		if (start >= end)
 			return string.Empty;
