@@ -55,7 +55,11 @@ public class VfsDirectory : DirectoryNode
 	/// <returns></returns>
 	public override IVfsNode Lookup(string name)
 	{
-		var location = (FileSystem as VfsFileSystem).Fat.FindEntry(new Find.WithName(name), directoryCluster);
+		var vfsFileSystem = FileSystem as VfsFileSystem;
+		if (vfsFileSystem == null)
+			return null;
+
+		var location = vfsFileSystem.Fat.FindEntry(new Find.WithName(name), directoryCluster);
 
 		if (!location.IsValid)
 			return null;
