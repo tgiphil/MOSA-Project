@@ -170,6 +170,13 @@ public sealed class GDBClient
 					return;
 				}
 
+				// Ensure we have enough data for RLE decode (needs at least 4 bytes: $ + data + # + checksum)
+				if (receivedData.Count < 4)
+				{
+					receivedData.Clear();
+					return;
+				}
+
 				var data = Rle.Decode(receivedData, 1, receivedData.Count - 3).ToArray();
 
 				var ok = false;
