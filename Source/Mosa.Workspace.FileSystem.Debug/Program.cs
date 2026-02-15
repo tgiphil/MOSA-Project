@@ -16,8 +16,8 @@ internal class Program
 	protected static byte[] GetResource(string name)
 	{
 		var assembly = Assembly.GetExecutingAssembly();
-		var stream = assembly.GetManifestResourceStream("Mosa.Workspace.FileSystem.Debug." + name);
-		var binary = new BinaryReader(stream);
+		using var stream = assembly.GetManifestResourceStream("Mosa.Workspace.FileSystem.Debug." + name);
+		using var binary = new BinaryReader(stream);
 		return binary.ReadBytes((int)stream.Length);
 	}
 
