@@ -53,7 +53,8 @@ public class BlockFileStreamDriver : BaseDeviceDriver, IDiskDevice, IDisposable
 	/// </summary>
 	public void Dispose()
 	{
-		diskFile.Close();
+		diskFile?.Dispose();
+		diskFile = null;
 	}
 
 	/// <summary>
