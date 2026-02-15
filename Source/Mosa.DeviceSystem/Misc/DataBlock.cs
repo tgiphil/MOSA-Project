@@ -60,6 +60,9 @@ public class DataBlock
 
 	public uint GetUInt24(uint offset)
 	{
+		if (offset + 2 >= Data.Length)
+			throw new ArgumentOutOfRangeException(nameof(offset));
+
 		uint value = Data[offset++];
 		value += (uint)(Data[offset++] << 8);
 		value += (uint)(Data[offset] << 16);
@@ -69,6 +72,9 @@ public class DataBlock
 
 	public void SetUInt24(uint offset, uint value)
 	{
+		if (offset + 2 >= Data.Length)
+			throw new ArgumentOutOfRangeException(nameof(offset));
+
 		Data[offset++] = (byte)(value & 0xFF);
 		Data[offset++] = (byte)((value >> 8) & 0xFF);
 		Data[offset] = (byte)((value >> 16) & 0xFF);
@@ -83,6 +89,9 @@ public class DataBlock
 
 	public uint GetUInt32(uint offset)
 	{
+		if (offset + 3 >= Data.Length)
+			throw new ArgumentOutOfRangeException(nameof(offset));
+
 		uint value = Data[offset++];
 		value += (uint)(Data[offset++] << 8);
 		value += (uint)(Data[offset++] << 16);
@@ -93,6 +102,9 @@ public class DataBlock
 
 	public void SetUInt32(uint offset, uint value)
 	{
+		if (offset + 3 >= Data.Length)
+			throw new ArgumentOutOfRangeException(nameof(offset));
+
 		Data[offset++] = (byte)(value & 0xFF);
 		Data[offset++] = (byte)((value >> 8) & 0xFF);
 		Data[offset++] = (byte)((value >> 16) & 0xFF);
@@ -183,18 +195,29 @@ public class DataBlock
 
 	public void SetBytes(uint offset, byte[] value)
 	{
+		if (offset + value.Length > Data.Length)
+			throw new ArgumentOutOfRangeException(nameof(offset));
+
 		for (var index = 0U; index < value.Length; index++)
 			Data[offset + index] = value[index];
 	}
 
 	public void SetBytes(uint offset, byte[] value, uint start, uint length)
 	{
+		if (offset + length > Data.Length)
+			throw new ArgumentOutOfRangeException(nameof(offset));
+		if (start + length > value.Length)
+			throw new ArgumentOutOfRangeException(nameof(start));
+
 		for (var index = 0U; index < length; index++)
 			Data[offset + index] = value[start + index];
 	}
 
 	public void Fill(uint offset, byte value, uint length)
 	{
+		if (offset + length > Data.Length)
+			throw new ArgumentOutOfRangeException(nameof(offset));
+
 		for (var index = 0U; index < length; index++)
 			Data[offset + index] = value;
 	}
