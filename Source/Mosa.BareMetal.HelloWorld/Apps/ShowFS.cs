@@ -42,7 +42,7 @@ public class ShowFS : IApp
 
 			Console.Write("Found test file!");
 
-			var testStream = new FatFileStream(fat, location);
+			using var testStream = new FatFileStream(fat, location);
 
 			Console.WriteLine(" - Length: " + (uint)testStream.Length + " bytes");
 			Console.Write("Reading File: ");
