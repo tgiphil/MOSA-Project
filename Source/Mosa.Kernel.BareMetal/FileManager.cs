@@ -27,12 +27,12 @@ public static class FileManager
 		if (!entry.IsValid)
 			return null;
 
-		var stream = new FatFileStream(fat, entry);
-		var bytes = new byte[stream.Length];
-
-		stream.Read(bytes, 0, bytes.Length);
-
-		return bytes;
+		using (var stream = new FatFileStream(fat, entry))
+		{
+			var bytes = new byte[stream.Length];
+			stream.Read(bytes, 0, bytes.Length);
+			return bytes;
+		}
 	}
 
 	public static void WriteAllBytes(string path, byte[] bytes)
@@ -46,9 +46,11 @@ public static class FileManager
 		var existing = fat.FindEntry(upper);
 
 		var entry = existing.IsValid ? existing : fat.CreateFile(upper, FatFileAttributes.Unused);
-		var stream = new FatFileStream(fat, entry);
-
-		stream.Write(bytes, 0, bytes.Length);
+		
+		using (var stream = new FatFileStream(fat, entry))
+		{
+			stream.Write(bytes, 0, bytes.Length);
+		}
 	}
 
 	public static void WriteAllLines(string path, string[] lines)
@@ -62,19 +64,21 @@ public static class FileManager
 		var existing = fat.FindEntry(upper);
 
 		var entry = existing.IsValid ? existing : fat.CreateFile(upper, FatFileAttributes.Unused);
-		var stream = new FatFileStream(fat, entry);
-
-		var list = new List<byte>();
-		foreach (var str in lines)
+		
+		using (var stream = new FatFileStream(fat, entry))
 		{
-			foreach (var c in str)
-				list.Add((byte)c);
-			list.Add((byte)'\n');
+			var list = new List<byte>();
+			foreach (var str in lines)
+			{
+				foreach (var c in str)
+					list.Add((byte)c);
+				list.Add((byte)'\n');
+			}
+
+			var bytes = list.ToArray();
+
+			stream.Write(bytes, 0, bytes.Length);
 		}
-
-		var bytes = list.ToArray();
-
-		stream.Write(bytes, 0, bytes.Length);
 	}
 
 	public static void WriteAllText(string path, string text)
@@ -88,15 +92,17 @@ public static class FileManager
 		var existing = fat.FindEntry(upper);
 
 		var entry = existing.IsValid ? existing : fat.CreateFile(upper, FatFileAttributes.Unused);
-		var stream = new FatFileStream(fat, entry);
+		
+		using (var stream = new FatFileStream(fat, entry))
+		{
+			var list = new List<byte>();
+			foreach (var c in text)
+				list.Add((byte)c);
 
-		var list = new List<byte>();
-		foreach (var c in text)
-			list.Add((byte)c);
+			var bytes = list.ToArray();
 
-		var bytes = list.ToArray();
-
-		stream.Write(bytes, 0, bytes.Length);
+			stream.Write(bytes, 0, bytes.Length);
+		}
 	}
 
 	public static bool Exists(string path) => fileSystems[CurrentDrive].FindEntry(path.ToUpper()).IsValid;
