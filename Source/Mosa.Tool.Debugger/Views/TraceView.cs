@@ -114,13 +114,13 @@ public partial class TraceView : DebugDockContent
 			{
 				columnNames += dataGridView1.Columns[i].HeaderText.ToString() + "\t";
 			}
-			outputCsv[0] += columnNames;
+			outputCsv[0] = columnNames;
 
-			for (var i = 1; (i - 1) < dataGridView1.Rows.Count; i++)
+			for (var i = 1; i <= dataGridView1.Rows.Count; i++)
 			{
 				for (var j = 0; j < columnCount; j++)
 				{
-					outputCsv[i] += dataGridView1.Rows[i - 1].Cells[j].Value.ToString() + "\t";
+					outputCsv[i] = (outputCsv[i] ?? string.Empty) + dataGridView1.Rows[i - 1].Cells[j].Value.ToString() + "\t";
 				}
 			}
 
