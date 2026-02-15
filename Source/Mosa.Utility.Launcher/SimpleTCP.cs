@@ -45,6 +45,7 @@ public class SimpleTCP
 
 	private const byte NewLine = (byte)'\n';
 
+	private readonly object streamLock = new object();
 	private TcpListener tcpListener;
 	private TcpClient tcpClient;
 	private NetworkStream stream;
@@ -158,28 +159,51 @@ public class SimpleTCP
 
 	public void Disconnect()
 	{
-		if (tcpClient != null)
+		lock (streamLock)
 		{
-			tcpClient.Close();
-			tcpClient = null;
-		}
+			stream = null;
 
-		if (tcpListener != null)
-		{
-			tcpListener.Stop();
-			tcpListener = null;
+			if (tcpClient != null)
+			{
+				tcpClient.Close();
+				tcpClient = null;
+			}
+
+			if (tcpListener != null)
+			{
+				tcpListener.Stop();
+				tcpListener = null;
+			}
 		}
 	}
 
-	public void Send(byte[] data) => stream.Write(data);
+	public void Send(byte[] data)
+	{
+		lock (streamLock)
+		{
+			stream?.Write(data);
+		}
+	}
 
 	public void Send(string s)
 	{
-		foreach (var c in s)
-			stream.WriteByte((byte)c);
+		lock (streamLock)
+		{
+			if (stream == null)
+				return;
+
+			foreach (var c in s)
+				stream.WriteByte((byte)c);
+		}
 	}
 
-	public void Send(char c) => stream.WriteByte((byte)c);
+	public void Send(char c)
+	{
+		lock (streamLock)
+		{
+			stream?.WriteByte((byte)c);
+		}
+	}
 
 	public int GetByte()
 	{
