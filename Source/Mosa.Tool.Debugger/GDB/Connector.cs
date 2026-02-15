@@ -245,6 +245,7 @@ public class Connector
 
 		OnMemoryReadMap.Remove(command);
 
-		invoke((command as ReadMemory).Address, bytes);
+		if (command is ReadMemory readMemory)
+			invoke(readMemory.Address, bytes);
 	}
 }
