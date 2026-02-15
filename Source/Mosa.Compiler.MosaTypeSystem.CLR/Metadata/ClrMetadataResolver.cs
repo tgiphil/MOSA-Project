@@ -65,7 +65,7 @@ internal class ClrMetadataResolver
 								mosaType.Interfaces.Add(metadata.Loader.GetType(iface.Interface.ToTypeSig()));
 							}
 
-							if (typeDef.BaseType != null && type.BaseType != null)
+							if (typeDef.BaseType != null && mosaType.BaseType != null)
 							{
 								ResolveInterfacesInBaseTypes(mosaType, type.BaseType);
 							}
