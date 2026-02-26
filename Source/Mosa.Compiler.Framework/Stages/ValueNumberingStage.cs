@@ -491,10 +491,8 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 	private Operand GetValueNumber(Operand operand)
 	{
-		if (MapToValueNumber.TryGetValue(operand, out Operand value))
-			return value;
-		else
-			return null;
+		MapToValueNumber.TryGetValue(operand, out Operand value);
+		return value;
 	}
 
 	private void SetValueNumber(Operand operand, Operand valueNumber)
