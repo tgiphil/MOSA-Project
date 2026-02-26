@@ -248,10 +248,8 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 				SubexpressionEliminationCount.Increment();
 				continue;
 			}
-			else
-			{
-				trace?.Log($"No Expression Found: {node}");
-			}
+
+			trace?.Log($"No Expression Found: {node}");
 
 			var newExpression = new Expression
 			{
@@ -553,7 +551,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 		list.Add(expression);
 
-		trace?.Log($"Added Expression: {expression.ValueNumber} <= {expression.Instruction} {expression.Operand1} {expression.Operand2}" ?? string.Empty);
+		trace?.Log($"Added Expression: {expression.ValueNumber} <= {expression.Instruction} {expression.Operand1} {expression.Operand2}");
 	}
 
 	private void RemoveExpressionFromHashTable(Expression expression)
@@ -625,8 +623,6 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 	private Operand CheckRedundant(Node node)
 	{
-		Operand redundant = null;
-
 		for (var previousPhi = node.Previous; !previousPhi.IsBlockStartInstruction; previousPhi = previousPhi.Previous)
 		{
 			if (previousPhi.IsEmptyOrNop)
@@ -636,12 +632,11 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 			if (ArePhisRedundant(node, previousPhi))
 			{
-				redundant = previousPhi.Result;
-				break;
+				return previousPhi.Result;
 			}
 		}
 
-		return redundant;
+		return null;
 	}
 
 	private bool ProcessPhiInstruction(Node node, ref bool successorValidated, ref bool successorProcessed)
