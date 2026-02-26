@@ -31,10 +31,7 @@ public sealed class ParameterReadOnlyAnalysis
 		parameterCount = parameters.Count();
 
 		if (parameterCount == 0)
-		{
-			//paramReadOnly = new BitArray(0);
 			return;
-		}
 
 		paramReadOnly = new BitArray(parameterCount, false);
 
