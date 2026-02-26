@@ -178,59 +178,8 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 			if (node.IsEmptyOrNop)
 				continue;
 
-			if (node.Instruction.IsPhi)
+			if (node.Instruction.IsPhi && ProcessPhiInstruction(node, ref successorValidated, ref successorProcessed))
 			{
-				// Validate all successor are already processed
-				// and if not, just set the value number
-				if (!successorValidated)
-				{
-					successorValidated = true;
-					foreach (var processed in block.PreviousBlocks)
-					{
-						if (!Processed.Contains(block))
-						{
-							successorProcessed = false;
-							break;
-						}
-					}
-				}
-
-				if (successorValidated && !successorProcessed)
-				{
-					SetValueNumber(node.Result, node.Result);
-					continue;
-				}
-
-				// check for useless
-				if (IsPhiUseless(node))
-				{
-					var w = GetValueNumber(node.Operand1);
-					SetValueNumber(node.Result, w);
-
-					trace?.Log($"Removed Unless PHI: {node}");
-
-					node.SetNop();
-					InstructionRemovalCount.Increment();
-					continue;
-				}
-
-				// check for redundant
-				var redundant = CheckRedundant(node);
-
-				if (redundant != null)
-				{
-					var w = GetValueNumber(redundant);
-					SetValueNumber(node.Result, w);
-
-					trace?.Log($"Removed Redundant PHI: {node}");
-
-					node.SetNop();
-					InstructionRemovalCount.Increment();
-					continue;
-				}
-
-				SetValueNumber(node.Result, node.Result);
-
 				continue;
 			}
 
@@ -695,5 +644,61 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 		}
 
 		return redundant;
+	}
+
+	private bool ProcessPhiInstruction(Node node, ref bool successorValidated, ref bool successorProcessed)
+	{
+		// Validate all successor are already processed
+		// and if not, just set the value number
+		if (!successorValidated)
+		{
+			successorValidated = true;
+			foreach (var processed in node.Block.PreviousBlocks)
+			{
+				if (!Processed.Contains(processed))
+				{
+					successorProcessed = false;
+					break;
+				}
+			}
+		}
+
+		if (successorValidated && !successorProcessed)
+		{
+			SetValueNumber(node.Result, node.Result);
+			return true;
+		}
+
+		// check for useless
+		if (IsPhiUseless(node))
+		{
+			var w = GetValueNumber(node.Operand1);
+			SetValueNumber(node.Result, w);
+
+			trace?.Log($"Removed Unless PHI: {node}");
+
+			node.SetNop();
+			InstructionRemovalCount.Increment();
+			return true;
+		}
+
+		// check for redundant
+		var redundant = CheckRedundant(node);
+
+		if (redundant != null)
+		{
+			var w = GetValueNumber(redundant);
+			SetValueNumber(node.Result, w);
+
+			trace?.Log($"Removed Redundant PHI: {node}");
+
+			node.SetNop();
+			InstructionRemovalCount.Increment();
+			return true;
+		}
+
+		SetValueNumber(node.Result, node.Result);
+
+		return true;
 	}
 }
