@@ -364,49 +364,56 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 		var children = AnalysisDominance.GetChildren(block);
 		if (children != null || children.Count == 0)
 		{
-			nextblocks = new List<BasicBlock>(children.Capacity);
+			nextblocks = GetOrderedChildBlocks(children);
+		}
+	}
 
-			if (children.Count == 1)
+	private List<BasicBlock> GetOrderedChildBlocks(List<BasicBlock> children)
+	{
+		var nextblocks = new List<BasicBlock>(children.Capacity);
+
+		if (children.Count == 1)
+		{
+			// Efficient!
+			nextblocks.Add(children[0]);
+
+			//trace?.Log("Queue Block:" + children[0]);
+		}
+		else if (ReversePostOrder.Count < 32)
+		{
+			// Efficient for small sets
+			foreach (var child in ReversePostOrder)
 			{
-				// Efficient!
-				nextblocks.Add(children[0]);
-
-				//trace?.Log("Queue Block:" + children[0]);
-			}
-			else if (ReversePostOrder.Count < 32)
-			{
-				// Efficient for small sets
-				foreach (var child in ReversePostOrder)
+				if (children.Contains(child))
 				{
-					if (children.Contains(child))
-					{
-						nextblocks.Add(child);
+					nextblocks.Add(child);
 
-						//trace?.Log("Queue Block:" + child);
-					}
-				}
-			}
-			else
-			{
-				// Scalable for large sets
-				var bitArray = new BitArray(BasicBlocks.Count, false);
-
-				foreach (var child in children)
-				{
-					bitArray.Set(child.Sequence, true);
-				}
-
-				foreach (var child in ReversePostOrder)
-				{
-					if (bitArray.Get(child.Sequence))
-					{
-						nextblocks.Add(child);
-
-						//trace?.Log("Queue Block:" + child);
-					}
+					//trace?.Log("Queue Block:" + child);
 				}
 			}
 		}
+		else
+		{
+			// Scalable for large sets
+			var bitArray = new BitArray(BasicBlocks.Count, false);
+
+			foreach (var child in children)
+			{
+				bitArray.Set(child.Sequence, true);
+			}
+
+			foreach (var child in ReversePostOrder)
+			{
+				if (bitArray.Get(child.Sequence))
+				{
+					nextblocks.Add(child);
+
+					//trace?.Log("Queue Block:" + child);
+				}
+			}
+		}
+
+		return nextblocks;
 	}
 
 	private bool CanAssignValueNumberToExpression(Node node)
