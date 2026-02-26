@@ -21,7 +21,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 	private TraceLog trace;
 
-	private BitArray ParamReadOnly;
+	private ParameterReadOnlyAnalysis ParameterAnalysis;
 
 	private readonly Counter InstructionRemovalCount = new("ValueNumbering.IRInstructionsRemoved");
 	private readonly Counter ConstantFoldingAndStrengthReductionCount = new("ValueNumbering.ConstantFoldingAndStrengthReduction");
@@ -87,7 +87,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 		AnalysisDominance = null;
 		ReversePostOrder = null;
-		ParamReadOnly = null;
+		ParameterAnalysis = null;
 
 		trace = null;
 	}
@@ -97,50 +97,17 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 		if (MethodCompiler.Parameters.Count == 0)
 			return;
 
-		ParamReadOnly = new BitArray(MethodCompiler.Parameters.Count, false);
+		ParameterAnalysis = new ParameterReadOnlyAnalysis(MethodCompiler.Parameters);
 
 		var traceParameters = CreateTraceLog("Parameters", 5);
 
-		foreach (var operand in MethodCompiler.Parameters)
+		if (traceParameters != null)
 		{
-			var write = false;
-
-			foreach (var use in operand.Uses)
+			foreach (var operand in MethodCompiler.Parameters)
 			{
-				if (use.Instruction.IsParameterStore)
-				{
-					write = true;
-					break;
-				}
+				var isReadOnly = ParameterAnalysis.IsReadOnly(operand);
+				traceParameters.Log($"{operand}: {(isReadOnly ? "ReadOnly" : "Writable")}");
 			}
-
-			if (!write && operand.Low != null)
-			{
-				foreach (var use in operand.Low.Uses)
-				{
-					if (use.Instruction.IsParameterStore)
-					{
-						write = true;
-						break;
-					}
-				}
-			}
-
-			if (!write && operand.High != null)
-			{
-				foreach (var use in operand.High.Uses)
-				{
-					if (use.Instruction.IsParameterStore)
-					{
-						write = true;
-						break;
-					}
-				}
-			}
-
-			ParamReadOnly[operand.Index] = !write;
-
-			traceParameters?.Log($"{operand}: {(write ? "Writable" : "ReadOnly")}");
 		}
 	}
 
@@ -446,7 +413,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 	{
 		if (node.Instruction.IsParameterLoad
 			&& node.Instruction != IR.LoadParamCompound
-			&& ParamReadOnly.Get(node.Operand1.Index))
+			&& ParameterAnalysis.IsReadOnly(node.Operand1.Index) == true)
 		{
 			return true;
 		}
