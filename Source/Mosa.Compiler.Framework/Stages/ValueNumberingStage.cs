@@ -2,6 +2,7 @@
 
 using System.Collections;
 using System.Diagnostics;
+using Mosa.Compiler.Common;
 using Mosa.Compiler.Common.Exceptions;
 using Mosa.Compiler.Framework.Analysis;
 using Mosa.Compiler.Framework.Common;
@@ -394,22 +395,45 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 	private static int ComputeExpressionHash(Node node)
 	{
-		var hash = node.Instruction.ID;
+		var hash = new StableHashCode();
 
-		hash = hash | ((int)node.ConditionCode << 16);
+		hash.Add(node.Instruction.ID);
+		hash.Add((int)node.ConditionCode);
 
 		if (node.Operand1.IsConstant)
-			hash = UpdateHash(hash, (int)node.Operand1.ConstantUnsigned64);
+		{
+			hash.Add(1);
+			hash.Add(node.Operand1.ConstantUnsigned64);
+		}
 		else if (node.Operand1.IsVirtualRegister || node.Operand1.IsLocalStack)
-			hash = UpdateHash(hash, node.Operand1.Index);
+		{
+			hash.Add(2);
+			hash.Add(node.Operand1.Index);
+		}
+		else
+		{
+			hash.Add(0);
+		}
 
 		if (node.OperandCount >= 2)
+		{
 			if (node.Operand2.IsConstant)
-				hash = UpdateHash(hash, (int)node.Operand2.ConstantUnsigned64);
+			{
+				hash.Add(1);
+				hash.Add(node.Operand2.ConstantUnsigned64);
+			}
 			else if (node.Operand2.IsVirtualRegister || node.Operand2.IsLocalStack)
-				hash = UpdateHash(hash, node.Operand2.Index);
+			{
+				hash.Add(2);
+				hash.Add(node.Operand2.Index);
+			}
+			else
+			{
+				hash.Add(0);
+			}
+		}
 
-		return hash;
+		return hash.ToHashCode();
 	}
 
 	private List<Expression> GetExpressionsByHash(int hash)
