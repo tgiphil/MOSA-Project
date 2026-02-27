@@ -25,11 +25,8 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 	private ParameterReadOnlyAnalysis ParameterAnalysis;
 
 	private readonly Counter InstructionRemovalCount = new("ValueNumbering.IRInstructionsRemoved");
-	private readonly Counter ConstantFoldingAndStrengthReductionCount = new("ValueNumbering.ConstantFoldingAndStrengthReduction");
 	private readonly Counter SubexpressionEliminationCount = new("ValueNumbering.SubexpressionElimination");
 	private readonly Counter ParameterLoadEliminationCount = new("ValueNumbering.ParameterLoadElimination");
-	private readonly Counter DeadCodeEliminationCount = new("ValueNumbering.DeadCodeElimination");
-	private readonly Counter StrengthReductionAndSimplificationCount = new("ValueNumbering.StrengthReductionAndSimplification");
 
 	private class Expression
 	{
@@ -45,12 +42,9 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 	protected override void Initialize()
 	{
-		Register(ConstantFoldingAndStrengthReductionCount);
 		Register(InstructionRemovalCount);
 		Register(SubexpressionEliminationCount);
 		Register(ParameterLoadEliminationCount);
-		Register(DeadCodeEliminationCount);
-		Register(StrengthReductionAndSimplificationCount);
 	}
 
 	protected override void Run()
@@ -65,7 +59,11 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 		if (BasicBlocks.PrologueBlock == null)
 			return;
 
-		trace = CreateTraceLog(5);
+		trace = CreateTraceLog("Log", 5);
+
+		var transform = CreateTraceLog(5);
+
+		Transform.SetLog(transform);
 
 		MapToValueNumber = new Dictionary<Operand, Operand>(MethodCompiler.VirtualRegisters.Count);
 		Expressions = new Dictionary<int, List<Expression>>();
@@ -202,8 +200,12 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 				}
 
 				SetValueNumber(node.Result, node.Operand1);
+
+				Transform.TraceBefore(node, "MoveElimination");
 				node.SetNop();
+				Transform.TraceAfter(node);
 				InstructionRemovalCount.Increment();
+
 				continue;
 			}
 
@@ -234,12 +236,16 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 				SetValueNumber(node.Result, w);
 
+				Transform.TraceBefore(node, "SubexpressionElimination");
+				node.SetNop();
+				Transform.TraceAfter(node);
+
+				InstructionRemovalCount.Increment();
+				SubexpressionEliminationCount.Increment();
+
 				if (node.Instruction.IsParameterLoad)
 					ParameterLoadEliminationCount.Increment();
 
-				node.SetNop();
-				InstructionRemovalCount.Increment();
-				SubexpressionEliminationCount.Increment();
 				continue;
 			}
 
@@ -315,10 +321,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 		if (children.Count == 1)
 		{
-			// Efficient!
 			nextblocks.Add(children[0]);
-
-			//trace?.Log("Queue Block:" + children[0]);
 		}
 		else if (ReversePostOrder.Count < 32)
 		{
@@ -328,8 +331,6 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 				if (children.Contains(child))
 				{
 					nextblocks.Add(child);
-
-					//trace?.Log("Queue Block:" + child);
 				}
 			}
 		}
@@ -348,8 +349,6 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 				if (bitArray.Get(child.Sequence))
 				{
 					nextblocks.Add(child);
-
-					//trace?.Log("Queue Block:" + child);
 				}
 			}
 		}
@@ -394,7 +393,6 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 		hash.Add(node.Instruction.ID);
 		hash.Add((int)node.ConditionCode);
-		hash.Add(node.OperandCount);
 		hash.Add((int)node.Operand1.Primitive);
 
 		if (node.Operand1.IsConstant)
@@ -487,11 +485,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 		return null;
 	}
 
-	private Operand GetValueNumber(Operand operand)
-	{
-		MapToValueNumber.TryGetValue(operand, out Operand value);
-		return value;
-	}
+	private Operand GetValueNumber(Operand operand) => MapToValueNumber.GetValueOrDefault(operand);
 
 	private void SetValueNumber(Operand operand, Operand valueNumber)
 	{
@@ -580,7 +574,10 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 					{
 						//trace?.Log($"BEFORE: {node}");
 						//trace?.Log($"Replaced: {operand} with {valueNumber}");
+
+						Transform.TraceBefore(node, "ValueNumber");
 						node.SetOperand(i, valueNumber);
+						Transform.TraceAfter(node);
 
 						trace?.Log($"UPDATED: {node}");
 					}
@@ -670,8 +667,11 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 			trace?.Log($"Removed Unless PHI: {node}");
 
+			Transform.TraceBefore(node, "UselessPhiElimination");
 			node.SetNop();
+			Transform.TraceAfter(node);
 			InstructionRemovalCount.Increment();
+
 			return true;
 		}
 
@@ -685,8 +685,11 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 			trace?.Log($"Removed Redundant PHI: {node}");
 
+			Transform.TraceBefore(node, "RedundantPhiElimination");
 			node.SetNop();
+			Transform.TraceAfter(node);
 			InstructionRemovalCount.Increment();
+
 			return true;
 		}
 
