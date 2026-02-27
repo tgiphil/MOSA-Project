@@ -180,12 +180,12 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 			UpdateNodeWithValueNumbers(node);
 
 			// move constant to right for commutative operations - helpful later
-			if (node.Instruction.IsCommutative && node.Operand1.IsResolvedConstant && node.Operand2.IsVirtualRegister)
-			{
-				var operand1 = node.Operand1;
-				node.Operand1 = node.Operand2;
-				node.Operand2 = operand1;
-			}
+			//if (node.Instruction.IsCommutative && node.Operand1.IsResolvedConstant && node.Operand2.IsVirtualRegister)
+			//{
+			//	var operand1 = node.Operand1;
+			//	node.Operand1 = node.Operand2;
+			//	node.Operand2 = operand1;
+			//}
 
 			if (node.Instruction.IsMove && node.Instruction.IsIRInstruction)
 			{
@@ -388,59 +388,42 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 		return true;
 	}
 
-	private static int UpdateHash(int hash, int addition)
-	{
-		return (hash << 8) + addition;
-	}
-
 	private static int ComputeExpressionHash(Node node)
 	{
 		var hash = new StableHashCode();
 
 		hash.Add(node.Instruction.ID);
 		hash.Add((int)node.ConditionCode);
+		hash.Add(node.OperandCount);
+		hash.Add((int)node.Operand1.Primitive);
 
 		if (node.Operand1.IsConstant)
 		{
-			hash.Add(1);
 			hash.Add(node.Operand1.ConstantUnsigned64);
 		}
 		else if (node.Operand1.IsVirtualRegister || node.Operand1.IsLocalStack)
 		{
-			hash.Add(2);
 			hash.Add(node.Operand1.Index);
-		}
-		else
-		{
-			hash.Add(0);
 		}
 
 		if (node.OperandCount >= 2)
 		{
+			hash.Add((int)node.Operand2.Primitive);
+
 			if (node.Operand2.IsConstant)
 			{
-				hash.Add(1);
 				hash.Add(node.Operand2.ConstantUnsigned64);
 			}
 			else if (node.Operand2.IsVirtualRegister || node.Operand2.IsLocalStack)
 			{
-				hash.Add(2);
 				hash.Add(node.Operand2.Index);
-			}
-			else
-			{
-				hash.Add(0);
 			}
 		}
 
 		return hash.ToHashCode();
 	}
 
-	private List<Expression> GetExpressionsByHash(int hash)
-	{
-		Expressions.TryGetValue(hash, out List<Expression> list);
-		return list;
-	}
+	private List<Expression> GetExpressionsByHash(int hash) => Expressions.GetValueOrDefault(hash);
 
 	private static bool IsEqual(Operand operand1, Operand operand2, BaseInstruction instruction = null)
 	{
