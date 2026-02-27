@@ -15,6 +15,7 @@ public sealed class ParameterReadOnlyAnalysis
 {
 	private readonly BitArray paramReadOnly;
 	private readonly int parameterCount;
+	private readonly Parameters parameters;
 
 	/// <summary>
 	/// Gets the number of parameters analyzed.
@@ -24,11 +25,13 @@ public sealed class ParameterReadOnlyAnalysis
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ParameterReadOnlyAnalysis"/> class.
 	/// </summary>
-	/// <param name="parameters">The list of method parameters to analyze.</param>
-	public ParameterReadOnlyAnalysis(IEnumerable<Operand> parameters)
+	/// <param name="parameters">The method parameters to analyze.</param>
+	public ParameterReadOnlyAnalysis(Parameters parameters)
 	{
+		this.parameters = parameters;
+
 		// Count parameters first
-		parameterCount = parameters.Count();
+		parameterCount = parameters.Count;
 
 		if (parameterCount == 0)
 			return;
@@ -66,6 +69,22 @@ public sealed class ParameterReadOnlyAnalysis
 			return false;
 
 		return IsReadOnly(parameter.Index);
+	}
+
+	/// <summary>
+	/// Traces the read-only status of all parameters to the provided trace log.
+	/// </summary>
+	/// <param name="traceLog">The trace log to write to, or null to skip tracing.</param>
+	public void Trace(TraceLog traceLog)
+	{
+		if (traceLog == null || parameterCount == 0)
+			return;
+
+		foreach (var operand in parameters)
+		{
+			var isReadOnly = IsReadOnly(operand);
+			traceLog.Log($"{operand}: {(isReadOnly ? "ReadOnly" : "Writable")}");
+		}
 	}
 
 	private void AnalyzeParameters(IEnumerable<Operand> parameters)

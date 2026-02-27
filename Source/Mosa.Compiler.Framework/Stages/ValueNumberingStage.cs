@@ -101,14 +101,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 		var traceParameters = CreateTraceLog("Parameters", 5);
 
-		if (traceParameters != null)
-		{
-			foreach (var operand in MethodCompiler.Parameters)
-			{
-				var isReadOnly = ParameterAnalysis.IsReadOnly(operand);
-				traceParameters.Log($"{operand}: {(isReadOnly ? "ReadOnly" : "Writable")}");
-			}
-		}
+		ParameterAnalysis.Trace(traceParameters);
 	}
 
 	private void ValueNumber()
