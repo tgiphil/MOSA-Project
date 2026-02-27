@@ -249,19 +249,24 @@ public sealed class Transform
 
 	#region Trace
 
-	private void TraceBefore(Context context, BaseTransform transformation)
+	private void TraceBefore(Context context, string name = null, bool log = false)
 	{
 		TransformCount++;
 
 		if (!IsTraceTransforms)
 			return;
 
-		TraceLog?.Log($"{TransformCount,-7}\t| {transformation.Name}");
+		TraceLog?.Log($"{TransformCount,-7}\t| {name ?? string.Empty}");
 
-		if (transformation.Log)
-			SpecialTraceLog?.Log($"{transformation.Name}\t{Method.FullName} at {context}");
+		if (log)
+			SpecialTraceLog?.Log($"{name ?? string.Empty}\t{Method.FullName} at {context}");
 
 		TraceLog?.Log($"{context.Block}\t| {context}");
+	}
+
+	private void TraceBefore(Context context, BaseTransform transformation)
+	{
+		TraceBefore(context, transformation.Name, transformation.Log);
 	}
 
 	private void TraceAfter(Context context)
