@@ -38,7 +38,22 @@ public sealed class ParameterReadOnlyAnalysis
 
 		paramReadOnly = new BitArray(parameterCount, false);
 
-		AnalyzeParameters(parameters);
+		foreach (var operand in parameters)
+		{
+			var write = HasParameterStore(operand);
+
+			if (!write && operand.Low != null)
+			{
+				write = HasParameterStore(operand.Low);
+			}
+
+			if (!write && operand.High != null)
+			{
+				write = HasParameterStore(operand.High);
+			}
+
+			paramReadOnly[operand.Index] = !write;
+		}
 	}
 
 	/// <summary>
@@ -83,27 +98,8 @@ public sealed class ParameterReadOnlyAnalysis
 		foreach (var operand in parameters)
 		{
 			var isReadOnly = IsReadOnly(operand);
+
 			traceLog.Log($"{operand}: {(isReadOnly ? "ReadOnly" : "Writable")}");
-		}
-	}
-
-	private void AnalyzeParameters(IEnumerable<Operand> parameters)
-	{
-		foreach (var operand in parameters)
-		{
-			var write = HasParameterStore(operand);
-
-			if (!write && operand.Low != null)
-			{
-				write = HasParameterStore(operand.Low);
-			}
-
-			if (!write && operand.High != null)
-			{
-				write = HasParameterStore(operand.High);
-			}
-
-			paramReadOnly[operand.Index] = !write;
 		}
 	}
 
