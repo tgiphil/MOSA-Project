@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Mosa.Tool.Explorer.Common;
 
-public class CompilerData
+public class CompilerInformation
 {
 	public readonly Dictionary<string, List<string>> Logs = new Dictionary<string, List<string>>();
 	public readonly List<string> LogSections = new List<string>();

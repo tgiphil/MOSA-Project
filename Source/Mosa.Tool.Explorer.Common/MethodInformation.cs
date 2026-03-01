@@ -2,7 +2,7 @@
 
 namespace Mosa.Tool.Explorer.Common;
 
-public class MethodData
+public class MethodInformation
 {
 	//public MosaMethod Method;
 

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mosa.Tool.Explorer.Common;
 
-public class FormatInstructions
+public class FormatInstruction
 {
 	private const int Padding = 34;
 

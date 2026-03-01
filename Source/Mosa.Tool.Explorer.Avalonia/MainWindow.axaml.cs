@@ -17,8 +17,8 @@ using Mosa.Tool.Explorer.Avalonia.Stages;
 using Mosa.Tool.Explorer.Common;
 using Mosa.Utility.Configuration;
 using Timer = System.Timers.Timer;
-using ExplorerCompilerData = Mosa.Tool.Explorer.Common.CompilerData;
-using ExplorerMethodData = Mosa.Tool.Explorer.Common.MethodData;
+using ExplorerCompilerData = Mosa.Tool.Explorer.Common.CompilerInformation;
+using ExplorerMethodData = Mosa.Tool.Explorer.Common.MethodInformation;
 
 namespace Mosa.Tool.Explorer.Avalonia;
 
@@ -829,7 +829,7 @@ public partial class MainWindow : Window
 		if (string.IsNullOrWhiteSpace(label) || label == "All")
 			label = string.Empty;
 
-		Instructions.Text = FormatInstructions.Format(records, label, !ShowOperandTypes.IsChecked,
+		Instructions.Text = FormatInstruction.Format(records, label, !ShowOperandTypes.IsChecked,
 			RemoveIrNop.IsChecked, LineBetweenBlocks.IsChecked);
 	}
 
@@ -849,7 +849,7 @@ public partial class MainWindow : Window
 		if (string.IsNullOrWhiteSpace(label) || label == "All")
 			label = string.Empty;
 
-		Transforms.Text = FormatInstructions.Format(records, label, !ShowOperandTypes.IsChecked,
+		Transforms.Text = FormatInstruction.Format(records, label, !ShowOperandTypes.IsChecked,
 			RemoveIrNop.IsChecked, LineBetweenBlocks.IsChecked);
 	}
 
