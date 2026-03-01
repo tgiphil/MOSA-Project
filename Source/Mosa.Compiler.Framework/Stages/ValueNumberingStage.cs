@@ -20,7 +20,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 	private Dictionary<Operand, Operand> MapToValueNumber;
 	private BlockBitSet Processed;
 
-	private TraceLog trace;
+	private TraceLog log;
 
 	private ParameterReadOnlyAnalysis ParameterAnalysis;
 
@@ -59,11 +59,13 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 		if (BasicBlocks.PrologueBlock == null)
 			return;
 
-		trace = CreateTraceLog("Log", 5);
+		var trace = CreateTraceLog(5);
 
-		var transform = CreateTraceLog(5);
+		Transform.SetLog(trace);
 
-		Transform.SetLog(transform);
+		Transform.TraceInstructions();
+
+		log = CreateTraceLog("Log", 5);
 
 		MapToValueNumber = new Dictionary<Operand, Operand>(MethodCompiler.VirtualRegisters.Count);
 		Expressions = new Dictionary<int, List<Expression>>();
@@ -88,7 +90,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 		ReversePostOrder = null;
 		ParameterAnalysis = null;
 
-		trace = null;
+		log = null;
 	}
 
 	private void DetermineReadOnlyParameters()
@@ -152,7 +154,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 	private void ValueNumber(BasicBlock block, out List<BasicBlock> nextblocks, out List<Expression> newExpressions)
 	{
-		trace?.Log($"Processing Block: {block}");
+		log?.Log($"Processing Block: {block}");
 
 		//Debug.Assert(!Processed.Get(block.Sequence));
 
@@ -232,7 +234,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 			{
 				var w = GetValueNumber(match.ValueNumber);
 
-				trace?.Log($"Found Expression Match: {node}");
+				log?.Log($"Found Expression Match: {node}");
 
 				SetValueNumber(node.Result, w);
 
@@ -249,7 +251,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 				continue;
 			}
 
-			trace?.Log($"No Expression Found: {node}");
+			log?.Log($"No Expression Found: {node}");
 
 			var newExpression = new Expression
 			{
@@ -489,7 +491,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 	private void SetValueNumber(Operand operand, Operand valueNumber)
 	{
-		trace?.Log($"Set: {operand} => {valueNumber}");
+		log?.Log($"Set: {operand} => {valueNumber}");
 
 		MapToValueNumber[operand] = valueNumber;
 	}
@@ -545,7 +547,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 		list.Add(expression);
 
-		trace?.Log($"Added Expression: {expression.ValueNumber} <= {expression.Instruction} {expression.Operand1} {expression.Operand2}");
+		log?.Log($"Added Expression: {expression.ValueNumber} <= {expression.Instruction} {expression.Operand1} {expression.Operand2}");
 	}
 
 	private void RemoveExpressionFromHashTable(Expression expression)
@@ -554,7 +556,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 
 		list.Remove(expression);
 
-		trace?.Log($"Removed Expression: {expression.ValueNumber} <= {expression.Instruction} {expression.Operand1} {expression.Operand2}" ?? string.Empty);
+		log?.Log($"Removed Expression: {expression.ValueNumber} <= {expression.Instruction} {expression.Operand1} {expression.Operand2}" ?? string.Empty);
 	}
 
 	private void UpdateNodeWithValueNumbers(Node node)
@@ -579,7 +581,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 						node.SetOperand(i, valueNumber);
 						Transform.TraceAfter(node);
 
-						trace?.Log($"UPDATED: {node}");
+						log?.Log($"UPDATED: {node}");
 					}
 				}
 				else
@@ -665,7 +667,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 			var w = GetValueNumber(node.Operand1);
 			SetValueNumber(node.Result, w);
 
-			trace?.Log($"Removed Unless PHI: {node}");
+			log?.Log($"Removed Unless PHI: {node}");
 
 			Transform.TraceBefore(node, "UselessPhiElimination");
 			node.SetNop();
@@ -683,7 +685,7 @@ public sealed class ValueNumberingStage : BaseMethodCompilerStage
 			var w = GetValueNumber(redundant);
 			SetValueNumber(node.Result, w);
 
-			trace?.Log($"Removed Redundant PHI: {node}");
+			log?.Log($"Removed Redundant PHI: {node}");
 
 			Transform.TraceBefore(node, "RedundantPhiElimination");
 			node.SetNop();

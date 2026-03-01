@@ -26,8 +26,4 @@
         <PackageReference Include="Avalonia.Themes.Simple" Version="11.3.12" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Stages\" />
-    </ItemGroup>
-
 </Project>

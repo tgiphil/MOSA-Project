@@ -1391,21 +1391,6 @@ public partial class MainForm : Form
 		UpdateGraphviz();
 	}
 
-	private class TranformEntry
-	{
-		public int ID { get; set; }
-
-		public string Name { get; set; }
-
-		public string Before { get; set; }
-
-		public string After { get; set; }
-
-		public string Block { get; set; }
-
-		public int Pass { get; set; }
-	}
-
 	private void PopulateTransformList()
 	{
 		dataGridView1.DataSource = null;
@@ -1420,60 +1405,7 @@ public partial class MainForm : Form
 
 		var debug = CurrentMethodInformation.DebugLogs[stage];
 
-		if (debug.Contains("*** Pass"))
-			return;
-
-		var list = new List<TranformEntry>();
-
-		list.Add(new TranformEntry() { ID = 0, Name = "***Start***" });
-
-		var pass = 0;
-		TranformEntry entry = null;
-
-		foreach (var line in debug)
-		{
-			if (string.IsNullOrEmpty(line))
-				continue;
-
-			if (line.StartsWith("*** Pass"))
-			{
-				pass = Convert.ToInt32(line[10..]);
-				continue;
-			}
-
-			if (line.StartsWith("Merge Blocking: ") || line.StartsWith("Removed Unreachable Block:"))
-				continue;
-
-			var parts = line.Split('\t');
-
-			if (parts.Length != 2)
-				continue;
-
-			var part1 = parts[1].Substring(1).Trim();
-
-			if (parts[0].StartsWith("L_"))
-			{
-				entry.Block = parts[0].TrimEnd();
-				entry.Before = part1;
-				continue;
-			}
-
-			if (parts[0].StartsWith(' '))
-			{
-				entry.After = part1;
-				continue;
-			}
-
-			entry = new TranformEntry
-			{
-				ID = Convert.ToInt32(parts[0].Trim()),
-				Name = part1,
-				Pass = pass
-			};
-
-			list.Add(entry);
-		}
-
+		var list = TransformListBuilder.BuildTransformList(debug);
 		dataGridView1.DataSource = list;
 		dataGridView1.AutoResizeColumns();
 	}
@@ -1483,7 +1415,7 @@ public partial class MainForm : Form
 		if (dataGridView1.CurrentCell == null)
 			return;
 
-		var entry = dataGridView1.CurrentCell.OwningRow.DataBoundItem as TranformEntry;
+		var entry = dataGridView1.CurrentCell.OwningRow.DataBoundItem as TransformEntry;
 
 		if (cbSetBlock.Checked && !string.IsNullOrEmpty(entry.Block))
 		{
