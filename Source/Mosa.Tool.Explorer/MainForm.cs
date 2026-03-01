@@ -12,7 +12,8 @@ using Mosa.Compiler.Framework.Stages.Diagnostic;
 using Mosa.Compiler.MosaTypeSystem;
 using Mosa.Compiler.MosaTypeSystem.CLR;
 using Mosa.Tool.Explorer.Common;
-using Mosa.Tool.Explorer.Stages;
+using Mosa.Tool.Explorer.Common.CompilerStage;
+using Mosa.Tool.Explorer.Common.Stages;
 using Mosa.Utility.Configuration;
 
 using static Mosa.Utility.Configuration.MosaSettings;
