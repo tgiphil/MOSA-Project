@@ -11,8 +11,11 @@ using Mosa.Compiler.Framework.Stages;
 using Mosa.Compiler.Framework.Stages.Diagnostic;
 using Mosa.Compiler.MosaTypeSystem;
 using Mosa.Compiler.MosaTypeSystem.CLR;
+using Mosa.Tool.Explorer.Common;
 using Mosa.Tool.Explorer.Stages;
 using Mosa.Utility.Configuration;
+
+using Mosa.Tool.Explorer.Common;
 
 using static Mosa.Utility.Configuration.MosaSettings;
 
@@ -40,7 +43,7 @@ public partial class MainForm : Form
 
 	private readonly object _statusLock = new object();
 	private readonly BindingList<CounterEntry> CompilerCounters = new BindingList<CounterEntry>();
-	private readonly CompilerData CompilerData = new CompilerData();
+	private readonly Common.CompilerData CompilerData = new Common.CompilerData();
 	private readonly BindingList<CounterEntry> MethodCounters = new BindingList<CounterEntry>();
 	private readonly MethodStore MethodStore = new MethodStore();
 
@@ -51,7 +54,7 @@ public partial class MainForm : Form
 	private string CurrentLogSection = string.Empty;
 
 	private MosaMethod CurrentMethod = null;
-	private MethodData CurrentMethodData = null;
+	private Common.MethodData CurrentMethodData = null;
 
 	private string Status = null;
 	private int TotalMethods = 0;
@@ -651,7 +654,7 @@ public partial class MainForm : Form
 		return node == null ? null : node.Tag as MosaMethod;
 	}
 
-	private MethodData GetCurrentMethodData()
+	private Common.MethodData GetCurrentMethodData()
 	{
 		var method = CurrentMethod;
 
