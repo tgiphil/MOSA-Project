@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<ProjectReference Include="..\Mosa.Compiler.Common\Mosa.Compiler.Common.csproj" />
+		<ProjectReference Include="..\Mosa.Compiler.Framework\Mosa.Compiler.Framework.csproj" />
+		<ProjectReference Include="..\Mosa.Compiler.MosaTypeSystem.CLR\Mosa.Compiler.MosaTypeSystem.CLR.csproj" />
+		<ProjectReference Include="..\Mosa.Compiler.ARM32\Mosa.Compiler.ARM32.csproj" />
+		<ProjectReference Include="..\Mosa.Compiler.x64\Mosa.Compiler.x64.csproj" />
+		<ProjectReference Include="..\Mosa.Compiler.x86\Mosa.Compiler.x86.csproj" />
+		<ProjectReference Include="..\Mosa.Utility.Configuration\Mosa.Utility.Configuration.csproj" />
+		<ProjectReference Include="..\Mosa.Utility.Disassembler\Mosa.Utility.Disassembler.csproj" />
+		<ProjectReference Include="..\Mosa.Utility.Launcher\Mosa.Utility.Launcher.csproj" />
+	</ItemGroup>
+
+</Project>

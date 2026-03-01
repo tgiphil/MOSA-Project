@@ -1,6 +1,6 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-namespace Mosa.Tool.Explorer;
+namespace Mosa.Tool.Explorer.Common;
 
 public class MethodData
 {

@@ -2,7 +2,7 @@
 
 using System.Diagnostics;
 
-namespace Mosa.Tool.Explorer;
+namespace Mosa.Tool.Explorer.Common;
 
 public class CompilerData
 {

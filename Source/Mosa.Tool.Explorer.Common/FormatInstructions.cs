@@ -2,7 +2,7 @@
 
 using System.Text;
 
-namespace Mosa.Tool.Explorer;
+namespace Mosa.Tool.Explorer.Common;
 
 public class FormatInstructions
 {

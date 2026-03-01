@@ -3,7 +3,7 @@
 using Mosa.Compiler.Common;
 using Mosa.Compiler.MosaTypeSystem;
 
-namespace Mosa.Tool.Explorer;
+namespace Mosa.Tool.Explorer.Common;
 
 public class MethodStore
 {
