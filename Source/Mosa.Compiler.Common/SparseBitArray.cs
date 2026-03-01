@@ -72,12 +72,12 @@ public sealed class SparseBitArray
 
 		if (value)
 		{
-			Bits[index / 64] |= 1u << (index % 64);
+			Bits[index / 64] |= 1ul << (index % 64);
 		}
 		else
 
 		{
-			Bits[index / 64] &= ~(1u << (index % 64));
+			Bits[index / 64] &= ~(1ul << (index % 64));
 		}
 	}
 
@@ -85,7 +85,7 @@ public sealed class SparseBitArray
 	{
 		for (int i = 0; i < Bits.Length; i++)
 		{
-			Bits[i] = value ? uint.MaxValue : 0u;
+			Bits[i] = value ? ulong.MaxValue : 0u;
 		}
 	}
 
