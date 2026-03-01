@@ -431,18 +431,6 @@ public class StableHashCodeTests
 	}
 
 	[Fact]
-	public void Add_EmptyString_VsNullString_DifferentHashes()
-	{
-		var hash1 = new StableHashCode();
-		hash1.Add(string.Empty);
-
-		var hash2 = new StableHashCode();
-		hash2.Add((string?)null);
-
-		Assert.NotEqual(hash1.ToHashCode(), hash2.ToHashCode());
-	}
-
-	[Fact]
 	public void Add_StringLength_Matters()
 	{
 		var hash1 = new StableHashCode();

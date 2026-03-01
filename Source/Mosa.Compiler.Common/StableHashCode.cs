@@ -13,13 +13,13 @@ public struct StableHashCode
 		hash = OffsetBasis;
 	}
 
-	public void Add(bool value) => Add(value ? 1u : 0u);
+	public void Add(bool value) => Add(value ? 1 : 0);
 
 	public void Add(byte value) => Add((uint)value);
 
 	public void Add(short value) => Add(unchecked((uint)value));
 
-	public void Add(ushort value) => Add(value);
+	public void Add(ushort value) => Add((uint)value);
 
 	public void Add(int value) => Add(unchecked((uint)value));
 
@@ -43,7 +43,7 @@ public struct StableHashCode
 
 	public void Add(char value) => Add((ushort)value);
 
-	public void Add(string? value)
+	public void Add(string value)
 	{
 		if (value is null)
 		{
@@ -72,30 +72,39 @@ public struct StableHashCode
 			case int intValue:
 				Add(intValue);
 				return;
+
 			case uint uintValue:
 				Add(uintValue);
 				return;
+
 			case long longValue:
 				Add(longValue);
 				return;
+
 			case ulong ulongValue:
 				Add(ulongValue);
 				return;
+
 			case short shortValue:
 				Add(shortValue);
 				return;
+
 			case ushort ushortValue:
 				Add(ushortValue);
 				return;
+
 			case byte byteValue:
 				Add(byteValue);
 				return;
+
 			case bool boolValue:
 				Add(boolValue);
 				return;
+
 			case char charValue:
 				Add(charValue);
 				return;
+
 			case string stringValue:
 				Add(stringValue);
 				return;
