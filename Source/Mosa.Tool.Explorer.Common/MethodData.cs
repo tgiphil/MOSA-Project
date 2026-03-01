@@ -19,4 +19,6 @@ public class MethodData
 	public Dictionary<string, List<string>> DebugLogs = new Dictionary<string, List<string>>();
 
 	public List<string> MethodCounters = new List<string>();
+
+	public List<string> Counters => MethodCounters;
 }

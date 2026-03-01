@@ -14,8 +14,11 @@ using Mosa.Compiler.MosaTypeSystem;
 using Mosa.Compiler.MosaTypeSystem.CLR;
 using Mosa.Tool.Explorer.Avalonia.CompilerStage;
 using Mosa.Tool.Explorer.Avalonia.Stages;
+using Mosa.Tool.Explorer.Common;
 using Mosa.Utility.Configuration;
 using Timer = System.Timers.Timer;
+using ExplorerCompilerData = Mosa.Tool.Explorer.Common.CompilerData;
+using ExplorerMethodData = Mosa.Tool.Explorer.Common.MethodData;
 
 namespace Mosa.Tool.Explorer.Avalonia;
 
@@ -23,7 +26,7 @@ public partial class MainWindow : Window
 {
 	private readonly object statusLock = new object();
 
-	private readonly CompilerData compilerData = new CompilerData();
+	private readonly ExplorerCompilerData compilerData = new ExplorerCompilerData();
 	private readonly MethodStore methodStore = new MethodStore();
 
 	private readonly ObservableCollection<CounterEntry> counterCollection = new ObservableCollection<CounterEntry>();
@@ -36,7 +39,7 @@ public partial class MainWindow : Window
 	private string currentLogSection = string.Empty;
 
 	private MosaMethod currentMethod;
-	private MethodData currentMethodData;
+	private ExplorerMethodData currentMethodData;
 
 	private string status;
 	private int totalMethods, transformStep;
@@ -936,7 +939,7 @@ public partial class MainWindow : Window
 
 	private MosaMethod GetCurrentMethod() => ((TreeViewItem)TreeView.SelectedItem)?.Tag as MosaMethod;
 
-	private MethodData GetCurrentMethodData() => currentMethod == null ? null : methodStore.GetMethodData(currentMethod, false);
+	private ExplorerMethodData GetCurrentMethodData() => currentMethod == null ? null : methodStore.GetMethodData(currentMethod, false);
 
 	private void CreateTree()
 	{
