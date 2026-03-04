@@ -72,5 +72,12 @@ public sealed class Counters
 		return list;
 	}
 
+	public List<Counter> GetSortedCounters()
+	{
+		var list = GetCounters();
+		list.Sort((left, right) => string.CompareOrdinal(left.Name, right.Name));
+		return list;
+	}
+
 	public override string ToString() => $"Counts = {Entries.Count}";
 }

@@ -21,11 +21,16 @@ public sealed class Compiler
 
 	#region Data Members
 
-	private readonly Pipeline<BaseMethodCompilerStage>[] MethodStagePipelines;
-
 	private Dictionary<string, IntrinsicMethodDelegate> InternalIntrinsicMethods { get; } = new Dictionary<string, IntrinsicMethodDelegate>();
 
 	private Dictionary<string, StubMethodDelegate> InternalStubMethods { get; } = new Dictionary<string, StubMethodDelegate>();
+
+	private readonly Pipeline<BaseMethodCompilerStage>[] MethodStagePipelines;
+
+	private int ActiveThreadCount;
+	private long[] ThreadProcessingTicks;
+	private long[] ThreadWallTicks;
+	private long[] ThreadMethods;
 
 	#endregion Data Members
 
@@ -243,6 +248,9 @@ public sealed class Compiler
 		ObjectHeaderSize = Architecture.NativePointerSize + 4 + 4; // Method Table Ptr + Hash Value (32-bit) + Lock & Status (32-bit)
 
 		MethodStagePipelines = new Pipeline<BaseMethodCompilerStage>[MaxThreads];
+		ThreadProcessingTicks = new long[MaxThreads];
+		ThreadWallTicks = new long[MaxThreads];
+		ThreadMethods = new long[MaxThreads];
 
 		MethodScheduler = new MethodScheduler(this);
 		MethodScanner = new MethodScanner(this);
@@ -473,6 +481,8 @@ public sealed class Compiler
 
 	public void ExecuteCompile(int maxThreads)
 	{
+		ActiveThreadCount = maxThreads;
+
 		GlobalCounters.Set("Compiler.MaxThreads", maxThreads);
 
 		PostEvent(CompilerEvent.CompilingMethodsStart);
@@ -483,8 +493,8 @@ public sealed class Compiler
 		if (maxThreads > 0)
 		{
 			var threads = Enumerable
-				.Range(0, maxThreads)
-				.Select(x => new Thread(CompilePass))
+				.Range(0, ActiveThreadCount)
+				.Select(index => new Thread(() => CompilePass(index)))
 				.ToList();
 
 			threads.ForEach(x => x.Start());
@@ -492,25 +502,35 @@ public sealed class Compiler
 		}
 		else
 		{
-			CompilePass();
+			CompilePass(0);
 		}
 
 		PostEvent(CompilerEvent.CompilingMethodsCompleted);
 	}
 
-	private void CompilePass()
+	private void CompilePass(int threadSlot)
 	{
 		var threadID = Thread.CurrentThread.ManagedThreadId;
-		var success = 0;
+		var threadTimer = Stopwatch.StartNew();
 
-		while (true)
+		try
 		{
-			var result = ProcessQueue(threadID);
+			while (true)
+			{
+				var result = ProcessQueue(threadID);
 
-			if (result == null)
-				return;
+				if (result == null)
+					return;
 
-			success++;
+				ThreadMethods[threadSlot]++;
+			}
+		}
+		finally
+		{
+			threadTimer.Stop();
+
+			ThreadProcessingTicks[threadSlot] = threadTimer.ElapsedTicks;
+			ThreadWallTicks[threadSlot] = threadTimer.ElapsedTicks;
 		}
 	}
 
@@ -526,6 +546,9 @@ public sealed class Compiler
 		GlobalCounters.Set("Elapsed.Total.Milliseconds", (int)CompileTime.ElapsedMilliseconds);
 
 		PostEvent(CompilerEvent.FinalizationStart);
+
+		// Emit per-thread performance metrics to GlobalCounters
+		EmitThreadPerformanceMetrics();
 
 		// Sum up the counters
 		foreach (var methodData in CompilerData.MethodData)
@@ -607,7 +630,7 @@ public sealed class Compiler
 
 	private void EmitCounters()
 	{
-		foreach (var counter in GlobalCounters.GetCounters())
+		foreach (var counter in GlobalCounters.GetSortedCounters())
 		{
 			PostEvent(CompilerEvent.Counter, counter.ToString());
 		}
@@ -664,6 +687,78 @@ public sealed class Compiler
 	public MethodData GetMethodData(MosaMethod method)
 	{
 		return CompilerData.GetMethodData(method);
+	}
+
+	private void EmitThreadPerformanceMetrics()
+	{
+		if (ActiveThreadCount == 0)
+			return;
+
+		double wallClockMs = CompileTime.ElapsedMilliseconds;
+
+		// Per-thread metrics
+		for (var threadId = 0; threadId < ActiveThreadCount; threadId++)
+		{
+			long processingTicks = ThreadProcessingTicks[threadId];
+			long wallTicks = ThreadWallTicks[threadId];
+			double processingMs = processingTicks / 10000.0;
+			double wallMs = wallTicks / 10000.0;
+			double utilityPercent = wallMs > 0 ? (processingMs / wallMs) * 100 : 0;
+
+			GlobalCounters.Set($"Compiler.Performance.Thread.{threadId}.CPUTime.Milliseconds", (int)processingMs);
+			GlobalCounters.Set($"Compiler.Performance.Thread.{threadId}.WallTime.Milliseconds", (int)wallMs);
+			GlobalCounters.Set($"Compiler.Performance.Thread.{threadId}.Utility.Percent", (int)utilityPercent);
+		}
+
+		// Aggregate metrics
+		long totalProcessingTicks = 0;
+		for (var i = 0; i < ActiveThreadCount; i++)
+		{
+			totalProcessingTicks += ThreadProcessingTicks[i];
+		}
+
+		double totalProcessingMs = totalProcessingTicks / 10000.0;
+		double avgProcessingMs = ActiveThreadCount > 0 ? totalProcessingMs / ActiveThreadCount : 0;
+
+		GlobalCounters.Set("Compiler.Performance.TotalProcessingTime.Milliseconds", (int)totalProcessingMs);
+		GlobalCounters.Set("Compiler.Performance.WallClockTime.Millisecondss", (int)wallClockMs);
+		GlobalCounters.Set("Compiler.Performance.AveragePerThread.Milliseconds", (int)avgProcessingMs);
+
+		// Min/Max thread analysis
+		if (ActiveThreadCount > 0)
+		{
+			var maxThreadId = 0;
+			var minThreadId = 0;
+			var maxTicks = ThreadProcessingTicks[0];
+			var minTicks = ThreadProcessingTicks[0];
+
+			for (var i = 1; i < ActiveThreadCount; i++)
+			{
+				var ticks = ThreadProcessingTicks[i];
+				if (ticks > maxTicks)
+				{
+					maxTicks = ticks;
+					maxThreadId = i;
+				}
+				if (ticks < minTicks)
+				{
+					minTicks = ticks;
+					minThreadId = i;
+				}
+			}
+
+			double maxThreadMs = maxTicks / 10000.0;
+			double minThreadMs = minTicks / 10000.0;
+			double imbalancePercent = minTicks > 0
+				? ((maxTicks - minTicks) / (double)maxTicks) * 100
+				: 0;
+
+			GlobalCounters.Set("Compiler.Performance.MaxThread.Milliseconds", (int)maxThreadMs);
+			GlobalCounters.Set("Compiler.Performance.MinThread.Milliseconds", (int)minThreadMs);
+			GlobalCounters.Set("Compiler.Performance.MaxThread.ID", maxThreadId);
+			GlobalCounters.Set("Compiler.Performance.MinThread.ID", minThreadId);
+			GlobalCounters.Set("Compiler.Performance.ThreadImbalance.Percent", (int)imbalancePercent);
+		}
 	}
 
 	#endregion Helper Methods
