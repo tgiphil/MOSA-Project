@@ -97,8 +97,6 @@ public class UnitTestEngine : IDisposable
 		MosaSettings.AddSourceFile("Mosa.UnitTests.dll");
 
 		MosaSettings.AddSearchPath(AppContext.BaseDirectory);
-
-		OutputStatus($"Search Folder(s): {string.Join(", ", new List<string>(MosaSettings.SearchPaths.ToArray()))}");
 	}
 
 	private void Initialize()
@@ -245,9 +243,11 @@ public class UnitTestEngine : IDisposable
 	{
 		Stopwatch.Restart();
 
-		//MosaSettings.AddSearchPath(TestAssemblyPath);
-		//MosaSettings.ClearSourceFiles();
-		//MosaSettings.AddSourceFile(Path.Combine(TestAssemblyPath, TestSuiteFile));
+		OutputStatus($"Search Folder(s): {string.Join(", ", new List<string>(MosaSettings.SearchPaths.ToArray()))}");
+		OutputStatus($"Output file: {MosaSettings.OutputFile}");
+		OutputStatus($"Available CPU Cores: {Environment.ProcessorCount}");
+		OutputStatus($"Max Threads: {MosaSettings.MaxThreads}");
+		OutputStatus($"Platform: {MosaSettings.Platform}");
 
 		var compilerHook = CreateCompilerHook();
 

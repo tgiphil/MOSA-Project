@@ -129,12 +129,9 @@ public sealed class MethodScheduler
 		{
 			if (queueSet.Contains(methodData))
 			{
-				//Debug.WriteLine($"Already in Queue: {method}");
-
 				return; // already queued
 			}
 
-			//Debug.WriteLine($"Queued: {method}");
 			var priority = GetCompilePriorityLevel(methodData);
 
 			queue.Enqueue(methodData, priority);
@@ -153,8 +150,6 @@ public sealed class MethodScheduler
 				queueSet.Remove(methodData);
 
 				Interlocked.Decrement(ref totalQueued);
-
-				//Debug.WriteLine($"Dequeued: {method}");
 
 				return methodData;
 			}
