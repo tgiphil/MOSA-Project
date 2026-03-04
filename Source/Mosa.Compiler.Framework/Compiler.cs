@@ -30,7 +30,7 @@ public sealed class Compiler
 	private int ActiveThreadCount;
 	private long[] ThreadCPUTicks;
 	private long[] ThreadWallTicks;
-	private long[] ThreadMethods;
+	private int[] ThreadMethods;
 
 	#endregion Data Members
 
@@ -250,7 +250,7 @@ public sealed class Compiler
 		MethodStagePipelines = new Pipeline<BaseMethodCompilerStage>[MaxThreads];
 		ThreadCPUTicks = new long[MaxThreads];
 		ThreadWallTicks = new long[MaxThreads];
-		ThreadMethods = new long[MaxThreads];
+		ThreadMethods = new int[MaxThreads];
 
 		MethodScheduler = new MethodScheduler(this);
 		MethodScanner = new MethodScanner(this);
