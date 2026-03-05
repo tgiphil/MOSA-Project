@@ -128,9 +128,7 @@ public sealed class MethodScheduler
 		lock (queue)
 		{
 			if (queueSet.Contains(methodData))
-			{
 				return; // already queued
-			}
 
 			var priority = GetCompilePriorityLevel(methodData);
 
@@ -139,6 +137,8 @@ public sealed class MethodScheduler
 
 			Interlocked.Increment(ref totalQueued);
 		}
+
+		SignalEnqueued();
 	}
 
 	public MethodData GetMethodToCompile()
@@ -243,4 +243,27 @@ public sealed class MethodScheduler
 
 		return 100 - adjustment;
 	}
+
+	#region Subscription
+
+	private Action? _onEnqueued;
+
+	public IDisposable Subscribe(Action onEnqueued)
+	{
+		_onEnqueued += onEnqueued;
+		return new Unsubscriber(() => _onEnqueued -= onEnqueued);
+	}
+
+	private void SignalEnqueued() => _onEnqueued?.Invoke();
+
+	private sealed class Unsubscriber : IDisposable
+	{
+		private readonly Action _dispose;
+
+		public Unsubscriber(Action dispose) => _dispose = dispose;
+
+		public void Dispose() => _dispose();
+	}
+
+	#endregion Subscription
 }

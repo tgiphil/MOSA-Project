@@ -313,21 +313,21 @@ public sealed class Compiler
 	/// </summary>
 	/// <param name="method">The method.</param>
 	/// <param name="basicBlocks">The basic blocks.</param>
-	/// <param name="threadID">The thread identifier.</param>
-	public void CompileMethod(MosaMethod method, BasicBlocks basicBlocks, int threadID = 0)
+	/// <param name="threadSlot">The thread slot.</param>
+	public void CompileMethod(MosaMethod method, BasicBlocks basicBlocks, int threadSlot = 0)
 	{
-		PostEvent(CompilerEvent.MethodCompileStart, method.FullName, threadID);
+		PostEvent(CompilerEvent.MethodCompileStart, method.FullName, threadSlot);
 
-		var pipeline = GetOrCreateMethodStagePipeline(threadID);
+		var pipeline = GetMethodStagePipeline(threadSlot);
 
-		var methodCompiler = new MethodCompiler(this, method, basicBlocks, threadID)
+		var methodCompiler = new MethodCompiler(this, method, basicBlocks, threadSlot)
 		{
 			Pipeline = pipeline
 		};
 
 		methodCompiler.Compile();
 
-		PostEvent(CompilerEvent.MethodCompileEnd, method.FullName, threadID);
+		PostEvent(CompilerEvent.MethodCompileEnd, method.FullName, threadSlot);
 
 		CompilerHooks.NotifyMethodCompiled?.Invoke(method);
 	}
@@ -336,7 +336,7 @@ public sealed class Compiler
 	{
 		PostEvent(CompilerEvent.MethodCompileStart, transform.Method.FullName, transform.MethodCompiler.ThreadID);
 
-		var pipeline = GetOrCreateMethodStagePipeline(transform.MethodCompiler.ThreadID);
+		var pipeline = GetMethodStagePipeline(transform.MethodCompiler.ThreadID);
 
 		transform.MethodCompiler.Pipeline = pipeline;
 		transform.MethodCompiler.Compile();
@@ -346,32 +346,32 @@ public sealed class Compiler
 		CompilerHooks.NotifyMethodCompiled?.Invoke(transform.Method);
 	}
 
-	private Pipeline<BaseMethodCompilerStage> GetOrCreateMethodStagePipeline(int threadID)
+	private Pipeline<BaseMethodCompilerStage> GetMethodStagePipeline(int threadSlot)
 	{
-		var pipeline = MethodStagePipelines[threadID];
+		var pipeline = MethodStagePipelines[threadSlot];
 
-		if (pipeline == null)
+		if (pipeline != null)
+			return pipeline;
+
+		pipeline = new Pipeline<BaseMethodCompilerStage>();
+
+		MethodStagePipelines[threadSlot] = pipeline;
+
+		// Setup the initial pipeline
+		InitializeMethodCompilerPipeline(pipeline, MosaSettings);
+
+		// Call hook to allow for the extension of the pipeline
+		CompilerHooks.ExtendMethodCompilerPipeline?.Invoke(pipeline, MosaSettings);
+
+		// Extend pipeline with architecture stages
+		Architecture.ExtendMethodCompilerPipeline(pipeline, MosaSettings);
+
+		// Extend pipeline after all hooks and architecture stages are added
+		ExtendMethodCompilerPipeline(pipeline, MosaSettings);
+
+		foreach (var stage in pipeline)
 		{
-			pipeline = new Pipeline<BaseMethodCompilerStage>();
-
-			MethodStagePipelines[threadID] = pipeline;
-
-			// Setup the initial pipeline
-			InitializeMethodCompilerPipeline(pipeline, MosaSettings);
-
-			// Call hook to allow for the extension of the pipeline
-			CompilerHooks.ExtendMethodCompilerPipeline?.Invoke(pipeline, MosaSettings);
-
-			// Extend pipeline with architecture stages
-			Architecture.ExtendMethodCompilerPipeline(pipeline, MosaSettings);
-
-			// Extend pipeline after all hooks and architecture stages are added
-			ExtendMethodCompilerPipeline(pipeline, MosaSettings);
-
-			foreach (var stage in pipeline)
-			{
-				stage.Initialize(this);
-			}
+			stage.Initialize(this);
 		}
 
 		return pipeline;
@@ -424,23 +424,28 @@ public sealed class Compiler
 			if (IsStopped)
 				return;
 
-			if (ProcessQueue() == null)
+			if (ProcessQueue(0) == null)
 				break;
 		}
 
 		PostEvent(CompilerEvent.CompilingMethodsCompleted);
 	}
 
-	private MosaMethod ProcessQueue(int threadID = 0)
+	private MosaMethod ProcessQueue(int threadSlot)
 	{
+		var methodData = MethodScheduler.GetMethodToCompile();
+
+		return CompileMethod(methodData, threadSlot);
+	}
+
+	public MosaMethod CompileMethod(MethodData methodData, int threadSlot)
+	{
+		if (methodData == null)
+			return null;
+
 		try
 		{
-			var methodData = MethodScheduler.GetMethodToCompile();
-
-			if (methodData == null)
-				return null;
-
-			CompileMethod(methodData.Method, threadID);
+			CompileMethod(methodData.Method, threadSlot);
 
 			return methodData.Method;
 		}
@@ -462,7 +467,7 @@ public sealed class Compiler
 		CompileMethod(method, 0);
 	}
 
-	private MosaMethod CompileMethod(MosaMethod method, int threadID)
+	private MosaMethod CompileMethod(MosaMethod method, int threadSlot)
 	{
 		if (method.IsCompilerGenerated)
 			return method;
@@ -471,7 +476,7 @@ public sealed class Compiler
 
 		lock (method)
 		{
-			CompileMethod(method, null, threadID);
+			CompileMethod(method, null, threadSlot);
 		}
 
 		CompilerHooks.NotifyProgress?.Invoke(MethodScheduler.TotalMethods, MethodScheduler.TotalMethods - MethodScheduler.TotalQueuedMethods);
@@ -492,46 +497,30 @@ public sealed class Compiler
 
 		if (maxThreads > 0)
 		{
-			var threads = Enumerable
-				.Range(0, ActiveThreadCount)
-				.Select(index => new Thread(() => CompilePass(index)))
-				.ToList();
+			var pool = new PipelinePool(MethodScheduler, this, maxThreads);
 
-			threads.ForEach(x => x.Start());
-			threads.ForEach(x => x.Join());
+			// subscribe scheduler -> pool signal
+			var schedulerSubscription = MethodScheduler.Subscribe(pool.NotifyWorkAdded);
+
+			// wait until done
+			pool.Completion.GetAwaiter().GetResult();
+
+			schedulerSubscription.Dispose();
+
+			pool.DisposeAsync().AsTask().GetAwaiter().GetResult();
 		}
 		else
 		{
-			CompilePass(0);
-		}
-
-		PostEvent(CompilerEvent.CompilingMethodsCompleted);
-	}
-
-	private void CompilePass(int threadSlot)
-	{
-		var threadID = Thread.CurrentThread.ManagedThreadId;
-		var threadTimer = Stopwatch.StartNew();
-
-		try
-		{
 			while (true)
 			{
-				var result = ProcessQueue(threadID);
+				var result = ProcessQueue(0);
 
 				if (result == null)
 					return;
-
-				ThreadMethods[threadSlot]++;
 			}
 		}
-		finally
-		{
-			threadTimer.Stop();
 
-			ThreadCPUTicks[threadSlot] = threadTimer.ElapsedTicks;
-			ThreadWallTicks[threadSlot] = threadTimer.ElapsedTicks;
-		}
+		PostEvent(CompilerEvent.CompilingMethodsCompleted);
 	}
 
 	/// <summary>
@@ -668,10 +657,10 @@ public sealed class Compiler
 	/// </summary>
 	/// <param name="compilerEvent">The compiler event.</param>
 	/// <param name="message">The message.</param>
-	/// <param name="threadID">The thread identifier.</param>
-	public void PostEvent(CompilerEvent compilerEvent, string message = null, int threadID = 0)
+	/// <param name="threadSlot">The thread identifier.</param>
+	public void PostEvent(CompilerEvent compilerEvent, string message = null, int threadSlot = 0)
 	{
-		CompilerHooks.NotifyEvent?.Invoke(compilerEvent, message ?? string.Empty, threadID);
+		CompilerHooks.NotifyEvent?.Invoke(compilerEvent, message ?? string.Empty, threadSlot);
 	}
 
 	private MosaType GetPlatformInternalRuntimeType()

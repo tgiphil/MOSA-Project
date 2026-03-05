@@ -6,7 +6,7 @@ using Mosa.Compiler.MosaTypeSystem;
 namespace Mosa.Compiler.Framework;
 
 /// <summary>
-/// Compiler Metho dData
+/// Compiler Method Data
 /// </summary>
 public sealed class MethodData
 {
