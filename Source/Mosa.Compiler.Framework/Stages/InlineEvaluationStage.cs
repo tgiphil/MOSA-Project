@@ -35,7 +35,7 @@ public class InlineEvaluationStage : BaseMethodCompilerStage
 
 	protected override void Run()
 	{
-		var trace = CreateTraceLog();
+		var trace = CreateTraceLog(5);
 
 		MethodData.HasAddressOfInstruction = false;
 		MethodData.HasLoops = false;

@@ -11,7 +11,7 @@ public class ControlFlowGraphStage : BaseMethodCompilerStage
 
 	protected void CreateDiagram()
 	{
-		var trace = CreateTraceLog("graphviz");
+		var trace = CreateTraceLog("graphviz", 5);
 
 		trace.Log("digraph blocks {");
 

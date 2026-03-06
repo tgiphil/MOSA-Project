@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Text;
+using Mosa.Compiler.Framework.Diagnostics;
 
 namespace Mosa.Compiler.Framework;
 
@@ -854,6 +855,8 @@ public sealed class Node
 	/// </returns>
 	public override string ToString()
 	{
+		StringificationDiagnostics.RecordNodeToString();
+
 		if (Instruction == null)
 			return "<none>";
 

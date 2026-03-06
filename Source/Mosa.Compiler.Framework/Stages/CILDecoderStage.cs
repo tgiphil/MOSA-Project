@@ -121,7 +121,7 @@ public sealed class CILDecoderStage : BaseMethodCompilerStage
 		if (!MethodCompiler.HasCILStream)
 			return;
 
-		trace = CreateTraceLog();
+		trace = CreateTraceLog(5);
 
 		var prologueBlock = BasicBlocks.CreatePrologueBlock();
 		var startBlock = BasicBlocks.CreateStartBlock();
