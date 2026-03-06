@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Text;
 using Mosa.Compiler.Common.Exceptions;
 using Mosa.Compiler.MosaTypeSystem;
-using Mosa.Compiler.Framework.Diagnostics;
 
 namespace Mosa.Compiler.Framework;
 
@@ -849,8 +848,6 @@ public sealed partial class Operand
 
 	public override string ToString()
 	{
-		StringificationDiagnostics.RecordOperandToString();
-
 		var sb = new StringBuilder();
 
 		if (IsConstant)

@@ -35,6 +35,12 @@ public sealed class MethodScheduler
 	private const long QueueReportIntervalTicks = TimeSpan.TicksPerSecond * 2; // Report every 2 seconds
 	private const int QueueReportIntervalOperations = 200; // Report every 200 completed work items
 
+	// CPU monitoring
+	private readonly Process currentProcess = Process.GetCurrentProcess();
+	private TimeSpan lastCpuTime;
+	private long lastCpuCheckTicks;
+	private readonly int processorCount = Environment.ProcessorCount;
+
 	// Reference to pipeline pool for tracking active workers
 	private PipelinePool pipelinePool;
 
@@ -89,6 +95,8 @@ public sealed class MethodScheduler
 		lastQueueReportTicks = queueProfileTimer.ElapsedTicks;
 		lastReportedDequeueCount = 0;
 		lastReportedEnqueueCount = 0;
+		lastCpuTime = currentProcess.TotalProcessorTime;
+		lastCpuCheckTicks = queueProfileTimer.ElapsedTicks;
 	}
 
 	/// <summary>
@@ -306,12 +314,46 @@ public sealed class MethodScheduler
 		var utilizationPercent = maxWorkers > 0 ? (activeWorkers * 100.0 / maxWorkers) : 0;
 		var idleWorkers = maxWorkers - activeWorkers;
 
+		// Calculate CPU usage with equivalent core count
+		var cpuPercent = CalculateCpuUsage(currentTicks);
+		var equivalentCores = (cpuPercent * processorCount) / 100.0;
+
 		Compiler.PostEvent(
 			CompilerEvent.DebugInfo,
 			$"[Queue] Size: {currentQueueSize} | Peak: {peakQueueSize} | Empty Events: {queueEmptyCount} | " +
 			$"Active: {activeWorkers}/{maxWorkers} ({utilizationPercent:F1}%) | Idle: {idleWorkers} | " +
-			$"Enqueue: {enqueueRate:F1}/s | Dequeue: {dequeueRate:F1}/s"
+			$"Enqueue: {enqueueRate:F1}/s | Dequeue: {dequeueRate:F1}/s | " +
+			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores)"
 		);
+	}
+
+	private double CalculateCpuUsage(long currentTicks)
+	{
+		try
+		{
+			currentProcess.Refresh();
+			var currentCpuTime = currentProcess.TotalProcessorTime;
+			var cpuTimeDelta = (currentCpuTime - lastCpuTime).TotalMilliseconds;
+			
+			var ticksDelta = currentTicks - lastCpuCheckTicks;
+			var wallTimeDelta = (ticksDelta / (double)Stopwatch.Frequency) * 1000.0; // Convert to milliseconds
+
+			lastCpuTime = currentCpuTime;
+			lastCpuCheckTicks = currentTicks;
+
+			if (wallTimeDelta > 0 && wallTimeDelta < 60000) // Sanity check: < 60 seconds
+			{
+				// CPU percentage divided by cores to match Task Manager (0-100% scale)
+				var cpuPercent = (cpuTimeDelta / wallTimeDelta / processorCount) * 100.0;
+				return Math.Clamp(cpuPercent, 0.0, 100.0);
+			}
+		}
+		catch
+		{
+			// Ignore any errors in CPU calculation
+		}
+
+		return 0.0;
 	}
 
 	private void ReportQueueStarvation()
@@ -320,12 +362,17 @@ public sealed class MethodScheduler
 		var maxWorkers = pipelinePool?.MaxWorkers ?? 0;
 		var idleWorkers = maxWorkers - activeWorkers;
 
+		// Get current CPU usage for starvation report
+		var cpuPercent = CalculateCpuUsage(queueProfileTimer.ElapsedTicks);
+		var equivalentCores = (cpuPercent * processorCount) / 100.0;
+
 		Compiler.PostEvent(
 			CompilerEvent.Warning,
 			$"[Queue Starvation] Queue became empty! " +
 			$"Active: {activeWorkers}/{maxWorkers} | Idle: {idleWorkers} threads waiting for work | " +
 			$"Empty count: {queueEmptyCount} | Peak size was: {peakQueueSize} | " +
-			$"Total methods: {totalMethods} | Completed: {totalDequeueOperations}"
+			$"Total methods: {totalMethods} | Completed: {totalDequeueOperations} | " +
+			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores)"
 		);
 	}
 

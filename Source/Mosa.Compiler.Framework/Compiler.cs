@@ -5,7 +5,6 @@ using System.Reflection;
 using Mosa.Compiler.Common;
 using Mosa.Compiler.Common.Exceptions;
 using Mosa.Compiler.Framework.CompilerStages;
-using Mosa.Compiler.Framework.Diagnostics;
 using Mosa.Compiler.Framework.Linker;
 using Mosa.Compiler.Framework.Stages;
 using Mosa.Compiler.MosaTypeSystem;
@@ -580,8 +579,6 @@ public sealed class Compiler
 		EmitCounters();
 
 		// Output stringification diagnostics summary
-		PostEvent(CompilerEvent.FinalizationEnd, StringificationDiagnostics.GetSummary());
-
 		PostEvent(CompilerEvent.FinalizationEnd);
 		PostEvent(CompilerEvent.CompilerEnd);
 	}
