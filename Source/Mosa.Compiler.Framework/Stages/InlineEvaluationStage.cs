@@ -176,7 +176,7 @@ public class InlineEvaluationStage : BaseMethodCompilerStage
 		}
 
 		// If previous or current is inline, schedule all references from previous
-		MethodScheduler.AddToRecompileQueue(previous.References);
+		MethodScheduler.AddToQueue(previous.References);
 	}
 
 	private bool StaticCanNotInline(MethodData methodData)

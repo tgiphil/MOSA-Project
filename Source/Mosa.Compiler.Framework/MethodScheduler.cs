@@ -115,30 +115,47 @@ public sealed class MethodScheduler
 
 	private void AddToQueue(MethodData methodData)
 	{
-		lock (workingSet)
-		{
-			if (!workingSet.Contains(methodData))
-			{
-				workingSet.Add(methodData);
-
-				Interlocked.Increment(ref totalMethods);
-			}
-		}
-
 		lock (queue)
 		{
-			if (queueSet.Contains(methodData))
-				return; // already queued
-
-			var priority = GetCompilePriorityLevel(methodData);
-
-			queue.Enqueue(methodData, priority);
-			queueSet.Add(methodData);
-
-			Interlocked.Increment(ref totalQueued);
+			AddToQueueInsideLock(methodData);
 		}
 
 		SignalEnqueued();
+	}
+
+	public void AddToQueue(HashSet<MosaMethod> methods)
+	{
+		lock (queue)
+		{
+			foreach (var method in methods)
+			{
+				var methodData = Compiler.GetMethodData(method);
+
+				AddToQueueInsideLock(methodData);
+			}
+		}
+
+		SignalEnqueued();
+	}
+
+	private void AddToQueueInsideLock(MethodData methodData)
+	{
+		if (!workingSet.Contains(methodData))
+		{
+			workingSet.Add(methodData);
+
+			Interlocked.Increment(ref totalMethods);
+		}
+
+		if (queueSet.Contains(methodData))
+			return; // already queued
+
+		var priority = GetCompilePriorityLevel(methodData);
+
+		queue.Enqueue(methodData, priority);
+		queueSet.Add(methodData);
+
+		Interlocked.Increment(ref totalQueued);
 	}
 
 	public MethodData GetMethodToCompile()
@@ -158,32 +175,6 @@ public sealed class MethodScheduler
 				return null;
 			}
 		}
-	}
-
-	public void AddToRecompileQueue(HashSet<MosaMethod> methods)
-	{
-		foreach (var method in methods)
-		{
-			AddToQueue(method);
-		}
-	}
-
-	public void AddToRecompileQueue(HashSet<MethodData> methodDatas)
-	{
-		foreach (var methodData in methodDatas)
-		{
-			AddToQueue(methodData);
-		}
-	}
-
-	public void AddToRecompileQueue(MosaMethod method)
-	{
-		AddToQueue(method);
-	}
-
-	public void AddToRecompileQueue(MethodData methodData)
-	{
-		AddToQueue(methodData);
 	}
 
 	private static int GetCompilePriorityLevel(MethodData methodData)
