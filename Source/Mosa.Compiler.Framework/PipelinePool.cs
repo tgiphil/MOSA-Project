@@ -152,13 +152,14 @@ internal sealed class PipelinePool : IAsyncDisposable
 	private void TryCompleteIfDone()
 	{
 		// This is the termination condition: queue empty AND no active workers.
-		// If your scheduler exposes a better “queued count” property, use it here.
 		if (Volatile.Read(ref active) != 0)
 			return;
 
-		// Safe check: attempt a pop without consuming when no slot? We avoid that.
-		// Instead, we rely on dispatcher seeing null while holding a slot.
-		// So completion is best-effort here; dispatcher also calls this after returning a slot.
+		// Check if queue is truly empty (no queued methods)
+		if (MethodScheduler.TotalQueuedMethods != 0)
+			return;
+
+		// Both conditions met: no active workers and queue is empty
 		completed.TrySetResult();
 	}
 

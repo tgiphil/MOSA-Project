@@ -25,6 +25,7 @@ public sealed class MethodScheduler
 
 	// Queue profiling metrics
 	private int peakQueueSize;
+
 	private long queueEmptyCount;
 	private long totalDequeueOperations;
 	private long totalEnqueueOperations;
@@ -37,6 +38,7 @@ public sealed class MethodScheduler
 
 	// CPU monitoring
 	private readonly Process currentProcess = Process.GetCurrentProcess();
+
 	private TimeSpan lastCpuTime;
 	private long lastCpuCheckTicks;
 	private readonly int processorCount = Environment.ProcessorCount;
@@ -159,10 +161,10 @@ public sealed class MethodScheduler
 		if (!IsCompilable(method))
 			return;
 
-		AddToQueue(method);
+		Add(method);
 	}
 
-	public void AddToQueue(MosaMethod method)
+	public void Add(MosaMethod method)
 	{
 		var methodData = Compiler.GetMethodData(method);
 		Add(methodData);
@@ -287,8 +289,8 @@ public sealed class MethodScheduler
 				var previousDequeueCount = Interlocked.Exchange(ref lastReportedDequeueCount, currentDequeueCount);
 				var currentEnqueueCount = totalEnqueueOperations;
 				var previousEnqueueCount = Interlocked.Exchange(ref lastReportedEnqueueCount, currentEnqueueCount);
-				
-				ReportQueueStatus(currentQueueSize, currentTicks, wasLastReportTicks, 
+
+				ReportQueueStatus(currentQueueSize, currentTicks, wasLastReportTicks,
 					currentDequeueCount, previousDequeueCount,
 					currentEnqueueCount, previousEnqueueCount);
 			}
@@ -334,7 +336,7 @@ public sealed class MethodScheduler
 			currentProcess.Refresh();
 			var currentCpuTime = currentProcess.TotalProcessorTime;
 			var cpuTimeDelta = (currentCpuTime - lastCpuTime).TotalMilliseconds;
-			
+
 			var ticksDelta = currentTicks - lastCpuCheckTicks;
 			var wallTimeDelta = (ticksDelta / (double)Stopwatch.Frequency) * 1000.0; // Convert to milliseconds
 
