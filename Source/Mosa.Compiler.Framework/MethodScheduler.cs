@@ -107,23 +107,23 @@ public sealed class MethodScheduler
 		AddToQueue(method);
 	}
 
-	private void AddToQueue(MosaMethod method)
+	public void AddToQueue(MosaMethod method)
 	{
 		var methodData = Compiler.GetMethodData(method);
-		AddToQueue(methodData);
+		Add(methodData);
 	}
 
-	private void AddToQueue(MethodData methodData)
+	public void Add(MethodData methodData)
 	{
 		lock (queue)
 		{
-			AddToQueueInsideLock(methodData);
+			AddInsideLock(methodData);
 		}
 
 		SignalEnqueued();
 	}
 
-	public void AddToQueue(HashSet<MosaMethod> methods)
+	public void Add(HashSet<MosaMethod> methods)
 	{
 		lock (queue)
 		{
@@ -131,14 +131,14 @@ public sealed class MethodScheduler
 			{
 				var methodData = Compiler.GetMethodData(method);
 
-				AddToQueueInsideLock(methodData);
+				AddInsideLock(methodData);
 			}
 		}
 
 		SignalEnqueued();
 	}
 
-	private void AddToQueueInsideLock(MethodData methodData)
+	private void AddInsideLock(MethodData methodData)
 	{
 		if (!workingSet.Contains(methodData))
 		{
@@ -158,7 +158,7 @@ public sealed class MethodScheduler
 		Interlocked.Increment(ref totalQueued);
 	}
 
-	public MethodData GetMethodToCompile()
+	public MethodData Get()
 	{
 		lock (queue)
 		{

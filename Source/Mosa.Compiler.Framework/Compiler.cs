@@ -433,7 +433,7 @@ public sealed class Compiler
 
 	private MosaMethod ProcessQueue(int threadSlot)
 	{
-		var methodData = MethodScheduler.GetMethodToCompile();
+		var methodData = MethodScheduler.Get();
 
 		return CompileMethod(methodData, threadSlot);
 	}

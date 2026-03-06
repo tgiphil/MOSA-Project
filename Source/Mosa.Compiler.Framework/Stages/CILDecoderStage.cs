@@ -3747,7 +3747,7 @@ public sealed class CILDecoderStage : BaseMethodCompilerStage
 		{
 			methodData.IsReferenced = true;
 
-			MethodScheduler.AddToQueue(methodData);
+			MethodScheduler.Add(methodData);
 		}
 
 		return true;

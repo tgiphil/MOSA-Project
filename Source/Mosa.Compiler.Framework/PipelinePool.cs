@@ -84,7 +84,7 @@ internal sealed class PipelinePool : IAsyncDisposable
 				int slot = await freeSlots.Reader.ReadAsync(ct).ConfigureAwait(false);
 
 				// only now pop (preserves your prioritization property)
-				var methodData = MethodScheduler.GetMethodToCompile();
+				var methodData = MethodScheduler.Get();
 
 				if (methodData is null)
 				{
