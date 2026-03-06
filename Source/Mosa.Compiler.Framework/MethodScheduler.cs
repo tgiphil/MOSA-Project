@@ -1,6 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Compiler.MosaTypeSystem;
+using System.Diagnostics;
 
 namespace Mosa.Compiler.Framework;
 
@@ -21,6 +22,21 @@ public sealed class MethodScheduler
 
 	private int totalMethods;
 	private int totalQueued;
+
+	// Queue profiling metrics
+	private int peakQueueSize;
+	private long queueEmptyCount;
+	private long totalDequeueOperations;
+	private long totalEnqueueOperations;
+	private readonly Stopwatch queueProfileTimer = Stopwatch.StartNew();
+	private long lastQueueReportTicks;
+	private long lastReportedDequeueCount;
+	private long lastReportedEnqueueCount;
+	private const long QueueReportIntervalTicks = TimeSpan.TicksPerSecond * 2; // Report every 2 seconds
+	private const int QueueReportIntervalOperations = 200; // Report every 200 completed work items
+
+	// Reference to pipeline pool for tracking active workers
+	private PipelinePool pipelinePool;
 
 	#endregion Data Members
 
@@ -44,12 +60,43 @@ public sealed class MethodScheduler
 	/// </value>
 	public int TotalQueuedMethods => totalQueued;
 
+	/// <summary>
+	/// Gets the peak queue size observed.
+	/// </summary>
+	public int PeakQueueSize => peakQueueSize;
+
+	/// <summary>
+	/// Gets the number of times the queue became empty.
+	/// </summary>
+	public long QueueEmptyCount => queueEmptyCount;
+
+	/// <summary>
+	/// Gets the total number of dequeue operations.
+	/// </summary>
+	public long TotalDequeueOperations => totalDequeueOperations;
+
+	/// <summary>
+	/// Gets the total number of enqueue operations.
+	/// </summary>
+	public long TotalEnqueueOperations => totalEnqueueOperations;
+
 	#endregion Properties
 
 	public MethodScheduler(Compiler compiler)
 	{
 		Compiler = compiler;
 		PassCount = 0;
+		lastQueueReportTicks = queueProfileTimer.ElapsedTicks;
+		lastReportedDequeueCount = 0;
+		lastReportedEnqueueCount = 0;
+	}
+
+	/// <summary>
+	/// Sets the pipeline pool reference for tracking active workers.
+	/// </summary>
+	internal void SetPipelinePool(PipelinePool pool)
+	{
+		pipelinePool = pool;
 	}
 
 	public void ScheduleAll(TypeSystem typeSystem)
@@ -115,16 +162,22 @@ public sealed class MethodScheduler
 
 	public void Add(MethodData methodData)
 	{
+		int queueSize;
+
 		lock (queue)
 		{
 			AddInsideLock(methodData);
+			queueSize = totalQueued;
 		}
 
+		UpdateQueueMetrics(queueSize);
 		SignalEnqueued();
 	}
 
 	public void Add(HashSet<MosaMethod> methods)
 	{
+		int queueSize;
+
 		lock (queue)
 		{
 			foreach (var method in methods)
@@ -133,8 +186,11 @@ public sealed class MethodScheduler
 
 				AddInsideLock(methodData);
 			}
+
+			queueSize = totalQueued;
 		}
 
+		UpdateQueueMetrics(queueSize);
 		SignalEnqueued();
 	}
 
@@ -156,25 +212,145 @@ public sealed class MethodScheduler
 		queueSet.Add(methodData);
 
 		Interlocked.Increment(ref totalQueued);
+		Interlocked.Increment(ref totalEnqueueOperations);
 	}
 
 	public MethodData Get()
 	{
+		MethodData methodData;
+		int queueSize;
+		bool wasEmpty = false;
+
 		lock (queue)
 		{
-			if (queue.TryDequeue(out var methodData, out var priority))
+			if (queue.TryDequeue(out methodData, out var priority))
 			{
 				queueSet.Remove(methodData);
 
 				Interlocked.Decrement(ref totalQueued);
+				Interlocked.Increment(ref totalDequeueOperations);
 
-				return methodData;
+				queueSize = totalQueued;
 			}
 			else
 			{
-				return null;
+				queueSize = 0;
+				wasEmpty = true;
 			}
 		}
+
+		if (wasEmpty)
+		{
+			Interlocked.Increment(ref queueEmptyCount);
+			ReportQueueStarvation();
+		}
+
+		UpdateQueueMetrics(queueSize);
+
+		return methodData;
+	}
+
+	private void UpdateQueueMetrics(int currentQueueSize)
+	{
+		// Update peak queue size
+		int currentPeak = peakQueueSize;
+		while (currentQueueSize > currentPeak)
+		{
+			var original = Interlocked.CompareExchange(ref peakQueueSize, currentQueueSize, currentPeak);
+			if (original == currentPeak)
+				break;
+			currentPeak = original;
+		}
+
+		// Periodic queue status reporting - trigger on EITHER time OR operation count
+		var currentTicks = queueProfileTimer.ElapsedTicks;
+		var currentDequeueCount = totalDequeueOperations;
+		var operationsSinceLastReport = currentDequeueCount - lastReportedDequeueCount;
+
+		var timeThresholdMet = currentTicks - lastQueueReportTicks >= QueueReportIntervalTicks;
+		var countThresholdMet = operationsSinceLastReport >= QueueReportIntervalOperations;
+
+		if (timeThresholdMet || countThresholdMet)
+		{
+			// Use CompareExchange to ensure only one thread reports (thread-safe)
+			var wasLastReportTicks = Interlocked.Read(ref lastQueueReportTicks);
+			if (Interlocked.CompareExchange(ref lastQueueReportTicks, currentTicks, wasLastReportTicks) == wasLastReportTicks)
+			{
+				var previousDequeueCount = Interlocked.Exchange(ref lastReportedDequeueCount, currentDequeueCount);
+				var currentEnqueueCount = totalEnqueueOperations;
+				var previousEnqueueCount = Interlocked.Exchange(ref lastReportedEnqueueCount, currentEnqueueCount);
+				
+				ReportQueueStatus(currentQueueSize, currentTicks, wasLastReportTicks, 
+					currentDequeueCount, previousDequeueCount,
+					currentEnqueueCount, previousEnqueueCount);
+			}
+		}
+	}
+
+	private void ReportQueueStatus(int currentQueueSize, long currentTicks, long previousTicks,
+		long currentDequeueCount, long previousDequeueCount,
+		long currentEnqueueCount, long previousEnqueueCount)
+	{
+		// Calculate instantaneous rates (since last report)
+		var ticksDelta = currentTicks - previousTicks;
+		var secondsDelta = ticksDelta / (double)Stopwatch.Frequency;
+
+		var dequeueDelta = currentDequeueCount - previousDequeueCount;
+		var enqueueDelta = currentEnqueueCount - previousEnqueueCount;
+
+		var dequeueRate = secondsDelta > 0 ? dequeueDelta / secondsDelta : 0;
+		var enqueueRate = secondsDelta > 0 ? enqueueDelta / secondsDelta : 0;
+
+		var activeWorkers = pipelinePool?.ActiveWorkers ?? 0;
+		var maxWorkers = pipelinePool?.MaxWorkers ?? 0;
+		var utilizationPercent = maxWorkers > 0 ? (activeWorkers * 100.0 / maxWorkers) : 0;
+		var idleWorkers = maxWorkers - activeWorkers;
+
+		Compiler.PostEvent(
+			CompilerEvent.DebugInfo,
+			$"[Queue] Size: {currentQueueSize} | Peak: {peakQueueSize} | Empty Events: {queueEmptyCount} | " +
+			$"Active: {activeWorkers}/{maxWorkers} ({utilizationPercent:F1}%) | Idle: {idleWorkers} | " +
+			$"Enqueue: {enqueueRate:F1}/s | Dequeue: {dequeueRate:F1}/s"
+		);
+	}
+
+	private void ReportQueueStarvation()
+	{
+		var activeWorkers = pipelinePool?.ActiveWorkers ?? 0;
+		var maxWorkers = pipelinePool?.MaxWorkers ?? 0;
+		var idleWorkers = maxWorkers - activeWorkers;
+
+		Compiler.PostEvent(
+			CompilerEvent.Warning,
+			$"[Queue Starvation] Queue became empty! " +
+			$"Active: {activeWorkers}/{maxWorkers} | Idle: {idleWorkers} threads waiting for work | " +
+			$"Empty count: {queueEmptyCount} | Peak size was: {peakQueueSize} | " +
+			$"Total methods: {totalMethods} | Completed: {totalDequeueOperations}"
+		);
+	}
+
+	public string GetQueueStatisticsSummary()
+	{
+		var elapsedSeconds = queueProfileTimer.Elapsed.TotalSeconds;
+		var avgEnqueueRate = totalEnqueueOperations / elapsedSeconds;
+		var avgDequeueRate = totalDequeueOperations / elapsedSeconds;
+
+		var maxWorkers = pipelinePool?.MaxWorkers ?? 0;
+		var avgUtilization = maxWorkers > 0 && elapsedSeconds > 0
+			? (totalDequeueOperations / (maxWorkers * elapsedSeconds)) * 100.0
+			: 0;
+
+		return $"Queue Statistics Summary:\n" +
+			   $"  Total Methods Scheduled: {totalMethods}\n" +
+			   $"  Peak Queue Size: {peakQueueSize}\n" +
+			   $"  Queue Empty Events: {queueEmptyCount}\n" +
+			   $"  Total Enqueue Operations: {totalEnqueueOperations}\n" +
+			   $"  Total Dequeue Operations: {totalDequeueOperations}\n" +
+			   $"  Average Enqueue Rate: {avgEnqueueRate:F2} methods/sec\n" +
+			   $"  Average Dequeue Rate: {avgDequeueRate:F2} methods/sec\n" +
+			   $"  Worker Threads: {maxWorkers}\n" +
+			   $"  Average Worker Utilization: {avgUtilization:F1}%\n" +
+			   $"  Total Elapsed Time: {elapsedSeconds:F2} seconds";
 	}
 
 	private static int GetCompilePriorityLevel(MethodData methodData)

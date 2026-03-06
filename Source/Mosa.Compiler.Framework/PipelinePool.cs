@@ -38,10 +38,21 @@ internal sealed class PipelinePool : IAsyncDisposable
 
 	public Task Completion => completed.Task;
 
+	/// <summary>
+	/// Gets the number of worker threads currently processing methods.
+	/// </summary>
+	public int ActiveWorkers => Volatile.Read(ref active);
+
+	/// <summary>
+	/// Gets the maximum number of worker threads.
+	/// </summary>
+	public int MaxWorkers { get; }
+
 	public PipelinePool(MethodScheduler scheduler, Compiler compiler, int maxThreads)
 	{
 		MethodScheduler = scheduler;
 		Compiler = compiler;
+		MaxWorkers = maxThreads;
 
 		inbox = new Channel<MethodData>[maxThreads];
 		workers = new Task[maxThreads];

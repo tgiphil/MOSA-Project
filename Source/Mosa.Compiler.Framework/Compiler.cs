@@ -499,6 +499,9 @@ public sealed class Compiler
 		{
 			var pool = new PipelinePool(MethodScheduler, this, maxThreads);
 
+			// Connect the pool to the scheduler for profiling
+			MethodScheduler.SetPipelinePool(pool);
+
 			// subscribe scheduler -> pool signal
 			var schedulerSubscription = MethodScheduler.Subscribe(pool.NotifyWorkAdded);
 
