@@ -1,6 +1,7 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Mosa.Compiler.Framework.Diagnostics;
 
@@ -464,13 +465,21 @@ public sealed class Node
 	/// <value>
 	/// 	<c>true</c> if this is the first instruction; otherwise, <c>false</c>.
 	/// </value>
-	public bool IsBlockStartInstruction => Instruction == IR.BlockStart;
+	public bool IsBlockStartInstruction
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => Instruction == IR.BlockStart;
+	}
 
 	/// <summary>
 	/// Gets a value indicating whether this is the last instruction.
 	/// </summary>
 	/// <value><c>true</c> if this is the last instruction; otherwise, <c>false</c>.</value>
-	public bool IsBlockEndInstruction => Instruction == IR.BlockEnd;
+	public bool IsBlockEndInstruction
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => Instruction == IR.BlockEnd;
+	}
 
 	/// <summary>
 	/// Gets a value indicating whether this node is empty.
@@ -478,7 +487,11 @@ public sealed class Node
 	/// <value>
 	///   <c>true</c> if this instance is empty; otherwise, <c>false</c>.
 	/// </value>
-	public bool IsEmpty => Instruction == null;
+	public bool IsEmpty
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => Instruction == null;
+	}
 
 	/// <summary>
 	/// Gets a value indicating whether this node is a NOP instruction.
@@ -486,7 +499,11 @@ public sealed class Node
 	/// <value>
 	///   <c>true</c> if this instance is nop; otherwise, <c>false</c>.
 	/// </value>
-	public bool IsNop => Instruction == IR.Nop;
+	public bool IsNop
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => Instruction == IR.Nop;
+	}
 
 	/// <summary>
 	/// Gets a value indicating whether this node is empty or a NOP instruction.
@@ -494,7 +511,11 @@ public sealed class Node
 	/// <value>
 	///   <c>true</c> if this instance is empty or nop; otherwise, <c>false</c>.
 	/// </value>
-	public bool IsEmptyOrNop => Instruction == null || Instruction == IR.Nop;
+	public bool IsEmptyOrNop
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => Instruction == null || Instruction == IR.Nop;
+	}
 
 	#endregion Properties
 
@@ -1312,8 +1333,7 @@ public sealed class Node
 	/// <param name="result">The result.</param>
 	public void SetInstruction(BaseInstruction instruction, InstructionOption options, Operand result)
 	{
-		SetInstruction(instruction, 0, 1);
-		Result = result;
+		SetInstruction(instruction, result);
 		Options = options;
 	}
 
@@ -1700,6 +1720,7 @@ public sealed class Node
 	/// <param name="operand1">The operand1.</param>
 	/// <param name="operand2">The operand2.</param>
 	/// <param name="operand3">The operand3.</param>
+	/// <param name="operand4">The operand4.</param>
 	public void SetInstruction(BaseInstruction instruction, InstructionOption options, Operand result, Operand operand1, Operand operand2, Operand operand3, Operand operand4)
 	{
 		SetInstruction(instruction, 4, (byte)(result == null ? 0 : 1));
