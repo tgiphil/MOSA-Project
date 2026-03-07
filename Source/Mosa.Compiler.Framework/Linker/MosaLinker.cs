@@ -70,8 +70,11 @@ public sealed class MosaLinker
 	{
 		var linkRequest = new LinkRequest(linkType, patchSymbol, (int)patchOffset, patchBitOffset, patchBitSize, patchValueShift, referenceSymbol, referenceOffset);
 
+		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
+			LockMonitor.RecordLockWait("Linker.Link", lockTimer, Compiler);
+
 			patchSymbol.AddPatch(linkRequest);
 		}
 	}
@@ -114,8 +117,10 @@ public sealed class MosaLinker
 
 	public bool IsSymbolDefined(string name)
 	{
+		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
+			LockMonitor.RecordLockWait("Linker.IsSymbolDefined", lockTimer, Compiler);
 			return symbolLookup.ContainsKey(name);
 		}
 	}

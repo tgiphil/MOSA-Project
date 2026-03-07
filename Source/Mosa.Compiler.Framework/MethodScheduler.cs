@@ -33,8 +33,8 @@ public sealed class MethodScheduler
 	private long lastQueueReportTicks;
 	private long lastReportedDequeueCount;
 	private long lastReportedEnqueueCount;
-	private const long QueueReportIntervalTicks = TimeSpan.TicksPerSecond * 2; // Report every 2 seconds
-	private const int QueueReportIntervalOperations = 200; // Report every 200 completed work items
+	private const long QueueReportIntervalTicks = TimeSpan.TicksPerSecond * 5; // Report every 2 seconds
+	private const int QueueReportIntervalOperations = 400; // Report every 200 completed work items
 
 	// CPU monitoring
 	private readonly Process currentProcess = Process.GetCurrentProcess();
@@ -47,7 +47,7 @@ public sealed class MethodScheduler
 	private PipelinePool pipelinePool;
 
 	// Lock contention monitoring (after 30 seconds when work should be independent)
-	private const long LockContentionThresholdTicks = TimeSpan.TicksPerSecond * 30; // 30 seconds
+	private const long LockContentionThresholdTicks = TimeSpan.TicksPerSecond * 0; // 30 seconds
 
 	private const long LockWaitWarningThresholdMs = 4; // Warn if lock wait > 4ms after 30 seconds
 	private long lockContentionCount;
@@ -272,7 +272,6 @@ public sealed class MethodScheduler
 		if (wasEmpty)
 		{
 			Interlocked.Increment(ref queueEmptyCount);
-			ReportQueueStarvation();
 		}
 
 		UpdateQueueMetrics(queueSize);
@@ -350,7 +349,7 @@ public sealed class MethodScheduler
 
 		Compiler.PostEvent(
 			CompilerEvent.Debug,
-			$"[Queue] Size: {currentQueueSize} | Peak: {peakQueueSize} | Empty Events: {queueEmptyCount} | " +
+			$"[Queue] Size: {currentQueueSize} | Peak: {peakQueueSize} | " +
 			$"Active: {activeWorkers}/{maxWorkers} ({utilizationPercent:F1}%) | Idle: {idleWorkers} | " +
 			$"Enqueue: {enqueueRate:F1}/s | Dequeue: {dequeueRate:F1}/s | " +
 			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores){contentionInfo}"
@@ -384,84 +383,6 @@ public sealed class MethodScheduler
 		}
 
 		return 0.0;
-	}
-
-	private void ReportQueueStarvation()
-	{
-		var activeWorkers = pipelinePool?.ActiveWorkers ?? 0;
-		var maxWorkers = pipelinePool?.MaxWorkers ?? 0;
-		var idleWorkers = maxWorkers - activeWorkers;
-
-		// Get current CPU usage for starvation report
-		var cpuPercent = CalculateCpuUsage(queueProfileTimer.ElapsedTicks);
-		var equivalentCores = (cpuPercent * processorCount) / 100.0;
-
-		Compiler.PostEvent(
-			CompilerEvent.Debug,
-			$"[Queue Starvation] Queue became empty! " +
-			$"Active: {activeWorkers}/{maxWorkers} | Idle: {idleWorkers} threads waiting for work | " +
-			$"Empty count: {queueEmptyCount} | Peak size was: {peakQueueSize} | " +
-			$"Total methods: {totalMethods} | Completed: {totalDequeueOperations} | " +
-			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores)"
-		);
-	}
-
-	private void TrackLockContention(long lockWaitMs)
-	{
-		var currentTicks = queueProfileTimer.ElapsedTicks;
-
-		// Only track contention after 30 seconds when work should be independent
-		if (currentTicks < LockContentionThresholdTicks)
-			return;
-
-		if (lockWaitMs > 0)
-		{
-			Interlocked.Add(ref totalLockWaitTimeMs, lockWaitMs);
-
-			// Update peak lock wait time
-			long currentPeak = Volatile.Read(ref peakLockWaitMs);
-			while (lockWaitMs > currentPeak)
-			{
-				var original = Interlocked.CompareExchange(ref peakLockWaitMs, lockWaitMs, currentPeak);
-				if (original == currentPeak)
-					break;
-				currentPeak = original;
-			}
-		}
-
-		if (lockWaitMs >= LockWaitWarningThresholdMs)
-		{
-			Interlocked.Increment(ref lockContentionCount);
-
-			// Periodic contention reporting
-			var lastReport = Interlocked.Read(ref lastLockContentionReportTicks);
-			if (currentTicks - lastReport >= LockContentionReportIntervalTicks)
-			{
-				if (Interlocked.CompareExchange(ref lastLockContentionReportTicks, currentTicks, lastReport) == lastReport)
-				{
-					ReportLockContention(lockWaitMs, currentTicks);
-				}
-			}
-		}
-	}
-
-	private void ReportLockContention(long currentLockWaitMs, long currentTicks)
-	{
-		var elapsedSeconds = (currentTicks - LockContentionThresholdTicks) / (double)Stopwatch.Frequency;
-		var avgLockWaitMs = lockContentionCount > 0 ? totalLockWaitTimeMs / (double)lockContentionCount : 0;
-		var contentionRate = elapsedSeconds > 0 ? lockContentionCount / elapsedSeconds : 0;
-
-		var activeWorkers = pipelinePool?.ActiveWorkers ?? 0;
-		var maxWorkers = pipelinePool?.MaxWorkers ?? 0;
-		var currentQueueSize = totalQueued;
-
-		Compiler.PostEvent(
-			CompilerEvent.Debug,
-			$"[Lock Contention Detected] Current wait: {currentLockWaitMs}ms | Peak: {peakLockWaitMs}ms | " +
-			$"Avg: {avgLockWaitMs:F1}ms | Contentions: {lockContentionCount} ({contentionRate:F1}/s) | " +
-			$"Queue: {currentQueueSize} | Active: {activeWorkers}/{maxWorkers} | " +
-			$"Time since 30s mark: {elapsedSeconds:F1}s"
-		);
 	}
 
 	public string GetQueueStatisticsSummary()

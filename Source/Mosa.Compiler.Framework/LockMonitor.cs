@@ -10,8 +10,8 @@ namespace Mosa.Compiler.Framework;
 /// </summary>
 internal static class LockMonitor
 {
-	private const long MonitoringThresholdTicks = TimeSpan.TicksPerSecond * 30; // 30 seconds
-	private const long WaitWarningThresholdMs = 4; // Warn if lock wait > 4ms after 30 seconds
+	private const long MonitoringThresholdTicks = TimeSpan.TicksPerSecond * 0; // 0 seconds
+	private const long WaitWarningThresholdMs = 15; // Warn if lock wait > 15ms
 	private const long ReportIntervalTicks = TimeSpan.TicksPerSecond * 5; // Report every 5 seconds
 
 	private static readonly Stopwatch GlobalTimer = Stopwatch.StartNew();
@@ -83,6 +83,9 @@ internal static class LockMonitor
 
 	private static void ReportContention(string lockName, long currentWaitMs, LockStats stats, Compiler compiler)
 	{
+		if (compiler == null)
+			return;
+
 		var elapsedSeconds = (GlobalTimer.ElapsedTicks - MonitoringThresholdTicks) / (double)Stopwatch.Frequency;
 		var avgWaitMs = stats.Count > 0 ? stats.TotalWaitMs / (double)stats.Count : 0;
 		var rate = elapsedSeconds > 0 ? stats.Count / elapsedSeconds : 0;
@@ -102,7 +105,7 @@ internal static class LockMonitor
 
 		lock (statsLock)
 		{
-			var summary = "Lock Contention Summary (>4ms waits after 30s):\n";
+			var summary = "Lock Contention Summary:\n";
 			foreach (var kvp in lockStats.OrderByDescending(x => x.Value.TotalWaitMs))
 			{
 				var avgWaitMs = kvp.Value.Count > 0 ? kvp.Value.TotalWaitMs / (double)kvp.Value.Count : 0;

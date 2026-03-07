@@ -1,6 +1,9 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using Mosa.Utility.Configuration;
 
 namespace Mosa.Compiler.Framework;
 
@@ -21,52 +24,60 @@ public sealed class Counters
 
 	public void Update(string name, int count)
 	{
-		UpdateCounter(name, count, false);
+		Update(name, count, false);
 	}
 
 	public void Set(string name, int count)
 	{
-		UpdateCounter(name, count, true);
+		Update(name, count, true);
 	}
 
 	public void Update(Counter counter)
 	{
-		UpdateCounter(counter.Name, counter.Count, false);
+		Update(counter.Name, counter.Count, false);
 	}
 
 	public void Update(Counters counters)
 	{
-		foreach (var counter in counters.Entries.Values)
+		var lockTimer = Stopwatch.StartNew();
+		lock (_lock)
 		{
-			UpdateCounter(counter.Name, counter.Count, false);
+			LockMonitor.RecordLockWait("Counters.Update-List", lockTimer, Compiler);
+
+			foreach (var counter in counters.Entries.Values)
+			{
+				UpdateInLock(counter.Name, counter.Count, false);
+			}
 		}
 	}
 
-	private void UpdateCounter(string name, int count, bool reset = false)
+	private void Update(string name, int count, bool reset = false)
 	{
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			if (Compiler != null)
-			{
-				LockMonitor.RecordLockWait("Counters._lock", lockTimer, Compiler);
-			}
+			LockMonitor.RecordLockWait("Counters.Update", lockTimer, Compiler);
 
-			if (Entries.TryGetValue(name, out var counter))
+			UpdateInLock(name, count, reset);
+		}
+	}
+
+	private void UpdateInLock(string name, int count, bool reset)
+	{
+		if (Entries.TryGetValue(name, out var counter))
+		{
+			if (reset)
 			{
-				if (reset)
-				{
-					counter.Set(count);
-				}
-				else
-				{
-					counter.Increment(count);
-				}
+				counter.Set(count);
 			}
 			else
 			{
-				Entries.Add(name, new Counter(name, count));
+				counter.Increment(count);
 			}
+		}
+		else
+		{
+			Entries.Add(name, new Counter(name, count));
 		}
 	}
 
