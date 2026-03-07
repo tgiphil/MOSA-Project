@@ -1,5 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using System.Diagnostics;
 using Mosa.Compiler.Framework.Linker;
 using Mosa.Compiler.MosaTypeSystem;
 
@@ -13,6 +14,8 @@ public sealed class MethodData
 	#region Properties
 
 	public MosaMethod Method { get; }
+
+	public Compiler Compiler { get; internal set; }
 
 	public LinkerSymbol Symbol { get; set; }
 
@@ -75,7 +78,17 @@ public sealed class MethodData
 	public bool HasCode { get; set; }
 
 	public bool Inlined
-	{ get { lock (_lock) { return InlineMethodData.IsInlined; } } }
+	{ 
+		get 
+		{ 
+			var lockTimer = Stopwatch.StartNew();
+			lock (_lock) 
+			{ 
+				LockMonitor.RecordLockWait($"MethodData.Inlined:{Method.FullName}", lockTimer, Compiler);
+				return InlineMethodData.IsInlined; 
+			} 
+		} 
+	}
 
 	public MosaMethod ReplacedBy { get; set; }
 
@@ -133,8 +146,11 @@ public sealed class MethodData
 
 	public InlineMethodData GetInlineMethodDataForUseBy(MosaMethod method)
 	{
+		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
+			LockMonitor.RecordLockWait("MethodData.GetInlineMethodDataForUseBy", lockTimer, Compiler);
+
 			InlineMethodData.AddReference(method);
 			return InlineMethodData;
 		}
@@ -142,8 +158,11 @@ public sealed class MethodData
 
 	public InlineMethodData SwapInlineMethodData(BasicBlocks basicBlocks)
 	{
+		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
+			LockMonitor.RecordLockWait("MethodData.SwapInlineMethodData", lockTimer, Compiler);
+
 			var tmp = InlineMethodData;
 
 			InlineMethodData = new InlineMethodData(basicBlocks, Version);
@@ -154,8 +173,11 @@ public sealed class MethodData
 
 	public InlineMethodData GetInlineMethodData()
 	{
+		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
+			LockMonitor.RecordLockWait("MethodData.GetInlineMethodData", lockTimer, Compiler);
+
 			return InlineMethodData;
 		}
 	}

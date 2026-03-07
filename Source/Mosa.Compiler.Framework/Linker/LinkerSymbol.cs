@@ -1,5 +1,6 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using System.Diagnostics;
 using Mosa.Compiler.Common;
 using Mosa.Compiler.MosaTypeSystem;
 
@@ -38,6 +39,8 @@ public sealed class LinkerSymbol
 
 	private readonly object _lock = new object();
 
+	public Compiler Compiler { get; internal set; }
+
 	//public int Version { get; set; } // for debugging
 
 	public MosaMethod MosaMethod { get; set; } // for debugging
@@ -71,24 +74,42 @@ public sealed class LinkerSymbol
 
 	public void AddPatch(LinkRequest linkRequest)
 	{
+		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
+			if (Compiler != null)
+			{
+				LockMonitor.RecordLockWait($"LinkerSymbol.AddPatch:{Name}", lockTimer, Compiler);
+			}
+
 			LinkRequests.Add(linkRequest);
 		}
 	}
 
 	public void RemovePatches()
 	{
+		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
+			if (Compiler != null)
+			{
+				LockMonitor.RecordLockWait($"LinkerSymbol.RemovePatches:{Name}", lockTimer, Compiler);
+			}
+
 			LinkRequests.Clear();
 		}
 	}
 
 	public LinkRequest[] GetLinkRequests()
 	{
+		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
+			if (Compiler != null)
+			{
+				LockMonitor.RecordLockWait($"LinkerSymbol.GetLinkRequests:{Name}", lockTimer, Compiler);
+			}
+
 			return LinkRequests.ToArray();
 		}
 	}

@@ -46,6 +46,16 @@ public sealed class MethodScheduler
 	// Reference to pipeline pool for tracking active workers
 	private PipelinePool pipelinePool;
 
+	// Lock contention monitoring (after 30 seconds when work should be independent)
+	private const long LockContentionThresholdTicks = TimeSpan.TicksPerSecond * 30; // 30 seconds
+
+	private const long LockWaitWarningThresholdMs = 4; // Warn if lock wait > 4ms after 30 seconds
+	private long lockContentionCount;
+	private long totalLockWaitTimeMs;
+	private long peakLockWaitMs;
+	private long lastLockContentionReportTicks;
+	private const long LockContentionReportIntervalTicks = TimeSpan.TicksPerSecond * 5; // Report every 5 seconds
+
 	#endregion Data Members
 
 	#region Properties
@@ -99,6 +109,7 @@ public sealed class MethodScheduler
 		lastReportedEnqueueCount = 0;
 		lastCpuTime = currentProcess.TotalProcessorTime;
 		lastCpuCheckTicks = queueProfileTimer.ElapsedTicks;
+		lastLockContentionReportTicks = queueProfileTimer.ElapsedTicks;
 	}
 
 	/// <summary>
@@ -174,8 +185,11 @@ public sealed class MethodScheduler
 	{
 		int queueSize;
 
+		var lockTimer = Stopwatch.StartNew();
 		lock (queue)
 		{
+			LockMonitor.RecordLockWait("MethodScheduler.queue", lockTimer, Compiler);
+
 			AddInsideLock(methodData);
 			queueSize = totalQueued;
 		}
@@ -188,8 +202,11 @@ public sealed class MethodScheduler
 	{
 		int queueSize;
 
+		var lockTimer = Stopwatch.StartNew();
 		lock (queue)
 		{
+			LockMonitor.RecordLockWait("MethodScheduler.queue", lockTimer, Compiler);
+
 			foreach (var method in methods)
 			{
 				var methodData = Compiler.GetMethodData(method);
@@ -231,8 +248,11 @@ public sealed class MethodScheduler
 		int queueSize;
 		bool wasEmpty = false;
 
+		var lockTimer = Stopwatch.StartNew();
 		lock (queue)
 		{
+			LockMonitor.RecordLockWait("MethodScheduler.queue", lockTimer, Compiler);
+
 			if (queue.TryDequeue(out methodData, out var priority))
 			{
 				queueSet.Remove(methodData);
@@ -320,12 +340,20 @@ public sealed class MethodScheduler
 		var cpuPercent = CalculateCpuUsage(currentTicks);
 		var equivalentCores = (cpuPercent * processorCount) / 100.0;
 
+		// Include lock contention stats after 30 seconds
+		var contentionInfo = "";
+		if (currentTicks >= LockContentionThresholdTicks && lockContentionCount > 0)
+		{
+			var avgLockWaitMs = lockContentionCount > 0 ? totalLockWaitTimeMs / (double)lockContentionCount : 0;
+			contentionInfo = $" | Lock: {lockContentionCount} contentions, Avg: {avgLockWaitMs:F1}ms, Peak: {peakLockWaitMs}ms";
+		}
+
 		Compiler.PostEvent(
-			CompilerEvent.DebugInfo,
+			CompilerEvent.Debug,
 			$"[Queue] Size: {currentQueueSize} | Peak: {peakQueueSize} | Empty Events: {queueEmptyCount} | " +
 			$"Active: {activeWorkers}/{maxWorkers} ({utilizationPercent:F1}%) | Idle: {idleWorkers} | " +
 			$"Enqueue: {enqueueRate:F1}/s | Dequeue: {dequeueRate:F1}/s | " +
-			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores)"
+			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores){contentionInfo}"
 		);
 	}
 
@@ -369,12 +397,70 @@ public sealed class MethodScheduler
 		var equivalentCores = (cpuPercent * processorCount) / 100.0;
 
 		Compiler.PostEvent(
-			CompilerEvent.Warning,
+			CompilerEvent.Debug,
 			$"[Queue Starvation] Queue became empty! " +
 			$"Active: {activeWorkers}/{maxWorkers} | Idle: {idleWorkers} threads waiting for work | " +
 			$"Empty count: {queueEmptyCount} | Peak size was: {peakQueueSize} | " +
 			$"Total methods: {totalMethods} | Completed: {totalDequeueOperations} | " +
 			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores)"
+		);
+	}
+
+	private void TrackLockContention(long lockWaitMs)
+	{
+		var currentTicks = queueProfileTimer.ElapsedTicks;
+
+		// Only track contention after 30 seconds when work should be independent
+		if (currentTicks < LockContentionThresholdTicks)
+			return;
+
+		if (lockWaitMs > 0)
+		{
+			Interlocked.Add(ref totalLockWaitTimeMs, lockWaitMs);
+
+			// Update peak lock wait time
+			long currentPeak = Volatile.Read(ref peakLockWaitMs);
+			while (lockWaitMs > currentPeak)
+			{
+				var original = Interlocked.CompareExchange(ref peakLockWaitMs, lockWaitMs, currentPeak);
+				if (original == currentPeak)
+					break;
+				currentPeak = original;
+			}
+		}
+
+		if (lockWaitMs >= LockWaitWarningThresholdMs)
+		{
+			Interlocked.Increment(ref lockContentionCount);
+
+			// Periodic contention reporting
+			var lastReport = Interlocked.Read(ref lastLockContentionReportTicks);
+			if (currentTicks - lastReport >= LockContentionReportIntervalTicks)
+			{
+				if (Interlocked.CompareExchange(ref lastLockContentionReportTicks, currentTicks, lastReport) == lastReport)
+				{
+					ReportLockContention(lockWaitMs, currentTicks);
+				}
+			}
+		}
+	}
+
+	private void ReportLockContention(long currentLockWaitMs, long currentTicks)
+	{
+		var elapsedSeconds = (currentTicks - LockContentionThresholdTicks) / (double)Stopwatch.Frequency;
+		var avgLockWaitMs = lockContentionCount > 0 ? totalLockWaitTimeMs / (double)lockContentionCount : 0;
+		var contentionRate = elapsedSeconds > 0 ? lockContentionCount / elapsedSeconds : 0;
+
+		var activeWorkers = pipelinePool?.ActiveWorkers ?? 0;
+		var maxWorkers = pipelinePool?.MaxWorkers ?? 0;
+		var currentQueueSize = totalQueued;
+
+		Compiler.PostEvent(
+			CompilerEvent.Debug,
+			$"[Lock Contention Detected] Current wait: {currentLockWaitMs}ms | Peak: {peakLockWaitMs}ms | " +
+			$"Avg: {avgLockWaitMs:F1}ms | Contentions: {lockContentionCount} ({contentionRate:F1}/s) | " +
+			$"Queue: {currentQueueSize} | Active: {activeWorkers}/{maxWorkers} | " +
+			$"Time since 30s mark: {elapsedSeconds:F1}s"
 		);
 	}
 
@@ -389,6 +475,15 @@ public sealed class MethodScheduler
 			? (totalDequeueOperations / (maxWorkers * elapsedSeconds)) * 100.0
 			: 0;
 
+		var contentionStats = "";
+		if (lockContentionCount > 0)
+		{
+			var avgLockWaitMs = totalLockWaitTimeMs / (double)lockContentionCount;
+			contentionStats = $"  Lock Contentions (>4ms): {lockContentionCount}\n" +
+							  $"  Average Lock Wait: {avgLockWaitMs:F2}ms\n" +
+							  $"  Peak Lock Wait: {peakLockWaitMs}ms\n";
+		}
+
 		return $"Queue Statistics Summary:\n" +
 			   $"  Total Methods Scheduled: {totalMethods}\n" +
 			   $"  Peak Queue Size: {peakQueueSize}\n" +
@@ -399,6 +494,7 @@ public sealed class MethodScheduler
 			   $"  Average Dequeue Rate: {avgDequeueRate:F2} methods/sec\n" +
 			   $"  Worker Threads: {maxWorkers}\n" +
 			   $"  Average Worker Utilization: {avgUtilization:F1}%\n" +
+			   contentionStats +
 			   $"  Total Elapsed Time: {elapsedSeconds:F2} seconds";
 	}
 

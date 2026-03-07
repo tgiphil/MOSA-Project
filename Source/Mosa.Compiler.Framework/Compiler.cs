@@ -99,7 +99,7 @@ public sealed class Compiler
 	/// <summary>
 	/// Gets the compiler data.
 	/// </summary>
-	public CompilerData CompilerData { get; } = new CompilerData();
+	public CompilerData CompilerData { get; private set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether [all stop].
@@ -243,7 +243,9 @@ public sealed class Compiler
 
 		PostEvent(CompilerEvent.CompilerStart);
 
+		CompilerData = new CompilerData(this);
 		Linker = new MosaLinker(this);
+		GlobalCounters.Compiler = this;
 
 		ObjectHeaderSize = Architecture.NativePointerSize + 4 + 4; // Method Table Ptr + Hash Value (32-bit) + Lock & Status (32-bit)
 
@@ -474,8 +476,11 @@ public sealed class Compiler
 
 		Debug.Assert(!method.HasOpenGenericParams);
 
+		var lockTimer = Stopwatch.StartNew();
 		lock (method)
 		{
+			LockMonitor.RecordLockWait($"Method:{method.FullName}", lockTimer, this);
+
 			CompileMethod(method, null, threadSlot);
 		}
 
@@ -577,6 +582,13 @@ public sealed class Compiler
 		MethodScanner.Complete();
 
 		EmitCounters();
+
+		// Output lock contention summary
+		var lockContentionSummary = LockMonitor.GetSummary();
+		if (!string.IsNullOrEmpty(lockContentionSummary))
+		{
+			PostEvent(CompilerEvent.Debug, lockContentionSummary);
+		}
 
 		// Output stringification diagnostics summary
 		PostEvent(CompilerEvent.FinalizationEnd);

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using System.Diagnostics;
+
 namespace Mosa.Compiler.Framework;
 
 /// <summary>
@@ -9,6 +11,8 @@ public sealed class Counters
 {
 	private readonly Dictionary<string, Counter> Entries = new();
 	private readonly object _lock = new();
+
+	public Compiler Compiler { get; set; }
 
 	public void Reset()
 	{
@@ -40,8 +44,14 @@ public sealed class Counters
 
 	private void UpdateCounter(string name, int count, bool reset = false)
 	{
+		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
+			if (Compiler != null)
+			{
+				LockMonitor.RecordLockWait("Counters._lock", lockTimer, Compiler);
+			}
+
 			if (Entries.TryGetValue(name, out var counter))
 			{
 				if (reset)
