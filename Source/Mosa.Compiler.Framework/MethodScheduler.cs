@@ -10,6 +10,8 @@ namespace Mosa.Compiler.Framework;
 /// </summary>
 public sealed class MethodScheduler
 {
+	private const int QueueReportIntervalSeconds = 1; // Report queue status every 2 seconds
+
 	#region Data Members
 
 	public Compiler Compiler;
@@ -20,20 +22,21 @@ public sealed class MethodScheduler
 
 	private readonly HashSet<MethodData> queueSet = new HashSet<MethodData>();
 
+	// Reference to pipeline pool for tracking active workers
+	private PipelinePool pipelinePool;
+
 	private int totalMethods;
 	private int totalQueued;
 
 	// Queue profiling metrics
+	private readonly Stopwatch queueProfileTimer = Stopwatch.StartNew();
+
 	private int peakQueueSize;
 
 	private long totalDequeueOperations;
 	private long totalEnqueueOperations;
-	private readonly Stopwatch queueProfileTimer = Stopwatch.StartNew();
 	private long lastQueueReportTicks;
 	private long lastReportedDequeueCount;
-	private long lastReportedEnqueueCount;
-	private const long QueueReportIntervalTicks = TimeSpan.TicksPerSecond * 5; // Report every 2 seconds
-	private const int QueueReportIntervalOperations = 400; // Report every 200 completed work items
 
 	// CPU monitoring
 	private readonly Process currentProcess = Process.GetCurrentProcess();
@@ -41,19 +44,6 @@ public sealed class MethodScheduler
 	private TimeSpan lastCpuTime;
 	private long lastCpuCheckTicks;
 	private readonly int processorCount = Environment.ProcessorCount;
-
-	// Reference to pipeline pool for tracking active workers
-	private PipelinePool pipelinePool;
-
-	// Lock contention monitoring (after 30 seconds when work should be independent)
-	private const long LockContentionThresholdTicks = TimeSpan.TicksPerSecond * 0; // 30 seconds
-
-	private const long LockWaitWarningThresholdMs = 4; // Warn if lock wait > 4ms after 30 seconds
-	private long lockContentionCount;
-	private long totalLockWaitTimeMs;
-	private long peakLockWaitMs;
-	private long lastLockContentionReportTicks;
-	private const long LockContentionReportIntervalTicks = TimeSpan.TicksPerSecond * 5; // Report every 5 seconds
 
 	#endregion Data Members
 
@@ -100,10 +90,8 @@ public sealed class MethodScheduler
 		PassCount = 0;
 		lastQueueReportTicks = queueProfileTimer.ElapsedTicks;
 		lastReportedDequeueCount = 0;
-		lastReportedEnqueueCount = 0;
 		lastCpuTime = currentProcess.TotalProcessorTime;
 		lastCpuCheckTicks = queueProfileTimer.ElapsedTicks;
-		lastLockContentionReportTicks = queueProfileTimer.ElapsedTicks;
 	}
 
 	/// <summary>
@@ -240,7 +228,6 @@ public sealed class MethodScheduler
 	{
 		MethodData methodData;
 		int queueSize;
-		bool wasEmpty = false;
 
 		var lockTimer = Stopwatch.StartNew();
 		lock (queue)
@@ -259,7 +246,6 @@ public sealed class MethodScheduler
 			else
 			{
 				queueSize = 0;
-				wasEmpty = true;
 			}
 		}
 
@@ -280,41 +266,35 @@ public sealed class MethodScheduler
 			currentPeak = original;
 		}
 
-		// Periodic queue status reporting - trigger on EITHER time OR operation count
+		// Periodic queue status reporting - time-based (every 2 seconds)
 		var currentTicks = queueProfileTimer.ElapsedTicks;
-		var currentDequeueCount = totalDequeueOperations;
-		var operationsSinceLastReport = currentDequeueCount - lastReportedDequeueCount;
+		var timeThresholdMet = currentTicks - lastQueueReportTicks >= Stopwatch.Frequency * QueueReportIntervalSeconds;
 
-		var timeThresholdMet = currentTicks - lastQueueReportTicks >= QueueReportIntervalTicks;
-		var countThresholdMet = operationsSinceLastReport >= QueueReportIntervalOperations;
-
-		if (timeThresholdMet || countThresholdMet)
+		if (timeThresholdMet)
 		{
 			// Use CompareExchange to ensure only one thread reports (thread-safe)
 			var wasLastReportTicks = Interlocked.Read(ref lastQueueReportTicks);
 			if (Interlocked.CompareExchange(ref lastQueueReportTicks, currentTicks, wasLastReportTicks) == wasLastReportTicks)
 			{
+				var currentDequeueCount = totalDequeueOperations;
 				var previousDequeueCount = Interlocked.Exchange(ref lastReportedDequeueCount, currentDequeueCount);
 				var currentEnqueueCount = totalEnqueueOperations;
-				var previousEnqueueCount = Interlocked.Exchange(ref lastReportedEnqueueCount, currentEnqueueCount);
 
 				ReportQueueStatus(currentQueueSize, currentTicks, wasLastReportTicks,
-					currentDequeueCount, previousDequeueCount,
-					currentEnqueueCount, previousEnqueueCount);
+					currentDequeueCount, previousDequeueCount, currentEnqueueCount);
 			}
 		}
 	}
 
 	private void ReportQueueStatus(int currentQueueSize, long currentTicks, long previousTicks,
-		long currentDequeueCount, long previousDequeueCount,
-		long currentEnqueueCount, long previousEnqueueCount)
+		long currentDequeueCount, long previousDequeueCount, long currentEnqueueCount)
 	{
 		// Calculate instantaneous rates (since last report)
 		var ticksDelta = currentTicks - previousTicks;
 		var secondsDelta = ticksDelta / (double)Stopwatch.Frequency;
 
 		var dequeueDelta = currentDequeueCount - previousDequeueCount;
-		var enqueueDelta = currentEnqueueCount - previousEnqueueCount;
+		var enqueueDelta = currentEnqueueCount - previousDequeueCount; // Calculate from last dequeue count
 
 		var dequeueRate = secondsDelta > 0 ? dequeueDelta / secondsDelta : 0;
 		var enqueueRate = secondsDelta > 0 ? enqueueDelta / secondsDelta : 0;
@@ -328,19 +308,12 @@ public sealed class MethodScheduler
 		var cpuPercent = CalculateCpuUsage(currentTicks);
 		var equivalentCores = (cpuPercent * processorCount) / 100.0;
 
-		var contentionInfo = string.Empty;
-		if (currentTicks >= LockContentionThresholdTicks && lockContentionCount > 0)
-		{
-			var avgLockWaitMs = lockContentionCount > 0 ? totalLockWaitTimeMs / (double)lockContentionCount : 0;
-			contentionInfo = $" | Lock: {lockContentionCount} contentions, Avg: {avgLockWaitMs:F1}ms, Peak: {peakLockWaitMs}ms";
-		}
-
 		Compiler.PostEvent(
 			CompilerEvent.Debug,
 			$"[Queue] Size: {currentQueueSize} | " +
 			$"Active: {activeWorkers}/{maxWorkers} ({utilizationPercent:F1}%) | Idle: {idleWorkers} | " +
 			$"Enqueue: {enqueueRate:F1}/s | Dequeue: {dequeueRate:F1}/s | " +
-			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores){contentionInfo}"
+			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores)"
 		);
 	}
 

@@ -12,7 +12,7 @@ internal static class LockMonitor
 {
 	private const long MonitoringThresholdTicks = TimeSpan.TicksPerSecond * 0; // 0 seconds
 	private const long WaitWarningThresholdMs = 15; // Warn if lock wait > 15ms
-	private const long ReportIntervalTicks = TimeSpan.TicksPerSecond * 5; // Report every 5 seconds
+	private const long ReportIntervalTicks = TimeSpan.TicksPerSecond * 2; // Report every 2 seconds
 
 	private static readonly Stopwatch GlobalTimer = Stopwatch.StartNew();
 
@@ -94,7 +94,7 @@ internal static class LockMonitor
 			CompilerEvent.Debug,
 			$"[Lock Contention] {lockName} | Current: {currentWaitMs}ms | Peak: {stats.PeakWaitMs}ms | " +
 			$"Avg: {avgWaitMs:F1}ms | Count: {stats.Count} ({rate:F1}/s) | " +
-			$"Time since 30s: {elapsedSeconds:F1}s"
+			$"Elapsed: {elapsedSeconds:F1}s"
 		);
 	}
 
