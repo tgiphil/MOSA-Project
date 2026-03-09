@@ -78,16 +78,16 @@ public sealed class MethodData
 	public bool HasCode { get; set; }
 
 	public bool Inlined
-	{ 
-		get 
-		{ 
+	{
+		get
+		{
 			var lockTimer = Stopwatch.StartNew();
-			lock (_lock) 
-			{ 
-				LockMonitor.RecordLockWait($"MethodData.Inlined:{Method.FullName}", lockTimer, Compiler);
-				return InlineMethodData.IsInlined; 
-			} 
-		} 
+			lock (_lock)
+			{
+				Compiler.RecordLockWait($"MethodData.Inlined:{Method.FullName}", lockTimer);
+				return InlineMethodData.IsInlined;
+			}
+		}
 	}
 
 	public MosaMethod ReplacedBy { get; set; }
@@ -108,12 +108,14 @@ public sealed class MethodData
 
 	#endregion Data Members
 
-	public MethodData(MosaMethod mosaMethod)
+	public MethodData(MosaMethod mosaMethod, Compiler compiler)
 	{
 		Method = mosaMethod;
+		Compiler = compiler;
 
+		Counters = new Counters(compiler);
 		LabelRegions = new List<LabelRegion>();
-		Counters = new Counters();
+
 		Version = 0;
 		DoNotInline = false;
 		InlineMethodData = new InlineMethodData(null, 0);
@@ -149,7 +151,7 @@ public sealed class MethodData
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			LockMonitor.RecordLockWait("MethodData.GetInlineMethodDataForUseBy", lockTimer, Compiler);
+			Compiler.RecordLockWait("MethodData.GetInlineMethodDataForUseBy", lockTimer);
 
 			InlineMethodData.AddReference(method);
 			return InlineMethodData;
@@ -161,7 +163,7 @@ public sealed class MethodData
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			LockMonitor.RecordLockWait("MethodData.SwapInlineMethodData", lockTimer, Compiler);
+			Compiler.RecordLockWait("MethodData.SwapInlineMethodData", lockTimer);
 
 			var tmp = InlineMethodData;
 
@@ -176,7 +178,7 @@ public sealed class MethodData
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			LockMonitor.RecordLockWait("MethodData.GetInlineMethodData", lockTimer, Compiler);
+			Compiler.RecordLockWait("MethodData.GetInlineMethodData", lockTimer);
 
 			return InlineMethodData;
 		}

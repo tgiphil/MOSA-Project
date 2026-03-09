@@ -77,7 +77,7 @@ public sealed class LinkerSymbol
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			LockMonitor.RecordLockWait($"LinkerSymbol.AddPatch:{Name}", lockTimer, Compiler);
+			Compiler?.RecordLockWait($"LinkerSymbol.AddPatch:{Name}", lockTimer);
 
 			LinkRequests.Add(linkRequest);
 		}
@@ -88,7 +88,7 @@ public sealed class LinkerSymbol
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			LockMonitor.RecordLockWait($"LinkerSymbol.RemovePatches:{Name}", lockTimer, Compiler);
+			Compiler?.RecordLockWait($"LinkerSymbol.RemovePatches:{Name}", lockTimer);
 
 			LinkRequests.Clear();
 		}
@@ -99,10 +99,7 @@ public sealed class LinkerSymbol
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			if (Compiler != null)
-			{
-				LockMonitor.RecordLockWait($"LinkerSymbol.GetLinkRequests:{Name}", lockTimer, Compiler);
-			}
+			Compiler?.RecordLockWait($"LinkerSymbol.GetLinkRequests:{Name}", lockTimer);
 
 			return LinkRequests.ToArray();
 		}

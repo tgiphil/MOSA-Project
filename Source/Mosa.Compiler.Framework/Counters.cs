@@ -1,9 +1,6 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using Mosa.Utility.Configuration;
 
 namespace Mosa.Compiler.Framework;
 
@@ -13,9 +10,15 @@ namespace Mosa.Compiler.Framework;
 public sealed class Counters
 {
 	private readonly Dictionary<string, Counter> Entries = new();
+
+	private readonly Compiler Compiler;
+
 	private readonly object _lock = new();
 
-	public Compiler Compiler { get; set; }
+	public Counters(Compiler compiler)
+	{
+		Compiler = compiler;
+	}
 
 	public void Reset()
 	{
@@ -42,7 +45,7 @@ public sealed class Counters
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			LockMonitor.RecordLockWait("Counters.Update-List", lockTimer, Compiler);
+			Compiler.RecordLockWait("Counters.Update-List", lockTimer);
 
 			foreach (var counter in counters.Entries.Values)
 			{
@@ -56,7 +59,7 @@ public sealed class Counters
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			LockMonitor.RecordLockWait("Counters.Update", lockTimer, Compiler);
+			Compiler.RecordLockWait("Counters.Update", lockTimer);
 
 			UpdateInLock(name, count, reset);
 		}
