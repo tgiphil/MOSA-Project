@@ -266,14 +266,14 @@ public sealed class MethodScheduler
 			currentPeak = original;
 		}
 
-		// Periodic queue status reporting - time-based (every 2 seconds)
+		// Periodic queue status reporting
 		var currentTicks = queueProfileTimer.ElapsedTicks;
 		var timeThresholdMet = currentTicks - lastQueueReportTicks >= Stopwatch.Frequency * QueueReportIntervalSeconds;
 
 		if (timeThresholdMet)
 		{
-			// Use CompareExchange to ensure only one thread reports (thread-safe)
 			var wasLastReportTicks = Interlocked.Read(ref lastQueueReportTicks);
+			// Use CompareExchange to ensure only one thread reports (thread-safe)
 			if (Interlocked.CompareExchange(ref lastQueueReportTicks, currentTicks, wasLastReportTicks) == wasLastReportTicks)
 			{
 				var currentDequeueCount = totalDequeueOperations;
@@ -426,4 +426,11 @@ public sealed class MethodScheduler
 	}
 
 	#endregion Subscription
+
+	public void ResetRates()
+	{
+		Interlocked.Exchange(ref totalEnqueueOperations, 0);
+		Interlocked.Exchange(ref totalDequeueOperations, 0);
+		Interlocked.Exchange(ref lastReportedDequeueCount, 0);
+	}
 }
