@@ -9,8 +9,6 @@ namespace Mosa.Compiler.Framework;
 /// </summary>
 public sealed class LockMonitor
 {
-	public delegate void PostEventDelegate(CompilerEvent compilerEvent, string message);
-
 	private const long LockWaitWarningThresholdMs = 15;
 	private const long LockReportIntervalTicks = TimeSpan.TicksPerSecond * 2;
 
@@ -25,13 +23,13 @@ public sealed class LockMonitor
 	private long lockMonitorLastReportTicks;
 	private long lockMonitorContentionCount;
 	private readonly Dictionary<string, LockStats> lockMonitorStats = new();
-	private readonly PostEventDelegate postEvent;
+	private readonly Compiler compiler;
 
 	private readonly object _lock = new();
 
-	public LockMonitor(PostEventDelegate postEvent)
+	public LockMonitor(Compiler compiler)
 	{
-		this.postEvent = postEvent;
+		this.compiler = compiler;
 	}
 
 	public void RecordLockWait(string lockName, Stopwatch lockTimer)
@@ -101,7 +99,7 @@ public sealed class LockMonitor
 		var avgWaitMs = stats.Count > 0 ? stats.TotalWaitMs / (double)stats.Count : 0;
 		var rate = elapsedSeconds > 0 ? stats.Count / elapsedSeconds : 0;
 
-		postEvent(
+		compiler.PostEvent(
 			CompilerEvent.Debug,
 			$"[Lock Contention] {lockName} | Current: {currentWaitMs}ms | Peak: {stats.PeakWaitMs}ms | " +
 			$"Avg: {avgWaitMs:F1}ms | Count: {stats.Count} ({rate:F1}/s) | " +

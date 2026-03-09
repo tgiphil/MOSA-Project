@@ -247,7 +247,7 @@ public sealed class Compiler
 		GlobalCounters = new Counters(this);
 		CompilerData = new CompilerData(this);
 		Linker = new MosaLinker(this);
-		LockMonitor = new LockMonitor((evt, msg) => PostEvent(evt, msg));
+		LockMonitor = new LockMonitor(this);
 
 		ObjectHeaderSize = Architecture.NativePointerSize + 4 + 4; // Method Table Ptr + Hash Value (32-bit) + Lock & Status (32-bit)
 
