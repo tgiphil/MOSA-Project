@@ -71,6 +71,8 @@ public sealed class MethodData
 
 	public long ElapsedTicks { get; set; }
 
+	public long TotalElapsedTicks { get; set; }
+
 	public bool DoNotInline { get; set; }
 
 	public bool IsReferenced { get; set; }
