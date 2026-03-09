@@ -26,7 +26,6 @@ public sealed class MethodScheduler
 	// Queue profiling metrics
 	private int peakQueueSize;
 
-	private long queueEmptyCount;
 	private long totalDequeueOperations;
 	private long totalEnqueueOperations;
 	private readonly Stopwatch queueProfileTimer = Stopwatch.StartNew();
@@ -82,11 +81,6 @@ public sealed class MethodScheduler
 	/// Gets the peak queue size observed.
 	/// </summary>
 	public int PeakQueueSize => peakQueueSize;
-
-	/// <summary>
-	/// Gets the number of times the queue became empty.
-	/// </summary>
-	public long QueueEmptyCount => queueEmptyCount;
 
 	/// <summary>
 	/// Gets the total number of dequeue operations.
@@ -269,11 +263,6 @@ public sealed class MethodScheduler
 			}
 		}
 
-		if (wasEmpty)
-		{
-			Interlocked.Increment(ref queueEmptyCount);
-		}
-
 		UpdateQueueMetrics(queueSize);
 
 		return methodData;
@@ -339,8 +328,7 @@ public sealed class MethodScheduler
 		var cpuPercent = CalculateCpuUsage(currentTicks);
 		var equivalentCores = (cpuPercent * processorCount) / 100.0;
 
-		// Include lock contention stats after 30 seconds
-		var contentionInfo = "";
+		var contentionInfo = string.Empty;
 		if (currentTicks >= LockContentionThresholdTicks && lockContentionCount > 0)
 		{
 			var avgLockWaitMs = lockContentionCount > 0 ? totalLockWaitTimeMs / (double)lockContentionCount : 0;
@@ -349,7 +337,7 @@ public sealed class MethodScheduler
 
 		Compiler.PostEvent(
 			CompilerEvent.Debug,
-			$"[Queue] Size: {currentQueueSize} | Peak: {peakQueueSize} | " +
+			$"[Queue] Size: {currentQueueSize} | " +
 			$"Active: {activeWorkers}/{maxWorkers} ({utilizationPercent:F1}%) | Idle: {idleWorkers} | " +
 			$"Enqueue: {enqueueRate:F1}/s | Dequeue: {dequeueRate:F1}/s | " +
 			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores){contentionInfo}"
@@ -383,40 +371,6 @@ public sealed class MethodScheduler
 		}
 
 		return 0.0;
-	}
-
-	public string GetQueueStatisticsSummary()
-	{
-		var elapsedSeconds = queueProfileTimer.Elapsed.TotalSeconds;
-		var avgEnqueueRate = totalEnqueueOperations / elapsedSeconds;
-		var avgDequeueRate = totalDequeueOperations / elapsedSeconds;
-
-		var maxWorkers = pipelinePool?.MaxWorkers ?? 0;
-		var avgUtilization = maxWorkers > 0 && elapsedSeconds > 0
-			? (totalDequeueOperations / (maxWorkers * elapsedSeconds)) * 100.0
-			: 0;
-
-		var contentionStats = "";
-		if (lockContentionCount > 0)
-		{
-			var avgLockWaitMs = totalLockWaitTimeMs / (double)lockContentionCount;
-			contentionStats = $"  Lock Contentions (>4ms): {lockContentionCount}\n" +
-							  $"  Average Lock Wait: {avgLockWaitMs:F2}ms\n" +
-							  $"  Peak Lock Wait: {peakLockWaitMs}ms\n";
-		}
-
-		return $"Queue Statistics Summary:\n" +
-			   $"  Total Methods Scheduled: {totalMethods}\n" +
-			   $"  Peak Queue Size: {peakQueueSize}\n" +
-			   $"  Queue Empty Events: {queueEmptyCount}\n" +
-			   $"  Total Enqueue Operations: {totalEnqueueOperations}\n" +
-			   $"  Total Dequeue Operations: {totalDequeueOperations}\n" +
-			   $"  Average Enqueue Rate: {avgEnqueueRate:F2} methods/sec\n" +
-			   $"  Average Dequeue Rate: {avgDequeueRate:F2} methods/sec\n" +
-			   $"  Worker Threads: {maxWorkers}\n" +
-			   $"  Average Worker Utilization: {avgUtilization:F1}%\n" +
-			   contentionStats +
-			   $"  Total Elapsed Time: {elapsedSeconds:F2} seconds";
 	}
 
 	private static int GetCompilePriorityLevel(MethodData methodData)

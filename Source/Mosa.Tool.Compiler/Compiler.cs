@@ -1,6 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
+using dnlib;
 using Mosa.Compiler.Framework;
 using Mosa.Compiler.MosaTypeSystem.CLR;
 using Mosa.Utility.Configuration;
@@ -15,6 +16,7 @@ public class Compiler
 	#region Data
 
 	private static readonly Stopwatch Stopwatch = new();
+	private static readonly MosaSettings MosaSettings = new();
 
 	#endregion Data
 
@@ -38,27 +40,25 @@ public class Compiler
 
 		try
 		{
-			var mosaSettings = new MosaSettings();
+			MosaSettings.LoadAppLocations();
+			MosaSettings.SetDefaultSettings();
+			MosaSettings.LoadArguments(args);
+			MosaSettings.NormalizeSettings();
+			MosaSettings.ResolveDefaults();
+			SetRequiredSettings(MosaSettings);
+			MosaSettings.ResolveFileAndPathSettings();
+			MosaSettings.AddStandardPlugs();
+			MosaSettings.ExpandSearchPaths();
 
-			mosaSettings.LoadAppLocations();
-			mosaSettings.SetDefaultSettings();
-			mosaSettings.LoadArguments(args);
-			mosaSettings.NormalizeSettings();
-			mosaSettings.ResolveDefaults();
-			SetRequiredSettings(mosaSettings);
-			mosaSettings.ResolveFileAndPathSettings();
-			mosaSettings.AddStandardPlugs();
-			mosaSettings.ExpandSearchPaths();
+			OutputStatus($"Compiling: {MosaSettings.SourceFiles[0]}");
 
-			OutputStatus($"Compiling: {mosaSettings.SourceFiles[0]}");
-
-			if (mosaSettings.SourceFiles == null && mosaSettings.SourceFiles.Count == 0)
+			if (MosaSettings.SourceFiles == null && MosaSettings.SourceFiles.Count == 0)
 			{
 				OutputStatus("ERROR: No input file(s) specified.");
 				return 1;
 			}
 
-			var compiler = new MosaCompiler(mosaSettings, CreateCompilerHooks(), new ClrModuleLoader(), new ClrTypeResolver());
+			var compiler = new MosaCompiler(MosaSettings, CreateCompilerHooks(), new ClrModuleLoader(), new ClrTypeResolver());
 
 			if (string.IsNullOrEmpty(compiler.MosaSettings.OutputFile))
 			{
@@ -130,7 +130,9 @@ public class Compiler
 			&& compilerEvent != CompilerEvent.SetupStageStart
 			&& compilerEvent != CompilerEvent.SetupStageEnd
 			&& compilerEvent != CompilerEvent.FinalizationStageStart
-			&& compilerEvent != CompilerEvent.FinalizationStageEnd)
+			&& compilerEvent != CompilerEvent.FinalizationStageEnd
+			&& (compilerEvent != CompilerEvent.Debug && MosaSettings.DebugOutput)
+			)
 		{
 			message = string.IsNullOrWhiteSpace(message) ? string.Empty : $": {message}";
 			OutputStatus($"{compilerEvent.ToText()}{message}");

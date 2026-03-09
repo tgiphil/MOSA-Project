@@ -626,6 +626,12 @@ public partial class MosaSettings
 		set => Settings.SetValue(Name.Optimizations_Platform, value);
 	}
 
+	public bool DebugOutput
+	{
+		get => Settings.GetValue(Name.CompilerDebug_EmitDebug, true);
+		set => Settings.SetValue(Name.CompilerDebug_EmitDebug, value);
+	}
+
 	public bool EmitStatistics
 	{
 		get => Settings.GetValue(Name.CompilerDebug_Statistics, true);
@@ -855,6 +861,7 @@ public partial class MosaSettings
 		ExplorerFilter = "%REGISTRY%";
 
 		InitialStackLocation = 0;
+		DebugOutput = false;
 
 		MaxThreads = Multithreading ? (int)(Environment.ProcessorCount * Constant.MultithreadingProcessorMultiplier) : 0;
 	}

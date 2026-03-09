@@ -284,6 +284,7 @@ public class UnitTestEngine : IDisposable
 			&& compilerEvent != CompilerEvent.SetupStageEnd
 			&& compilerEvent != CompilerEvent.FinalizationStageStart
 			&& compilerEvent != CompilerEvent.FinalizationStageEnd
+			&& (compilerEvent != CompilerEvent.Debug && MosaSettings.DebugOutput)
 		   )
 		{
 			var eventname = compilerEvent.ToText();
