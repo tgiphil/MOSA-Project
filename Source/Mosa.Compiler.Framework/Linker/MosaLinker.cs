@@ -73,7 +73,7 @@ public sealed class MosaLinker
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.RecordLockWait("Linker.Link", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("Linker.Link", lockTimer);
 
 			patchSymbol.AddPatch(linkRequest);
 		}
@@ -94,7 +94,7 @@ public sealed class MosaLinker
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.RecordLockWait("Linker.Link", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("Linker.Link", lockTimer);
 
 			patchSymbol.AddPatch(linkRequest);
 		}
@@ -120,7 +120,7 @@ public sealed class MosaLinker
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.RecordLockWait("Linker.IsSymbolDefined", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("Linker.IsSymbolDefined", lockTimer);
 			return symbolLookup.ContainsKey(name);
 		}
 	}
@@ -130,7 +130,7 @@ public sealed class MosaLinker
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.RecordLockWait("Linker.GetSymbol", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("Linker.GetSymbol", lockTimer);
 
 			if (!symbolLookup.TryGetValue(name, out LinkerSymbol symbol))
 			{
@@ -151,7 +151,7 @@ public sealed class MosaLinker
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.RecordLockWait("Linker.DefineSymbol", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("Linker.DefineSymbol", lockTimer);
 
 			if (!symbolLookup.TryGetValue(name, out LinkerSymbol symbol))
 			{

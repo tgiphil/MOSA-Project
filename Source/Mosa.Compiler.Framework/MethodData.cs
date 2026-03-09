@@ -86,7 +86,7 @@ public sealed class MethodData
 			var lockTimer = Stopwatch.StartNew();
 			lock (_lock)
 			{
-				Compiler.RecordLockWait($"MethodData.Inlined:{Method.FullName}", lockTimer);
+				Compiler.LockMonitor.RecordLockWait($"MethodData.Inlined:{Method.FullName}", lockTimer);
 				return InlineMethodData.IsInlined;
 			}
 		}
@@ -153,7 +153,7 @@ public sealed class MethodData
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.RecordLockWait("MethodData.GetInlineMethodDataForUseBy", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("MethodData.GetInlineMethodDataForUseBy", lockTimer);
 
 			InlineMethodData.AddReference(method);
 			return InlineMethodData;
@@ -165,7 +165,7 @@ public sealed class MethodData
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.RecordLockWait("MethodData.SwapInlineMethodData", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("MethodData.SwapInlineMethodData", lockTimer);
 
 			var tmp = InlineMethodData;
 
@@ -180,7 +180,7 @@ public sealed class MethodData
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.RecordLockWait("MethodData.GetInlineMethodData", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("MethodData.GetInlineMethodData", lockTimer);
 
 			return InlineMethodData;
 		}

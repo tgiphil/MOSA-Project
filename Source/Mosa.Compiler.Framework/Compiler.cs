@@ -18,16 +18,6 @@ namespace Mosa.Compiler.Framework;
 public sealed class Compiler
 {
 	private const uint MaxThreads = 1024;
-	private const long LockMonitoringThresholdTicks = TimeSpan.TicksPerSecond * 0;
-	private const long LockWaitWarningThresholdMs = 15;
-	private const long LockReportIntervalTicks = TimeSpan.TicksPerSecond * 2;
-
-	private struct LockStats
-	{
-		public long Count;
-		public long TotalWaitMs;
-		public long PeakWaitMs;
-	}
 
 	#region Data Members
 
@@ -40,11 +30,6 @@ public sealed class Compiler
 	private int ActiveThreadCount;
 	private long[] ThreadCPUTicks;
 	private long[] ThreadWallTicks;
-	private readonly Stopwatch lockMonitorTimer = Stopwatch.StartNew();
-	private long lockMonitorLastReportTicks;
-	private long lockMonitorContentionCount;
-	private readonly Dictionary<string, LockStats> lockMonitorStats = new();
-	private readonly object lockMonitorStatsLock = new();
 
 	#endregion Data Members
 
@@ -137,6 +122,8 @@ public sealed class Compiler
 	public Stopwatch TotalCompileTime { get; } = new Stopwatch();
 
 	public Stopwatch LinkerTime { get; } = new Stopwatch();
+
+	public LockMonitor LockMonitor { get; }
 
 	#endregion Properties
 
@@ -260,6 +247,7 @@ public sealed class Compiler
 		GlobalCounters = new Counters(this);
 		CompilerData = new CompilerData(this);
 		Linker = new MosaLinker(this);
+		LockMonitor = new LockMonitor((evt, msg) => PostEvent(evt, msg));
 
 		ObjectHeaderSize = Architecture.NativePointerSize + 4 + 4; // Method Table Ptr + Hash Value (32-bit) + Lock & Status (32-bit)
 
@@ -492,7 +480,7 @@ public sealed class Compiler
 		var lockTimer = Stopwatch.StartNew();
 		lock (method)
 		{
-			RecordLockWait($"Method:{method.FullName}", lockTimer);
+			LockMonitor.RecordLockWait($"Method:{method.FullName}", lockTimer);
 
 			CompileMethod(method, null, threadSlot);
 		}
@@ -597,7 +585,7 @@ public sealed class Compiler
 		EmitCounters();
 
 		// Output lock contention summary
-		var lockContentionSummary = GetLockContentionSummary();
+		var lockContentionSummary = LockMonitor.GetLockContentionSummary();
 		if (!string.IsNullOrEmpty(lockContentionSummary))
 		{
 			PostEvent(CompilerEvent.Debug, lockContentionSummary);
@@ -776,89 +764,6 @@ public sealed class Compiler
 			GlobalCounters.Set("Compiler.Performance.MaxThread.ID", maxThreadId);
 			GlobalCounters.Set("Compiler.Performance.MinThread.ID", minThreadId);
 			GlobalCounters.Set("Compiler.Performance.ThreadImbalance.Percent", (int)imbalancePercent);
-		}
-	}
-
-	private bool ShouldMonitorLockContention()
-	{
-		return lockMonitorTimer.ElapsedTicks >= LockMonitoringThresholdTicks;
-	}
-
-	internal void RecordLockWait(string lockName, Stopwatch lockTimer)
-	{
-		if (!ShouldMonitorLockContention())
-			return;
-
-		var waitMs = lockTimer.ElapsedMilliseconds;
-
-		if (waitMs < LockWaitWarningThresholdMs)
-			return;
-
-		bool shouldReport = false;
-		LockStats currentStats;
-
-		lock (lockMonitorStatsLock)
-		{
-			if (!lockMonitorStats.TryGetValue(lockName, out var stats))
-			{
-				stats = new LockStats();
-			}
-
-			stats.Count++;
-			stats.TotalWaitMs += waitMs;
-			if (waitMs > stats.PeakWaitMs)
-				stats.PeakWaitMs = waitMs;
-
-			lockMonitorStats[lockName] = stats;
-			currentStats = stats;
-
-			Interlocked.Increment(ref lockMonitorContentionCount);
-
-			var currentTicks = lockMonitorTimer.ElapsedTicks;
-			var lastReport = Interlocked.Read(ref lockMonitorLastReportTicks);
-			if (currentTicks - lastReport >= LockReportIntervalTicks)
-			{
-				if (Interlocked.CompareExchange(ref lockMonitorLastReportTicks, currentTicks, lastReport) == lastReport)
-				{
-					shouldReport = true;
-				}
-			}
-		}
-
-		if (shouldReport)
-		{
-			ReportLockContention(lockName, waitMs, currentStats);
-		}
-	}
-
-	private void ReportLockContention(string lockName, long currentWaitMs, LockStats stats)
-	{
-		var elapsedSeconds = (lockMonitorTimer.ElapsedTicks - LockMonitoringThresholdTicks) / (double)Stopwatch.Frequency;
-		var avgWaitMs = stats.Count > 0 ? stats.TotalWaitMs / (double)stats.Count : 0;
-		var rate = elapsedSeconds > 0 ? stats.Count / elapsedSeconds : 0;
-
-		PostEvent(
-			CompilerEvent.Debug,
-			$"[Lock Contention] {lockName} | Current: {currentWaitMs}ms | Peak: {stats.PeakWaitMs}ms | " +
-			$"Avg: {avgWaitMs:F1}ms | Count: {stats.Count} ({rate:F1}/s) | " +
-			$"Elapsed: {elapsedSeconds:F1}s"
-		);
-	}
-
-	private string GetLockContentionSummary()
-	{
-		if (lockMonitorContentionCount == 0)
-			return string.Empty;
-
-		lock (lockMonitorStatsLock)
-		{
-			var summary = "Lock Contention Summary:\n";
-			foreach (var kvp in lockMonitorStats.OrderByDescending(x => x.Value.TotalWaitMs))
-			{
-				var avgWaitMs = kvp.Value.Count > 0 ? kvp.Value.TotalWaitMs / (double)kvp.Value.Count : 0;
-				summary += $"  {kvp.Key}: Count={kvp.Value.Count}, Avg={avgWaitMs:F2}ms, Peak={kvp.Value.PeakWaitMs}ms\n";
-			}
-			return summary;
 		}
 	}
 
