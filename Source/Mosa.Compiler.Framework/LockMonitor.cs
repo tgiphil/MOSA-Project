@@ -1,5 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using System.Collections;
 using System.Diagnostics;
 
 namespace Mosa.Compiler.Framework;
@@ -72,38 +73,37 @@ public sealed class LockMonitor
 
 		if (shouldReport)
 		{
-			ReportLockContention(lockName, waitMs, currentStats);
+			ReportLockContention(lockName, currentStats);
 		}
 	}
 
-	public string GetLockContentionSummary()
+	public void GetLockContentionSummary(long waitThresholdMs)
 	{
-		if (lockMonitorContentionCount == 0)
-			return string.Empty;
+		var snapshot = lockMonitorStats
+			.Where(x => x.Value.TotalWaitMs > waitThresholdMs)
+			.OrderByDescending(x => x.Value.TotalWaitMs)
+			.ToList();
 
-		lock (_lock)
+		if (snapshot.Count == 0)
+			return;
+
+		compiler.PostEvent(CompilerEvent.Debug, "Lock Contention Summary:");
+
+		foreach (var kvp in snapshot)
 		{
-			var summary = "Lock Contention Summary:\n";
-			foreach (var kvp in lockMonitorStats.OrderByDescending(x => x.Value.TotalWaitMs))
-			{
-				var avgWaitMs = kvp.Value.Count > 0 ? kvp.Value.TotalWaitMs / (double)kvp.Value.Count : 0;
-				summary += $"  {kvp.Key}: Count={kvp.Value.Count}, Avg={avgWaitMs:F2}ms, Peak={kvp.Value.PeakWaitMs}ms\n";
-			}
-			return summary;
+			var stats = kvp.Value;
+			var lockName = kvp.Key;
+
+			ReportLockContention(lockName, stats);
 		}
 	}
 
-	private void ReportLockContention(string lockName, long currentWaitMs, LockStats stats)
+	private void ReportLockContention(string lockName, LockStats stats)
 	{
-		var elapsedSeconds = lockMonitorTimer.ElapsedTicks / (double)Stopwatch.Frequency;
 		var avgWaitMs = stats.Count > 0 ? stats.TotalWaitMs / (double)stats.Count : 0;
-		var rate = elapsedSeconds > 0 ? stats.Count / elapsedSeconds : 0;
 
 		compiler.PostEvent(
 			CompilerEvent.Debug,
-			$"[Lock Contention] {lockName} | Current: {currentWaitMs}ms | Peak: {stats.PeakWaitMs}ms | " +
-			$"Avg: {avgWaitMs:F1}ms | Count: {stats.Count} ({rate:F1}/s) | " +
-			$"Elapsed: {elapsedSeconds:F1}s"
-		);
+			$"[Lock Contention] Count: {stats.Count} | Peak: {stats.PeakWaitMs}ms | Avg: {avgWaitMs:F1}ms | Wait: {stats.TotalWaitMs}ms -> {lockName}");
 	}
 }

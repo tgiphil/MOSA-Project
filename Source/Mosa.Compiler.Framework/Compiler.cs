@@ -17,7 +17,11 @@ namespace Mosa.Compiler.Framework;
 /// </summary>
 public sealed class Compiler
 {
-	private const uint MaxThreads = 1024;
+	private static class Constant
+	{
+		public const uint MaxThreads = 1024;
+		public const long LockContentionThresholdMs = 15;
+	}
 
 	#region Data Members
 
@@ -251,9 +255,9 @@ public sealed class Compiler
 
 		ObjectHeaderSize = Architecture.NativePointerSize + 4 + 4; // Method Table Ptr + Hash Value (32-bit) + Lock & Status (32-bit)
 
-		MethodStagePipelines = new Pipeline<BaseMethodCompilerStage>[MaxThreads];
-		ThreadCPUTicks = new long[MaxThreads];
-		ThreadWallTicks = new long[MaxThreads];
+		MethodStagePipelines = new Pipeline<BaseMethodCompilerStage>[Constant.MaxThreads];
+		ThreadCPUTicks = new long[Constant.MaxThreads];
+		ThreadWallTicks = new long[Constant.MaxThreads];
 
 		MethodScheduler = new MethodScheduler(this);
 		MethodScanner = new MethodScanner(this);
@@ -589,13 +593,8 @@ public sealed class Compiler
 		EmitCounters();
 
 		// Output lock contention summary
-		var lockContentionSummary = LockMonitor.GetLockContentionSummary();
-		if (!string.IsNullOrEmpty(lockContentionSummary))
-		{
-			PostEvent(CompilerEvent.Debug, lockContentionSummary);
-		}
+		LockMonitor.GetLockContentionSummary(Constant.LockContentionThresholdMs);
 
-		// Output stringification diagnostics summary
 		PostEvent(CompilerEvent.FinalizationEnd);
 		PostEvent(CompilerEvent.CompilerEnd);
 	}
@@ -759,9 +758,7 @@ public sealed class Compiler
 
 			double maxThreadMs = maxTicks / 10000.0;
 			double minThreadMs = minTicks / 10000.0;
-			double imbalancePercent = minTicks > 0
-				? ((maxTicks - minTicks) / (double)maxTicks) * 100
-				: 0;
+			double imbalancePercent = minTicks > 0 ? ((maxTicks - minTicks) / (double)maxTicks) * 100 : 0;
 
 			GlobalCounters.Set("Compiler.Performance.MaxThread.Milliseconds", (int)maxThreadMs);
 			GlobalCounters.Set("Compiler.Performance.MinThread.Milliseconds", (int)minThreadMs);
