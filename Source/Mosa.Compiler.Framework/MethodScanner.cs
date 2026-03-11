@@ -103,7 +103,7 @@ public class MethodScanner
 		var lockTimer = Stopwatch.StartNew();
 		lock (invokedMethods)
 		{
-			Compiler.LockMonitor.RecordLockWait("MethodScanner.invokedMethods", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(lockTimer, invokedMethods);
 
 			invokedMethods.Add(method);
 		}
@@ -117,7 +117,7 @@ public class MethodScanner
 		var lockTimer1 = Stopwatch.StartNew();
 		lock (allocatedTypes)
 		{
-			Compiler.LockMonitor.RecordLockWait("MethodScanner.allocatedTypes", lockTimer1);
+			Compiler.LockMonitor.RecordLockWait(lockTimer1, allocatedTypes);
 
 			if (allocatedTypes.Contains(type))
 				return;
@@ -130,7 +130,7 @@ public class MethodScanner
 			var lockTimer2 = Stopwatch.StartNew();
 			lock (trace)
 			{
-				Compiler.LockMonitor.RecordLockWait("MethodScanner.trace", lockTimer2);
+				Compiler.LockMonitor.RecordLockWait(lockTimer2, trace);
 
 				if ((lastSource == null && source != null) || lastSource != source)
 				{
@@ -144,7 +144,7 @@ public class MethodScanner
 		var lockTimer3 = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait("MethodScanner._lock", lockTimer3);
+			Compiler.LockMonitor.RecordLockWait(lockTimer3, _lock);
 
 			Compiler.CompilerData.GetTypeData(type).IsTypeAllocated = true;
 
@@ -207,7 +207,7 @@ public class MethodScanner
 			var lockTimer1 = Stopwatch.StartNew();
 			lock (trace)
 			{
-				Compiler.LockMonitor.RecordLockWait("MethodScanner.trace", lockTimer1);
+				Compiler.LockMonitor.RecordLockWait(lockTimer1, trace);
 
 				if ((lastSource == null && source != null) || lastSource != source)
 				{
@@ -222,7 +222,7 @@ public class MethodScanner
 		var lockTimer2 = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait("MethodScanner._lock", lockTimer2);
+			Compiler.LockMonitor.RecordLockWait(lockTimer2, _lock);
 
 			invokedInteraceTypes.Add(method.DeclaringType);
 
@@ -243,7 +243,7 @@ public class MethodScanner
 				var lockTimer3 = Stopwatch.StartNew();
 				lock (allocatedTypes)
 				{
-					Compiler.LockMonitor.RecordLockWait("MethodScanner.allocatedTypes", lockTimer3);
+					Compiler.LockMonitor.RecordLockWait(lockTimer3, allocatedTypes);
 
 					if (!allocatedTypes.Contains(type))
 						continue;
@@ -321,7 +321,7 @@ public class MethodScanner
 			var lockTimer = Stopwatch.StartNew();
 			lock (allocatedTypes)
 			{
-				Compiler.LockMonitor.RecordLockWait("MethodScanner.allocatedTypes", lockTimer);
+				Compiler.LockMonitor.RecordLockWait(lockTimer, allocatedTypes);
 
 				contains = allocatedTypes.Contains(derived);
 			}
@@ -354,7 +354,7 @@ public class MethodScanner
 				var lockTimer = Stopwatch.StartNew();
 				lock (invokedMethods)
 				{
-					Compiler.LockMonitor.RecordLockWait("MethodScanner.invokedMethods", lockTimer);
+					Compiler.LockMonitor.RecordLockWait(lockTimer, invokedMethods);
 
 					contains = invokedMethods.Contains(method);
 				}
@@ -461,7 +461,7 @@ public class MethodScanner
 		var lockTimer = Stopwatch.StartNew();
 		lock (accessedFields)
 		{
-			Compiler.LockMonitor.RecordLockWait("MethodScanner.accessedFields", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(lockTimer, accessedFields);
 
 			accessedFields.AddIfNew(field);
 		}

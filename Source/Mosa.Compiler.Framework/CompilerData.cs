@@ -43,7 +43,7 @@ public sealed class CompilerData
 		var lockTimer = Stopwatch.StartNew();
 		lock (types)
 		{
-			Compiler.LockMonitor.RecordLockWait("CompilerData.types", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(lockTimer, types, "CompilerData.types");
 
 			if (!types.TryGetValue(type, out TypeData compilerType))
 			{
@@ -60,7 +60,7 @@ public sealed class CompilerData
 		var lockTimer = Stopwatch.StartNew();
 		lock (methods)
 		{
-			Compiler.LockMonitor.RecordLockWait("CompilerData.methods", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(lockTimer, methods, "CompilerData.methods");
 
 			if (!methods.TryGetValue(method, out MethodData methodData))
 			{

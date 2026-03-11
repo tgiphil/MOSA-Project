@@ -488,7 +488,7 @@ public sealed class Compiler
 		var lockTimer = Stopwatch.StartNew();
 		lock (method)
 		{
-			LockMonitor.RecordLockWait($"Method: {method.FullName}", lockTimer);
+			LockMonitor.RecordLockWait(lockTimer, method, null, location: "Method");
 
 			CompileMethod(method, null, threadSlot);
 		}

@@ -185,7 +185,7 @@ public sealed class MethodScheduler
 		var lockTimer = Stopwatch.StartNew();
 		lock (queue)
 		{
-			Compiler.LockMonitor.RecordLockWait("MethodScheduler.queue", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(lockTimer, queue, "MethodScheduler.queue");
 
 			AddInsideLock(methodData);
 			queueSize = totalQueued;
@@ -202,7 +202,7 @@ public sealed class MethodScheduler
 		var lockTimer = Stopwatch.StartNew();
 		lock (queue)
 		{
-			Compiler.LockMonitor.RecordLockWait("MethodScheduler.queue", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(lockTimer, queue, "MethodScheduler.queue");
 
 			foreach (var method in methods)
 			{
@@ -258,7 +258,7 @@ public sealed class MethodScheduler
 		var lockTimer = Stopwatch.StartNew();
 		lock (queue)
 		{
-			Compiler.LockMonitor.RecordLockWait("MethodScheduler.queue", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(lockTimer, queue, "MethodScheduler.queue");
 
 			if (queue.TryDequeue(out methodData, out var priority))
 			{
@@ -289,7 +289,7 @@ public sealed class MethodScheduler
 		var lockTimer = Stopwatch.StartNew();
 		lock (queue)
 		{
-			Compiler.LockMonitor.RecordLockWait("MethodScheduler.queue", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(lockTimer, queue, "MethodScheduler.queue");
 
 			currentlyCompiling.Remove(methodData);
 

@@ -12,7 +12,7 @@ public sealed class LockMonitor
 {
 	private struct Contants
 	{
-		public const long LockWaitWarningThresholdMs = 35;
+		public const long LockWaitWarningThresholdMs = 50;
 		public const long LockReportIntervalTicks = TimeSpan.TicksPerSecond * 2;
 	}
 
@@ -21,9 +21,12 @@ public sealed class LockMonitor
 		public long Count;
 		public long TotalWaitMs;
 		public long PeakWaitMs;
+		public object LockObject;
+		public string Name;
+		public string Type;
 	}
 
-	private readonly Dictionary<string, LockStats> lockMonitorStats = new();
+	private readonly Dictionary<object, LockStats> lockMonitorStats = new();
 	private readonly Compiler compiler;
 
 	private readonly object _lock = new();
@@ -33,7 +36,7 @@ public sealed class LockMonitor
 		this.compiler = compiler;
 	}
 
-	public void RecordLockWait(string lockName, Stopwatch lockTimer, string location = null)
+	public void RecordLockWait(Stopwatch lockTimer, object lockObject, string lockName = null, string type = null, string location = null)
 	{
 		var waitMs = lockTimer.ElapsedMilliseconds;
 
@@ -41,18 +44,23 @@ public sealed class LockMonitor
 
 		lock (_lock)
 		{
-			if (!lockMonitorStats.TryGetValue(lockName, out var stats))
+			if (!lockMonitorStats.TryGetValue(lockObject, out var lockStat))
 			{
-				stats = new LockStats();
+				lockStat = new LockStats();
+				lockStat.LockObject = lockObject;
+
+				lockStat.Name = lockName == null ? lockObject.ToString() : lockName;
+				lockStat.Type = string.Empty; // "[" + (type ?? lockObject.GetType().Name) + "]";
+
+				lockMonitorStats.Add(lockObject, lockStat);
 			}
 
-			stats.Count++;
-			stats.TotalWaitMs += waitMs;
-			if (waitMs > stats.PeakWaitMs)
-				stats.PeakWaitMs = waitMs;
+			lockStat.Count++;
+			lockStat.TotalWaitMs += waitMs;
+			if (waitMs > lockStat.PeakWaitMs)
+				lockStat.PeakWaitMs = waitMs;
 
-			lockMonitorStats[lockName] = stats;
-			currentStats = stats;
+			currentStats = lockStat;
 		}
 
 		if (waitMs < Contants.LockWaitWarningThresholdMs)
@@ -82,17 +90,17 @@ public sealed class LockMonitor
 
 			compiler.PostEvent(
 				CompilerEvent.Debug,
-				$"[Lock Contention] Count: {stats.Count} | Peak: {stats.PeakWaitMs}ms | Avg: {avgWaitMs:F1}ms | Wait: {stats.TotalWaitMs}ms -> {lockName}");
+				$"[Lock Contention] Count: {stats.Count} | Peak: {stats.PeakWaitMs}ms | Avg: {avgWaitMs:F1}ms | Wait: {stats.TotalWaitMs}ms -> {lockName} {stats.Type}");
 		}
 	}
 
 	private void ReportLockContention(string lockName, LockStats stats, long waitMs, string location = null)
 	{
 		var avgWaitMs = stats.Count > 0 ? stats.TotalWaitMs / (double)stats.Count : 0;
-		location = location == null ? string.Empty : $"[{location}]";
+		location = location == null ? string.Empty : $"[{location}] ";
 
 		compiler.PostEvent(
 			CompilerEvent.Debug,
-			$"[Lock Contention] Count: {stats.Count} | Current: {waitMs}ms | Peak: {stats.PeakWaitMs}ms | Avg: {avgWaitMs:F1}ms | Wait: {stats.TotalWaitMs}ms -> {location} {lockName}");
+			$"[Lock Contention] Count: {stats.Count} | Current: {waitMs}ms | Peak: {stats.PeakWaitMs}ms | Avg: {avgWaitMs:F1}ms | Wait: {stats.TotalWaitMs}ms -> {location}{lockName} {stats.Type} ");
 	}
 }
