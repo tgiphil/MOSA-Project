@@ -46,11 +46,12 @@ public sealed class LockMonitor
 		{
 			if (!lockMonitorStats.TryGetValue(lockObject, out var lockStat))
 			{
-				lockStat = new LockStats();
-				lockStat.LockObject = lockObject;
-
-				lockStat.Name = lockName == null ? lockObject.ToString() : lockName;
-				lockStat.Type = string.Empty; // "[" + (type ?? lockObject.GetType().Name) + "]";
+				lockStat = new LockStats
+				{
+					LockObject = lockObject,
+					Name = lockName == null ? lockObject.ToString() : lockName,
+					Type = string.Empty // "[" + (type ?? lockObject.GetType().Name) + "]";
+				};
 
 				lockMonitorStats.Add(lockObject, lockStat);
 			}
