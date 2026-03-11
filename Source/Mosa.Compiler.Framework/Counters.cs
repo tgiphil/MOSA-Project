@@ -51,10 +51,6 @@ public sealed class Counters
 
 	public void Update(Counters counters)
 	{
-		//foreach (var counter in counters.Entries.Values)
-		//{
-		//	Update(counter.Name, counter.Count, false);
-		//}
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
