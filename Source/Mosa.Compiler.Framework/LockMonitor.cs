@@ -10,8 +10,11 @@ namespace Mosa.Compiler.Framework;
 /// </summary>
 public sealed class LockMonitor
 {
-	private const long LockWaitWarningThresholdMs = 15;
-	private const long LockReportIntervalTicks = TimeSpan.TicksPerSecond * 2;
+	private struct Contants
+	{
+		public const long LockWaitWarningThresholdMs = 25;
+		public const long LockReportIntervalTicks = TimeSpan.TicksPerSecond * 2;
+	}
 
 	private struct LockStats
 	{
@@ -20,9 +23,6 @@ public sealed class LockMonitor
 		public long PeakWaitMs;
 	}
 
-	private readonly Stopwatch lockMonitorTimer = Stopwatch.StartNew();
-	private long lockMonitorLastReportTicks;
-	private long lockMonitorContentionCount;
 	private readonly Dictionary<string, LockStats> lockMonitorStats = new();
 	private readonly Compiler compiler;
 
@@ -36,9 +36,6 @@ public sealed class LockMonitor
 	public void RecordLockWait(string lockName, Stopwatch lockTimer)
 	{
 		var waitMs = lockTimer.ElapsedMilliseconds;
-
-		if (waitMs < LockWaitWarningThresholdMs)
-			return;
 
 		bool shouldReport = false;
 		LockStats currentStats;
@@ -57,24 +54,15 @@ public sealed class LockMonitor
 
 			lockMonitorStats[lockName] = stats;
 			currentStats = stats;
-
-			Interlocked.Increment(ref lockMonitorContentionCount);
-
-			var currentTicks = lockMonitorTimer.ElapsedTicks;
-			var lastReport = Interlocked.Read(ref lockMonitorLastReportTicks);
-			if (currentTicks - lastReport >= LockReportIntervalTicks)
-			{
-				if (Interlocked.CompareExchange(ref lockMonitorLastReportTicks, currentTicks, lastReport) == lastReport)
-				{
-					shouldReport = true;
-				}
-			}
 		}
 
-		if (shouldReport)
-		{
-			ReportLockContention(lockName, currentStats);
-		}
+		if (waitMs < Contants.LockWaitWarningThresholdMs)
+			return;
+
+		if (!shouldReport)
+			return;
+
+		ReportLockContention(lockName, currentStats);
 	}
 
 	public void GetLockContentionSummary(long waitThresholdMs)

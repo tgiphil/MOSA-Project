@@ -42,6 +42,7 @@ public sealed class MethodScheduler
 	private long totalEnqueueOperations;
 	private long lastQueueReportTicks;
 	private long lastReportedDequeueCount;
+	private long lastReportedEnqueueCount;
 
 	// CPU monitoring
 	private readonly Process currentProcess = Process.GetCurrentProcess();
@@ -103,6 +104,7 @@ public sealed class MethodScheduler
 		PassCount = 0;
 		lastQueueReportTicks = queueProfileTimer.ElapsedTicks;
 		lastReportedDequeueCount = 0;
+		lastReportedEnqueueCount = 0;
 		lastCpuTime = currentProcess.TotalProcessorTime;
 		lastCpuCheckTicks = queueProfileTimer.ElapsedTicks;
 	}
@@ -334,25 +336,26 @@ public sealed class MethodScheduler
 				var currentDequeueCount = totalDequeueOperations;
 				var previousDequeueCount = Interlocked.Exchange(ref lastReportedDequeueCount, currentDequeueCount);
 				var currentEnqueueCount = totalEnqueueOperations;
+				var previousEnqueueCount = Interlocked.Exchange(ref lastReportedEnqueueCount, currentEnqueueCount);
 
 				ReportQueueStatus(currentQueueSize, currentTicks, wasLastReportTicks,
-					currentDequeueCount, previousDequeueCount, currentEnqueueCount);
+					currentDequeueCount, previousDequeueCount, currentEnqueueCount, previousEnqueueCount);
 			}
 		}
 	}
 
 	private void ReportQueueStatus(int currentQueueSize, long currentTicks, long previousTicks,
-		long currentDequeueCount, long previousDequeueCount, long currentEnqueueCount)
+		long currentDequeueCount, long previousDequeueCount, long currentEnqueueCount, long previousEnqueueCount)
 	{
 		// Calculate instantaneous rates (since last report)
 		var ticksDelta = currentTicks - previousTicks;
 		var secondsDelta = ticksDelta / (double)Stopwatch.Frequency;
 
 		var dequeueDelta = currentDequeueCount - previousDequeueCount;
-		var enqueueDelta = currentEnqueueCount - previousDequeueCount; // Calculate from last dequeue count
+		var enqueueDelta = currentEnqueueCount - previousEnqueueCount;
 
-		var dequeueRate = secondsDelta > 0 ? dequeueDelta / secondsDelta : 0;
-		var enqueueRate = secondsDelta > 0 ? enqueueDelta / secondsDelta : 0;
+		var dequeueRate = secondsDelta > 0 ? (uint)(dequeueDelta / secondsDelta) : 0;
+		var enqueueRate = secondsDelta > 0 ? (uint)(enqueueDelta / secondsDelta) : 0;
 
 		var activeWorkers = pipelinePool?.ActiveWorkers ?? 0;
 		var maxWorkers = pipelinePool?.MaxWorkers ?? 0;
@@ -369,7 +372,7 @@ public sealed class MethodScheduler
 			CompilerEvent.Debug,
 			$"[Queue] Size: {currentQueueSize} | Deferred: {deferredCount} | " +
 			$"Active: {activeWorkers}/{maxWorkers} ({utilizationPercent:F1}%) | Idle: {idleWorkers} | " +
-			$"Enqueue: {enqueueRate:F1}/s | Dequeue: {dequeueRate:F1}/s | " +
+			$"Enqueue: {enqueueRate}/s | Dequeue: {dequeueRate}/s | " +
 			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores)"
 		);
 	}
@@ -489,5 +492,6 @@ public sealed class MethodScheduler
 		Interlocked.Exchange(ref totalEnqueueOperations, 0);
 		Interlocked.Exchange(ref totalDequeueOperations, 0);
 		Interlocked.Exchange(ref lastReportedDequeueCount, 0);
+		Interlocked.Exchange(ref lastReportedEnqueueCount, 0);
 	}
 }

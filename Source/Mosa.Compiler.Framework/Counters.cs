@@ -28,7 +28,7 @@ public sealed class Counters
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait($"Counter: {Name}", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(Name, lockTimer);
 
 			Entries.Clear();
 		}
@@ -54,7 +54,7 @@ public sealed class Counters
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait($"Counter: {Name}", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(Name, lockTimer);
 
 			foreach (var counter in counters.Entries.Values)
 			{
@@ -68,7 +68,7 @@ public sealed class Counters
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait($"Counter: {Name}", lockTimer);
+			Compiler.LockMonitor.RecordLockWait(Name, lockTimer);
 
 			UpdateInLock(name, count, reset);
 		}

@@ -20,7 +20,7 @@ public sealed class Compiler
 	private static class Constant
 	{
 		public const uint MaxThreads = 1024;
-		public const long LockContentionThresholdMs = 15;
+		public const long LockContentionThresholdMs = 100;
 	}
 
 	#region Data Members
