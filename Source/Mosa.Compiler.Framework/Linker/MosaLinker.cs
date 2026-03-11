@@ -73,7 +73,7 @@ public sealed class MosaLinker
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait("Linker.Link", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("MosaLinker.Lock", lockTimer, "Link");
 
 			patchSymbol.AddPatch(linkRequest);
 		}
@@ -94,7 +94,7 @@ public sealed class MosaLinker
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait("Linker.Link", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("MosaLinker.Lock", lockTimer, "Link");
 
 			patchSymbol.AddPatch(linkRequest);
 		}
@@ -120,7 +120,7 @@ public sealed class MosaLinker
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait("Linker.IsSymbolDefined", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("MosaLinker.Lock", lockTimer, "IsSymbolDefined");
 			return symbolLookup.ContainsKey(name);
 		}
 	}
@@ -147,13 +147,14 @@ public sealed class MosaLinker
 	public LinkerSymbol DefineSymbol(string name, SectionKind kind, uint alignment, uint size)
 	{
 		var aligned = alignment != 0 ? alignment : 1;
+		LinkerSymbol symbol;
 
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait("Linker.DefineSymbol", lockTimer);
+			Compiler.LockMonitor.RecordLockWait("MosaLinker.Lock", lockTimer, "DefineSymbol");
 
-			if (!symbolLookup.TryGetValue(name, out LinkerSymbol symbol))
+			if (!symbolLookup.TryGetValue(name, out symbol))
 			{
 				symbol = new LinkerSymbol(name, aligned, kind) { Compiler = Compiler };
 
@@ -164,16 +165,16 @@ public sealed class MosaLinker
 
 			symbol.Alignment = aligned;
 			symbol.SectionKind = kind;
-
-			symbol.Stream = size == 0 ? new MemoryStream() : new MemoryStream((int)size);
-
-			if (size != 0)
-			{
-				symbol.Stream.SetLength(size);
-			}
-
-			return symbol;
 		}
+
+		symbol.Stream = size == 0 ? new MemoryStream() : new MemoryStream((int)size);
+
+		if (size != 0)
+		{
+			symbol.Stream.SetLength(size);
+		}
+
+		return symbol;
 	}
 
 	public void SetFirst(LinkerSymbol symbol)

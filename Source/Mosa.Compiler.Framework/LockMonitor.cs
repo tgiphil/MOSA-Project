@@ -12,7 +12,7 @@ public sealed class LockMonitor
 {
 	private struct Contants
 	{
-		public const long LockWaitWarningThresholdMs = 25;
+		public const long LockWaitWarningThresholdMs = 35;
 		public const long LockReportIntervalTicks = TimeSpan.TicksPerSecond * 2;
 	}
 
@@ -33,11 +33,10 @@ public sealed class LockMonitor
 		this.compiler = compiler;
 	}
 
-	public void RecordLockWait(string lockName, Stopwatch lockTimer)
+	public void RecordLockWait(string lockName, Stopwatch lockTimer, string location = null)
 	{
 		var waitMs = lockTimer.ElapsedMilliseconds;
 
-		bool shouldReport = false;
 		LockStats currentStats;
 
 		lock (_lock)
@@ -59,10 +58,7 @@ public sealed class LockMonitor
 		if (waitMs < Contants.LockWaitWarningThresholdMs)
 			return;
 
-		if (!shouldReport)
-			return;
-
-		ReportLockContention(lockName, currentStats);
+		ReportLockContention(lockName, currentStats, waitMs, location);
 	}
 
 	public void GetLockContentionSummary(long waitThresholdMs)
@@ -82,16 +78,21 @@ public sealed class LockMonitor
 			var stats = kvp.Value;
 			var lockName = kvp.Key;
 
-			ReportLockContention(lockName, stats);
+			var avgWaitMs = stats.Count > 0 ? stats.TotalWaitMs / (double)stats.Count : 0;
+
+			compiler.PostEvent(
+				CompilerEvent.Debug,
+				$"[Lock Contention] Count: {stats.Count} | Peak: {stats.PeakWaitMs}ms | Avg: {avgWaitMs:F1}ms | Wait: {stats.TotalWaitMs}ms -> {lockName}");
 		}
 	}
 
-	private void ReportLockContention(string lockName, LockStats stats)
+	private void ReportLockContention(string lockName, LockStats stats, long waitMs, string location = null)
 	{
 		var avgWaitMs = stats.Count > 0 ? stats.TotalWaitMs / (double)stats.Count : 0;
+		location = location == null ? string.Empty : $"[{location}]";
 
 		compiler.PostEvent(
 			CompilerEvent.Debug,
-			$"[Lock Contention] Count: {stats.Count} | Peak: {stats.PeakWaitMs}ms | Avg: {avgWaitMs:F1}ms | Wait: {stats.TotalWaitMs}ms -> {lockName}");
+			$"[Lock Contention] Count: {stats.Count} | Current: {waitMs}ms | Peak: {stats.PeakWaitMs}ms | Avg: {avgWaitMs:F1}ms | Wait: {stats.TotalWaitMs}ms -> {location} {lockName}");
 	}
 }
