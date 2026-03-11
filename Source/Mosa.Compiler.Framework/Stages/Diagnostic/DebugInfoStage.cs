@@ -79,7 +79,7 @@ public class DebugInfoStage : BaseMethodCompilerStage
 
 	protected void DumpRegions()
 	{
-		var trace = CreateTraceLog("Regions", 5);
+		var trace = CreateTraceLog("Regions");
 
 		trace.Log("Label\tAddress\tLength");
 
@@ -91,7 +91,7 @@ public class DebugInfoStage : BaseMethodCompilerStage
 
 	protected void DumpSourceInfo()
 	{
-		var trace = CreateTraceLog("Source", 5);
+		var trace = CreateTraceLog("Source");
 
 		trace.Log("Label\tStartLine\tEndLine\tStartColumn\tEndColumn\tDocument");
 

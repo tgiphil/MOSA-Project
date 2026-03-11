@@ -15,9 +15,12 @@ public sealed class Counters
 
 	private readonly object _lock = new();
 
-	public Counters(Compiler compiler)
+	private readonly string Name;
+
+	public Counters(Compiler compiler, string name = null)
 	{
 		Compiler = compiler;
+		Name = name;
 	}
 
 	public void Reset()
@@ -25,7 +28,7 @@ public sealed class Counters
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait("Counters._lock", lockTimer);
+			Compiler.LockMonitor.RecordLockWait($"Counter: {Name}", lockTimer);
 
 			Entries.Clear();
 		}
@@ -52,11 +55,10 @@ public sealed class Counters
 		//{
 		//	Update(counter.Name, counter.Count, false);
 		//}
-
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait("Counters._lock", lockTimer);
+			Compiler.LockMonitor.RecordLockWait($"Counter: {Name}", lockTimer);
 
 			foreach (var counter in counters.Entries.Values)
 			{
@@ -70,7 +72,7 @@ public sealed class Counters
 		var lockTimer = Stopwatch.StartNew();
 		lock (_lock)
 		{
-			Compiler.LockMonitor.RecordLockWait("Counters._lock", lockTimer);
+			Compiler.LockMonitor.RecordLockWait($"Counter: {Name}", lockTimer);
 
 			UpdateInLock(name, count, reset);
 		}

@@ -115,7 +115,7 @@ public sealed class MethodData
 		Method = mosaMethod;
 		Compiler = compiler;
 
-		Counters = new Counters(compiler);
+		Counters = new Counters(compiler, mosaMethod.FullName);
 		LabelRegions = new List<LabelRegion>();
 
 		Version = 0;

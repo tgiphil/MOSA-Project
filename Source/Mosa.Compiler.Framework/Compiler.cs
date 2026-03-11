@@ -68,7 +68,7 @@ public sealed class Compiler
 	/// <summary>
 	/// Gets the counters.
 	/// </summary>
-	public Counters GlobalCounters { get; } 
+	public Counters GlobalCounters { get; }
 
 	/// <summary>
 	/// Gets the scheduler.
@@ -244,7 +244,7 @@ public sealed class Compiler
 
 		PostEvent(CompilerEvent.CompilerStart);
 
-		GlobalCounters = new Counters(this);
+		GlobalCounters = new Counters(this, "Global");
 		CompilerData = new CompilerData(this);
 		Linker = new MosaLinker(this);
 		LockMonitor = new LockMonitor(this);
@@ -458,6 +458,10 @@ public sealed class Compiler
 			Stop();
 			return null;
 		}
+		finally
+		{
+			MethodScheduler.MarkCompleted(methodData);
+		}
 	}
 
 	public void CompileMethod(MosaMethod method)
@@ -480,7 +484,7 @@ public sealed class Compiler
 		var lockTimer = Stopwatch.StartNew();
 		lock (method)
 		{
-			LockMonitor.RecordLockWait($"Method:{method.FullName}", lockTimer);
+			LockMonitor.RecordLockWait($"Method: {method.FullName}", lockTimer);
 
 			CompileMethod(method, null, threadSlot);
 		}

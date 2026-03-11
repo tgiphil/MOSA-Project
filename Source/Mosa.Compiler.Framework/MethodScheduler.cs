@@ -22,11 +22,16 @@ public sealed class MethodScheduler
 
 	private readonly HashSet<MethodData> queueSet = new HashSet<MethodData>();
 
+	private readonly HashSet<MethodData> currentlyCompiling = new HashSet<MethodData>();
+
+	private readonly HashSet<MethodData> deferredQueue = new HashSet<MethodData>();
+
 	// Reference to pipeline pool for tracking active workers
 	private PipelinePool pipelinePool;
 
 	private int totalMethods;
 	private int totalQueued;
+	private int totalDeferred;
 
 	// Queue profiling metrics
 	private readonly Stopwatch queueProfileTimer = Stopwatch.StartNew();
@@ -66,6 +71,14 @@ public sealed class MethodScheduler
 	/// The queued methods.
 	/// </value>
 	public int TotalQueuedMethods => totalQueued;
+
+	/// <summary>
+	/// Gets the deferred methods waiting for recompilation.
+	/// </summary>
+	/// <value>
+	/// The deferred methods.
+	/// </value>
+	public int TotalDeferredMethods => totalDeferred;
 
 	/// <summary>
 	/// Gets the peak queue size observed.
@@ -212,6 +225,17 @@ public sealed class MethodScheduler
 			Interlocked.Increment(ref totalMethods);
 		}
 
+		// If currently being compiled, defer it
+		if (currentlyCompiling.Contains(methodData))
+		{
+			if (!deferredQueue.Contains(methodData))
+			{
+				deferredQueue.Add(methodData);
+				Interlocked.Increment(ref totalDeferred);
+			}
+			return; // Don't add to priority queue yet
+		}
+
 		if (queueSet.Contains(methodData))
 			return; // already queued
 
@@ -237,6 +261,7 @@ public sealed class MethodScheduler
 			if (queue.TryDequeue(out methodData, out var priority))
 			{
 				queueSet.Remove(methodData);
+				currentlyCompiling.Add(methodData);  // Track as being compiled
 
 				Interlocked.Decrement(ref totalQueued);
 				Interlocked.Increment(ref totalDequeueOperations);
@@ -252,6 +277,36 @@ public sealed class MethodScheduler
 		UpdateQueueMetrics(queueSize);
 
 		return methodData;
+	}
+
+	public void MarkCompleted(MethodData methodData)
+	{
+		bool shouldRequeue = false;
+		int queueSize;
+
+		var lockTimer = Stopwatch.StartNew();
+		lock (queue)
+		{
+			Compiler.LockMonitor.RecordLockWait("MethodScheduler.queue", lockTimer);
+
+			currentlyCompiling.Remove(methodData);
+
+			// Check if it needs recompilation
+			if (deferredQueue.Remove(methodData))
+			{
+				Interlocked.Decrement(ref totalDeferred);
+				shouldRequeue = true;
+				AddInsideLock(methodData);
+			}
+
+			queueSize = totalQueued;
+		}
+
+		if (shouldRequeue)
+		{
+			UpdateQueueMetrics(queueSize);
+			SignalEnqueued();
+		}
 	}
 
 	private void UpdateQueueMetrics(int currentQueueSize)
@@ -308,9 +363,11 @@ public sealed class MethodScheduler
 		var cpuPercent = CalculateCpuUsage(currentTicks);
 		var equivalentCores = (cpuPercent * processorCount) / 100.0;
 
+		var deferredCount = totalDeferred;
+
 		Compiler.PostEvent(
 			CompilerEvent.Debug,
-			$"[Queue] Size: {currentQueueSize} | " +
+			$"[Queue] Size: {currentQueueSize} | Deferred: {deferredCount} | " +
 			$"Active: {activeWorkers}/{maxWorkers} ({utilizationPercent:F1}%) | Idle: {idleWorkers} | " +
 			$"Enqueue: {enqueueRate:F1}/s | Dequeue: {dequeueRate:F1}/s | " +
 			$"CPU: {cpuPercent:F1}% ({equivalentCores:F1}/{processorCount} cores)"

@@ -862,6 +862,7 @@ public partial class MosaSettings
 
 		InitialStackLocation = 0;
 		DebugOutput = false;
+		EmitStatistics = false;
 
 		MaxThreads = Multithreading ? (int)(Environment.ProcessorCount * Constant.MultithreadingProcessorMultiplier) : 0;
 	}
