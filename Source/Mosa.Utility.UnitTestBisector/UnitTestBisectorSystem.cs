@@ -73,6 +73,21 @@ public sealed class UnitTestBisectorSystem
 				if (!MosaSettings.UnitTestBisectorMasking)
 					return 0;
 
+				OutputStatusBisector("Running masking pre-check (all transforms disabled)...");
+				bisectorDisabledTransformNames = [.. observedTransformNames.Where(name => !forcedDisabledTransformNames.Contains(name))];
+				RebuildEffectiveDisabledSet();
+				var maskingPreCheckResult = ExecuteIteration();
+				bisectorDisabledTransformNames = [];
+				RebuildEffectiveDisabledSet();
+
+				OutputStatusBisector($"Masking Pre-Check -> Actual: {(maskingPreCheckResult.Passed ? "PASS" : "FAIL")}");
+
+				if (maskingPreCheckResult.Passed)
+				{
+					OutputStatusBisector("Masking pre-check passed (all-disabled still passes). No masking transforms exist. Skipping masking session.");
+					return 0;
+				}
+
 				OutputStatusBisector("Running masking bisector (items whose removal induces failure)...");
 				RunBisectorSession("Masking", invertOutcome: true, discoveryResult);
 				return 0;
@@ -81,6 +96,21 @@ public sealed class UnitTestBisectorSystem
 			if (!MosaSettings.UnitTestBisectorMasking)
 			{
 				OutputStatusBisector("Discovery passed and masking mode disabled. Nothing to bisect.");
+				return 0;
+			}
+
+			OutputStatusBisector("Running masking pre-check (all transforms disabled)...");
+			bisectorDisabledTransformNames = [.. observedTransformNames.Where(name => !forcedDisabledTransformNames.Contains(name))];
+			RebuildEffectiveDisabledSet();
+			var allDisabledResult = ExecuteIteration();
+			bisectorDisabledTransformNames = [];
+			RebuildEffectiveDisabledSet();
+
+			OutputStatusBisector($"Masking Pre-Check -> Actual: {(allDisabledResult.Passed ? "PASS" : "FAIL")}");
+
+			if (allDisabledResult.Passed)
+			{
+				OutputStatusBisector("Masking pre-check passed (all-disabled still passes). No masking transforms exist. Skipping masking session.");
 				return 0;
 			}
 
