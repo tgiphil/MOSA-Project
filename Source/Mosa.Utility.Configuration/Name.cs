@@ -136,7 +136,6 @@ public static class Name
 	public const string UnitTest_Bisector_Persistent_StateFile = "UnitTest.Bisector.Persistent.StateFile";
 	public const string UnitTest_Bisector_Persistent_Plan = "UnitTest.Bisector.Persistent.Plan";
 	public const string UnitTest_Bisector_Persistent_ResetState = "UnitTest.Bisector.Persistent.ResetState";
-	public const string UnitTest_Bisector_Supervisor_TargetPath = "UnitTest.Bisector.Supervisor.TargetPath";
 	public const string UnitTest_Bisector_Supervisor_WorkingDirectory = "UnitTest.Bisector.Supervisor.WorkingDirectory";
 	public const string UnitTest_Bisector_Supervisor_MaxMemoryPercent = "UnitTest.Bisector.Supervisor.MaxMemoryPercent";
 	public const string UnitTest_Bisector_Supervisor_MaxRestarts = "UnitTest.Bisector.Supervisor.MaxRestarts";

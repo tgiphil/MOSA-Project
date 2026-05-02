@@ -1,6 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Mosa.Utility.Configuration;
 
 namespace Mosa.Utility.UnitTestBisector.Supervisor;
@@ -9,6 +10,7 @@ internal sealed class ProcessSupervisor
 {
 	private const int PollIntervalMs = 2000;
 	private const int RestartDelayMs = 3000;
+	private const long MinimumFreeMemoryForLimitMB = 8L * 1024L;
 
 	private readonly Stopwatch stopwatch = new();
 	private readonly MosaSettings settings;
@@ -27,7 +29,8 @@ internal sealed class ProcessSupervisor
 		var targetArguments = BuildTargetArguments();
 		var workingDirectory = ResolveAndValidateWorkingDirectory(targetPath);
 		var maxMemoryPercent = GetValidatedMaxMemoryPercent();
-		var maxMemoryMB = GetStartupMemoryLimitInMB(maxMemoryPercent);
+		var startupFreeMemoryMB = GetStartupAvailablePhysicalMemoryInMB();
+		var maxMemoryMB = GetStartupMemoryLimitInMB(maxMemoryPercent, startupFreeMemoryMB);
 		var maxRestarts = GetValidatedMaxRestarts();
 
 		stopwatch.Start();
@@ -37,7 +40,10 @@ internal sealed class ProcessSupervisor
 		OutputStatus($"Working Directory: {workingDirectory}");
 		OutputStatus($"Poll Interval: {PollIntervalMs} ms");
 		OutputStatus($"Restart Delay: {RestartDelayMs} ms");
-		OutputStatus($"Memory Limit: {maxMemoryPercent}% of startup free memory ({maxMemoryMB} MB)");
+		if (maxMemoryMB <= 0)
+			OutputStatus($"Memory Limit: disabled (startup free physical memory {startupFreeMemoryMB} MB is below {MinimumFreeMemoryForLimitMB} MB)");
+		else
+			OutputStatus($"Memory Limit: {maxMemoryPercent}% of startup free physical memory ({startupFreeMemoryMB} MB -> {maxMemoryMB} MB)");
 		OutputStatus($"Max Restarts: {(maxRestarts <= 0 ? "unlimited" : maxRestarts)}");
 
 		while (true)
@@ -77,41 +83,20 @@ internal sealed class ProcessSupervisor
 
 	private string ResolveAndValidateTargetPath()
 	{
-		var configuredTargetPath = settings.BisectorSupervisorTargetPath;
-
-		if (!string.IsNullOrWhiteSpace(configuredTargetPath))
-		{
-			var resolvedConfiguredTargetPath = Path.IsPathRooted(configuredTargetPath)
-				? configuredTargetPath
-				: Path.GetFullPath(configuredTargetPath);
-
-			if (File.Exists(resolvedConfiguredTargetPath))
-				return resolvedConfiguredTargetPath;
-		}
-
 		settings.LoadAppLocations();
 
 		var discoveredTargetPath = settings.BisectorPersistentApp;
-		if (!string.IsNullOrWhiteSpace(discoveredTargetPath))
-		{
-			var resolvedDiscoveredTargetPath = Path.IsPathRooted(discoveredTargetPath)
-				? discoveredTargetPath
-				: Path.GetFullPath(discoveredTargetPath);
+		if (string.IsNullOrWhiteSpace(discoveredTargetPath))
+			throw new InvalidOperationException("Unable to locate persistent bisector target from app locations.");
 
-			if (File.Exists(resolvedDiscoveredTargetPath))
-				return resolvedDiscoveredTargetPath;
-		}
+		var resolvedDiscoveredTargetPath = Path.IsPathRooted(discoveredTargetPath)
+			? discoveredTargetPath
+			: Path.GetFullPath(discoveredTargetPath);
 
-		if (!string.IsNullOrWhiteSpace(configuredTargetPath))
-		{
-			var resolvedConfiguredTargetPath = Path.IsPathRooted(configuredTargetPath)
-				? configuredTargetPath
-				: Path.GetFullPath(configuredTargetPath);
+		if (!File.Exists(resolvedDiscoveredTargetPath))
+			throw new InvalidOperationException($"Discovered target does not exist: {resolvedDiscoveredTargetPath}");
 
-			throw new InvalidOperationException($"Target does not exist: {resolvedConfiguredTargetPath}");
-		}
-
-		throw new InvalidOperationException("Missing target path. Use -bisect-target.");
+		return resolvedDiscoveredTargetPath;
 	}
 
 	private string BuildTargetArguments()
@@ -138,9 +123,6 @@ internal sealed class ProcessSupervisor
 	private static bool IsSupervisorOption(string arg, out bool takesValue)
 	{
 		takesValue = true;
-
-		if (string.Equals(arg, "-bisect-target", StringComparison.OrdinalIgnoreCase))
-			return true;
 
 		if (string.Equals(arg, "-bisect-working-dir", StringComparison.OrdinalIgnoreCase))
 			return true;
@@ -194,15 +176,56 @@ internal sealed class ProcessSupervisor
 		return value;
 	}
 
-	private static long GetStartupMemoryLimitInMB(int percent)
+	private static long GetStartupAvailablePhysicalMemoryInMB()
 	{
-		var freeBytes = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+		var freeBytes = GetAvailablePhysicalMemoryBytes();
 		if (freeBytes <= 0)
+			throw new InvalidOperationException("Unable to determine available physical memory at startup.");
+
+		return freeBytes / (1024 * 1024);
+	}
+
+	private static long GetAvailablePhysicalMemoryBytes()
+	{
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+		{
+			var memoryStatus = new MemoryStatusEx();
+			if (!GlobalMemoryStatusEx(memoryStatus))
+				throw new InvalidOperationException("Unable to query physical memory using GlobalMemoryStatusEx.");
+
+			return (long)memoryStatus.AvailPhys;
+		}
+
+		var info = GC.GetGCMemoryInfo();
+		if (info.TotalAvailableMemoryBytes <= 0)
 			throw new InvalidOperationException("Unable to determine available memory at startup.");
 
-		var limitBytes = freeBytes * percent / 100;
-		var limitMB = limitBytes / (1024 * 1024);
+		return info.TotalAvailableMemoryBytes;
+	}
 
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+	private sealed class MemoryStatusEx
+	{
+		public uint Length = (uint)Marshal.SizeOf<MemoryStatusEx>();
+		public uint MemoryLoad;
+		public ulong TotalPhys;
+		public ulong AvailPhys;
+		public ulong TotalPageFile;
+		public ulong AvailPageFile;
+		public ulong TotalVirtual;
+		public ulong AvailVirtual;
+		public ulong AvailExtendedVirtual;
+	}
+
+	[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+	private static extern bool GlobalMemoryStatusEx([In, Out] MemoryStatusEx lpBuffer);
+
+	private static long GetStartupMemoryLimitInMB(int percent, long startupFreeMemoryMB)
+	{
+		if (startupFreeMemoryMB < MinimumFreeMemoryForLimitMB)
+			return 0;
+
+		var limitMB = startupFreeMemoryMB * percent / 100;
 		return Math.Max(1, limitMB);
 	}
 
@@ -249,6 +272,8 @@ internal sealed class ProcessSupervisor
 	private static bool IsMemoryExceeded(Process process, long maxMemoryMB, out long memoryMB)
 	{
 		memoryMB = 0;
+		if (maxMemoryMB <= 0)
+			return false;
 
 		try
 		{

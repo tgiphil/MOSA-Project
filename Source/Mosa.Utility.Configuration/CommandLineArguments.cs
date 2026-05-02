@@ -204,7 +204,6 @@ public static class CommandLineArguments
 			new Argument { Name = "-bisect-persist-state", Setting = Name.UnitTest_Bisector_Persistent_StateFile},
 			new Argument { Name = "-bisect-plan", Setting = Name.UnitTest_Bisector_Persistent_Plan},
 			new Argument { Name = "-bisect-reset-state", Setting = Name.UnitTest_Bisector_Persistent_ResetState, Value = "true"},
-			new Argument { Name = "-bisect-target", Setting = Name.UnitTest_Bisector_Supervisor_TargetPath},
 			new Argument { Name = "-bisect-working-dir", Setting = Name.UnitTest_Bisector_Supervisor_WorkingDirectory},
 			new Argument { Name = "-bisect-max-memory-percent", Setting = Name.UnitTest_Bisector_Supervisor_MaxMemoryPercent},
 			new Argument { Name = "-bisect-max-restarts", Setting = Name.UnitTest_Bisector_Supervisor_MaxRestarts},

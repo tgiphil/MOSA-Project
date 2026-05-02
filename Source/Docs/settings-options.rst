@@ -276,7 +276,6 @@ Unit Test Settings
 	UnitTest.Bisector.Persistent.StateFile,Path to the persistent bisector state file used to resume interrupted runs
 	UnitTest.Bisector.Persistent.Plan,"Persistent bisector plan: disable-one or enable-one"
 	UnitTest.Bisector.Persistent.ResetState,"If true, deletes existing persistent state before starting"
-	UnitTest.Bisector.Supervisor.TargetPath,Path to the supervised target executable
 	UnitTest.Bisector.Supervisor.WorkingDirectory,Working directory for the supervised target process
 	UnitTest.Bisector.Supervisor.MaxMemoryPercent,Percentage of free memory at supervisor startup used as the target working set limit
 	UnitTest.Bisector.Supervisor.MaxRestarts,Maximum number of restarts before supervisor exits (0 means unlimited)

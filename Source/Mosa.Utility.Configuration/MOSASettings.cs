@@ -24,8 +24,7 @@ public partial class MosaSettings
 		public const int EmulatorMaxRuntime = 20; // in seconds
 		public const string BisectorPersistentStateFile = "unit-test-bisector-persistent-state.json";
 		public const string BisectorPersistentPlan = "disable-one";
-		public const string BisectorSupervisorTargetPath = "Mosa.Utility.UnitTestBisector.Persistent.exe";
-		public const int BisectorSupervisorMaxMemoryPercent = 80;
+		public const int BisectorSupervisorMaxMemoryPercent = 100;
 		public const int BisectorSupervisorMaxRestarts = 0;
 
 		public const int X86StackLocation = 0x30000;
@@ -565,12 +564,6 @@ public partial class MosaSettings
 	{
 		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_ResetState, false);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Persistent_ResetState, value);
-	}
-
-	public string BisectorSupervisorTargetPath
-	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Supervisor_TargetPath, Constant.BisectorSupervisorTargetPath);
-		set => Settings.SetValue(Name.UnitTest_Bisector_Supervisor_TargetPath, value);
 	}
 
 	public string BisectorSupervisorWorkingDirectory

@@ -211,7 +211,6 @@ Below are the command line arguments available:
 	-bisect-reset-state,UnitTest.Bisector.Persistent.ResetState,true
 
 	Bisect Supervisor:
-	-bisect-target,UnitTest.Bisector.Supervisor.TargetPath,{value}
 	-bisect-working-dir,UnitTest.Bisector.Supervisor.WorkingDirectory,{value}
 	-bisect-max-memory-percent,UnitTest.Bisector.Supervisor.MaxMemoryPercent,{value}
 	-bisect-max-restarts,UnitTest.Bisector.Supervisor.MaxRestarts,{value}
