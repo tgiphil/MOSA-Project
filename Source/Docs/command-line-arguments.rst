@@ -199,12 +199,22 @@ Below are the command line arguments available:
 	-maxerrors,UnitTest.MaxErrors,{value}
 
 	Bisect:
+	-bisect,UnitTest.Bisector.Persistent.Plan,disable-one
 	-bisect-stage,UnitTest.Bisector.Stage,{value}
 	-bisect-masking,UnitTest.Bisector.Masking,true
 	-bisect-masking-off,UnitTest.Bisector.Masking,false
 	-bisect-pairwise,UnitTest.Bisector.Pairwise,true
 	-bisect-pairwise-off,UnitTest.Bisector.Pairwise,false
 	-bisect-disabled-file,UnitTest.Bisector.DisabledTransformsFile,{value}
+	-bisect-persist-state,UnitTest.Bisector.Persistent.StateFile,{value}
+	-bisect-plan,UnitTest.Bisector.Persistent.Plan,{value}
+	-bisect-reset-state,UnitTest.Bisector.Persistent.ResetState,true
+	-bisect-target,UnitTest.Bisector.Supervisor.TargetPath,{value}
+	-bisect-working-dir,UnitTest.Bisector.Supervisor.WorkingDirectory,{value}
+	-bisect-poll-ms,UnitTest.Bisector.Supervisor.PollIntervalMs,{value}
+	-bisect-restart-delay-ms,UnitTest.Bisector.Supervisor.RestartDelayMs,{value}
+	-bisect-max-memory-mb,UnitTest.Bisector.Supervisor.MaxMemoryMB,{value}
+	-bisect-max-restarts,UnitTest.Bisector.Supervisor.MaxRestarts,{value}
 
     Optimization Levels:
     -o0,Optimizations.Basic,false

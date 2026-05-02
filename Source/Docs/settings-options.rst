@@ -273,6 +273,15 @@ Unit Test Settings
 	UnitTest.Bisector.Masking,"If true, enables masking analysis mode in the unit test bisector"
 	UnitTest.Bisector.Pairwise,"If true, enables pairwise bisector analysis mode"
 	UnitTest.Bisector.DisabledTransformsFile,Path to a text file listing transform names to force-disable (one per line) during bisector runs
+	UnitTest.Bisector.Persistent.StateFile,Path to the persistent bisector state file used to resume interrupted runs
+	UnitTest.Bisector.Persistent.Plan,"Persistent bisector plan: disable-one or enable-one"
+	UnitTest.Bisector.Persistent.ResetState,"If true, deletes existing persistent state before starting"
+	UnitTest.Bisector.Supervisor.TargetPath,Path to the supervised target executable
+	UnitTest.Bisector.Supervisor.WorkingDirectory,Working directory for the supervised target process
+	UnitTest.Bisector.Supervisor.PollIntervalMs,Supervisor polling interval in milliseconds
+	UnitTest.Bisector.Supervisor.RestartDelayMs,Supervisor delay in milliseconds before restarting target
+	UnitTest.Bisector.Supervisor.MaxMemoryMB,Maximum target working set in MB before restart (0 disables limit)
+	UnitTest.Bisector.Supervisor.MaxRestarts,Maximum number of restarts before supervisor exits (0 means unlimited)
 
 Compiler X86 Settings
 ---------------------

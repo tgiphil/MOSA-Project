@@ -38,7 +38,7 @@ public sealed class UnitTestBisectorSystem
 			LoadForcedDisabledTransforms();
 
 			OutputStatusBisector("Resolving stage type...");
-			selectedStageType = ResolveStageType(MosaSettings.UnitTestBisectorStage);
+			selectedStageType = ResolveStageType(MosaSettings.BisectorStage);
 			selectedStageName = selectedStageType.Name;
 			OutputStatusBisector($"Stage: {selectedStageType.FullName} ({selectedStageName})");
 
@@ -70,7 +70,7 @@ public sealed class UnitTestBisectorSystem
 				OutputStatusBisector("Running failure-inducing bisector...");
 				RunBisectorSession("Failure-Inducing", invertOutcome: false, discoveryResult);
 
-				if (!MosaSettings.UnitTestBisectorMasking)
+				if (!MosaSettings.BisectorMasking)
 					return 0;
 
 				OutputStatusBisector("Running masking pre-check (all transforms disabled)...");
@@ -93,7 +93,7 @@ public sealed class UnitTestBisectorSystem
 				return 0;
 			}
 
-			if (!MosaSettings.UnitTestBisectorMasking)
+			if (!MosaSettings.BisectorMasking)
 			{
 				OutputStatusBisector("Discovery passed and masking mode disabled. Nothing to bisect.");
 				return 0;
@@ -130,7 +130,7 @@ public sealed class UnitTestBisectorSystem
 	{
 		bisectorDisabledTransformNames = [];
 		RebuildEffectiveDisabledSet();
-		bisector = new Bisector<string>(observedTransformNames.Where(name => !forcedDisabledTransformNames.Contains(name)), enablePairwise: MosaSettings.UnitTestBisectorPairwise);
+		bisector = new Bisector<string>(observedTransformNames.Where(name => !forcedDisabledTransformNames.Contains(name)), enablePairwise: MosaSettings.BisectorPairwise);
 		var reportedBadItems = new HashSet<string>(StringComparer.Ordinal);
 
 		// Consume the baseline using discovery outcome to avoid rerunning identical baseline iteration.
@@ -266,7 +266,7 @@ public sealed class UnitTestBisectorSystem
 	{
 		forcedDisabledTransformNames = [];
 
-		var filename = MosaSettings.UnitTestBisectorDisabledTransformsFile;
+		var filename = MosaSettings.BisectorDisabledTransformsFile;
 		if (string.IsNullOrWhiteSpace(filename))
 			return;
 

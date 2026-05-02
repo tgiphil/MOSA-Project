@@ -25,6 +25,7 @@ public static class Name
 	public const string AppLocation_QemuEDK2ARM32 = "AppLocation.QemuEDK2ARM32";
 	public const string AppLocation_QemuEDK2ARM64 = "AppLocation.QemuEDK2ARM64";
 	public const string AppLocation_VirtualBox = "AppLocation.VirtualBox";
+	public const string AppLocation_UnitTestBisectorPersistent = "AppLocation.UnitTestBisectorPersistent";
 
 	public const string Compiler_BaseAddress = "Compiler.BaseAddress";
 	public const string Compiler_InitialStackAddress = "Compiler.InitialStackAddress";
@@ -132,6 +133,15 @@ public static class Name
 	public const string UnitTest_Bisector_Masking = "UnitTest.Bisector.Masking";
 	public const string UnitTest_Bisector_Pairwise = "UnitTest.Bisector.Pairwise";
 	public const string UnitTest_Bisector_DisabledTransformsFile = "UnitTest.Bisector.DisabledTransformsFile";
+	public const string UnitTest_Bisector_Persistent_StateFile = "UnitTest.Bisector.Persistent.StateFile";
+	public const string UnitTest_Bisector_Persistent_Plan = "UnitTest.Bisector.Persistent.Plan";
+	public const string UnitTest_Bisector_Persistent_ResetState = "UnitTest.Bisector.Persistent.ResetState";
+	public const string UnitTest_Bisector_Supervisor_TargetPath = "UnitTest.Bisector.Supervisor.TargetPath";
+	public const string UnitTest_Bisector_Supervisor_WorkingDirectory = "UnitTest.Bisector.Supervisor.WorkingDirectory";
+	public const string UnitTest_Bisector_Supervisor_PollIntervalMs = "UnitTest.Bisector.Supervisor.PollIntervalMs";
+	public const string UnitTest_Bisector_Supervisor_RestartDelayMs = "UnitTest.Bisector.Supervisor.RestartDelayMs";
+	public const string UnitTest_Bisector_Supervisor_MaxMemoryMB = "UnitTest.Bisector.Supervisor.MaxMemoryMB";
+	public const string UnitTest_Bisector_Supervisor_MaxRestarts = "UnitTest.Bisector.Supervisor.MaxRestarts";
 	public const string UnitTest_FailFast = "UnitTest.FailFast";
 
 	public const string Image_DiskBlocks = "Image.DiskBlocks";
