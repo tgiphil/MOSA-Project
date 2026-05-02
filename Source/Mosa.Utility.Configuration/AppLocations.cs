@@ -40,7 +40,7 @@ public static class AppLocations
         mosaSettings.MkisofsApp = FindMkisofs();
         mosaSettings.GDBApp = FindGDB();
         mosaSettings.GraphvizApp = FindGraphviz();
-        mosaSettings.BisectorPersistentApp = FindUnitTestBisectorPersistent();
+        mosaSettings.BisectorApp = FindUnitTestBisectorPersistent();
     }
 
     private static string FindQemuX86()

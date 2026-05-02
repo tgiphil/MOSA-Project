@@ -22,12 +22,14 @@ public partial class MosaSettings
 		public const int Port = 11110;
 
 		public const int EmulatorMaxRuntime = 20; // in seconds
-		public const string BisectorPersistentStateFile = "unit-test-bisector-persistent-state.json";
-		public const string BisectorPersistentPlan = "disable-one";
-		public const string BisectorPersistentOrder = "original";
-		public const int BisectorPersistentIterations = 20;
-		public const int BisectorPersistentRandomSeed = 0;
-		public const int BisectorSupervisorMaxRestarts = 0;
+		public const string BisectorStateFile = "unit-test-bisector-persistent-state.json";
+		public const string BisectorPlan = "disable-one";
+		public const string BisectorOrder = "original";
+		public const int BisectorIterations = 20;
+		public const int BisectorRandomSeed = 0;
+		public const int BisectorMaxRestarts = 0;
+
+		public const string BisectorStage = "OptimizationStage";
 
 		public const int X86StackLocation = 0x30000;
 		public const int X64StackLocation = 0x30000;
@@ -185,7 +187,7 @@ public partial class MosaSettings
 		set => Settings.SetValue(Name.AppLocation_GDB, value);
 	}
 
-	public string BisectorPersistentApp
+	public string BisectorApp
 	{
 		get => Settings.GetValue(Name.AppLocation_UnitTestBisectorPersistent, null);
 		set => Settings.SetValue(Name.AppLocation_UnitTestBisectorPersistent, value);
@@ -528,7 +530,7 @@ public partial class MosaSettings
 
 	public string BisectorStage
 	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Stage, null);
+		get => Settings.GetValue(Name.UnitTest_Bisector_Stage, Constant.BisectorStage);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Stage, value);
 	}
 
@@ -550,57 +552,57 @@ public partial class MosaSettings
 		set => Settings.SetValue(Name.UnitTest_Bisector_DisabledTransformsFile, value);
 	}
 
-	public string BisectorPersistentStateFile
+	public string BisectorStateFile
 	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_StateFile, Constant.BisectorPersistentStateFile);
+		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_StateFile, Constant.BisectorStateFile);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Persistent_StateFile, value);
 	}
 
-	public string BisectorPersistentPlan
+	public string BisectorPlan
 	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_Plan, Constant.BisectorPersistentPlan);
+		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_Plan, Constant.BisectorPlan);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Persistent_Plan, value);
 	}
 
-	public bool BisectorPersistentResetState
+	public bool BisectorResetState
 	{
 		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_ResetState, false);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Persistent_ResetState, value);
 	}
 
-	public string BisectorPersistentOrder
+	public string BisectorOrder
 	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_Order, Constant.BisectorPersistentOrder);
+		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_Order, Constant.BisectorOrder);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Persistent_Order, value);
 	}
 
-	public int BisectorPersistentIterations
+	public int BisectorIterations
 	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_Iterations, Constant.BisectorPersistentIterations);
+		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_Iterations, Constant.BisectorIterations);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Persistent_Iterations, value);
 	}
 
-	public int BisectorPersistentRandomSeed
+	public int BisectorRandomSeed
 	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_RandomSeed, Constant.BisectorPersistentRandomSeed);
+		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_RandomSeed, Constant.BisectorRandomSeed);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Persistent_RandomSeed, value);
 	}
 
-	public bool BisectorPersistentWorkerIteration
+	public bool BisectorWorkerIteration
 	{
 		get => Settings.GetValue(Name.UnitTest_Bisector_Persistent_WorkerIteration, false);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Persistent_WorkerIteration, value);
 	}
 
-	public string BisectorSupervisorWorkingDirectory
+	public string BisectorWorkingDirectory
 	{
 		get => Settings.GetValue(Name.UnitTest_Bisector_Supervisor_WorkingDirectory, null);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Supervisor_WorkingDirectory, value);
 	}
 
-	public int BisectorSupervisorMaxRestarts
+	public int BisectorMaxRestarts
 	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Supervisor_MaxRestarts, Constant.BisectorSupervisorMaxRestarts);
+		get => Settings.GetValue(Name.UnitTest_Bisector_Supervisor_MaxRestarts, Constant.BisectorMaxRestarts);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Supervisor_MaxRestarts, value);
 	}
 

@@ -33,9 +33,11 @@ Use ``Mosa.Utility.UnitTestBisector.Persistent`` to run bisector plans that can 
 
 .. code-block:: bash
 
-	dotnet bin/Mosa.Utility.UnitTestBisector.Persistent.dll -bisect -bisect-stage <StageTypeName> -bisect-persist-state artifact/bisect-state.json
+	dotnet bin/Mosa.Utility.UnitTestBisector.Persistent.dll -bisect -bisect-persist-state artifact/bisect-state.json
 
 ``-bisect`` is an alias for ``-bisect-plan disable-one``.
+
+The ``-bisect-stage`` option specifies which compiler stage to bisect. The most common stage — and the default — is ``OptimizationStage``. You can override it with any ``BaseTransformStage`` subclass name (short or fully qualified).
 
 Supported plans:
 
@@ -49,11 +51,14 @@ Quick usage examples for the new plans:
 
 .. code-block:: bash
 
-	# Failure-inducing analysis
-	dotnet bin/Mosa.Utility.UnitTestBisector.Persistent.dll -bisect-plan failure-inducing -bisect-stage <StageTypeName> -filter <UnitTestFilter>
+	# Failure-inducing analysis (uses default OptimizationStage)
+	dotnet bin/Mosa.Utility.UnitTestBisector.Persistent.dll -bisect-plan failure-inducing -filter <UnitTestFilter>
+
+	# Failure-inducing analysis with an explicit stage
+	dotnet bin/Mosa.Utility.UnitTestBisector.Persistent.dll -bisect-plan failure-inducing -bisect-stage OptimizationStage -filter <UnitTestFilter>
 
 	# Masking analysis
-	dotnet bin/Mosa.Utility.UnitTestBisector.Persistent.dll -bisect-plan masking -bisect-stage <StageTypeName> -filter <UnitTestFilter>
+	dotnet bin/Mosa.Utility.UnitTestBisector.Persistent.dll -bisect-plan masking -bisect-stage OptimizationStage -filter <UnitTestFilter>
 
 Optional ordering for deterministic plans:
 
@@ -70,4 +75,4 @@ Use ``Mosa.Utility.UnitTestBisector.Supervisor`` to run one bisector worker iter
 
 .. code-block:: bash
 
-	dotnet bin/Mosa.Utility.UnitTestBisector.Supervisor.dll -bisect -bisect-stage <StageTypeName> -bisect-persist-state artifact/bisect-state.json -bisect-worker-iteration
+	dotnet bin/Mosa.Utility.UnitTestBisector.Supervisor.dll -bisect -bisect-persist-state artifact/bisect-state.json -bisect-worker-iteration

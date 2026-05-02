@@ -60,7 +60,7 @@ internal sealed class ProcessSupervisor
 	{
 		settings.LoadAppLocations();
 
-		var discoveredTargetPath = settings.BisectorPersistentApp;
+		var discoveredTargetPath = settings.BisectorApp;
 		if (string.IsNullOrWhiteSpace(discoveredTargetPath))
 			throw new InvalidOperationException("Unable to locate persistent bisector target from app locations.");
 
@@ -125,7 +125,7 @@ internal sealed class ProcessSupervisor
 
 	private string ResolveAndValidateWorkingDirectory(string targetPath)
 	{
-		var workingDirectory = settings.BisectorSupervisorWorkingDirectory;
+		var workingDirectory = settings.BisectorWorkingDirectory;
 		if (string.IsNullOrWhiteSpace(workingDirectory))
 			workingDirectory = Environment.CurrentDirectory;
 		else if (!Path.IsPathRooted(workingDirectory))
@@ -142,7 +142,7 @@ internal sealed class ProcessSupervisor
 
 	private int GetValidatedMaxRestarts()
 	{
-		var value = settings.BisectorSupervisorMaxRestarts;
+		var value = settings.BisectorMaxRestarts;
 		if (value < 0)
 			throw new InvalidOperationException("Invalid value for -bisect-max-restarts. Minimum is 0.");
 
