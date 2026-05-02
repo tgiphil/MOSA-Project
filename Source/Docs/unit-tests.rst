@@ -41,12 +41,21 @@ Supported plans:
 
 - ``-bisect-plan disable-one``: disable one transform at a time
 - ``-bisect-plan enable-one``: enable one transform at a time
+- ``-bisect-plan random-combo``: randomly enable/disable all transforms each iteration (persistent, resumable)
+
+Optional ordering for deterministic plans:
+
+- ``-bisect-order original``: discovery order (default)
+- ``-bisect-order count``: prioritize lower-observed transforms first
+- ``-bisect-order random``: randomized order (seeded via ``-bisect-seed``)
+
+For ``random-combo``, use ``-bisect-iterations <N>`` (default 20) to control how many iterations are run per invocation.
 
 Supervisor
 ----------
 
-Use ``Mosa.Utility.UnitTestBisector.Supervisor`` to run the bisector process in a monitored child process and restart it if it exits or exceeds memory limits.
+Use ``Mosa.Utility.UnitTestBisector.Supervisor`` to run one bisector worker iteration per child process and automatically restart until completion.
 
 .. code-block:: bash
 
-	dotnet bin/Mosa.Utility.UnitTestBisector.Supervisor.dll -bisect -bisect-stage <StageTypeName> -bisect-persist-state artifact/bisect-state.json -bisect-max-memory-percent 100
+	dotnet bin/Mosa.Utility.UnitTestBisector.Supervisor.dll -bisect -bisect-stage <StageTypeName> -bisect-persist-state artifact/bisect-state.json -bisect-worker-iteration

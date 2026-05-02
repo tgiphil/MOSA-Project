@@ -136,8 +136,11 @@ public static class Name
 	public const string UnitTest_Bisector_Persistent_StateFile = "UnitTest.Bisector.Persistent.StateFile";
 	public const string UnitTest_Bisector_Persistent_Plan = "UnitTest.Bisector.Persistent.Plan";
 	public const string UnitTest_Bisector_Persistent_ResetState = "UnitTest.Bisector.Persistent.ResetState";
+	public const string UnitTest_Bisector_Persistent_Order = "UnitTest.Bisector.Persistent.Order";
+	public const string UnitTest_Bisector_Persistent_Iterations = "UnitTest.Bisector.Persistent.Iterations";
+	public const string UnitTest_Bisector_Persistent_RandomSeed = "UnitTest.Bisector.Persistent.RandomSeed";
+	public const string UnitTest_Bisector_Persistent_WorkerIteration = "UnitTest.Bisector.Persistent.WorkerIteration";
 	public const string UnitTest_Bisector_Supervisor_WorkingDirectory = "UnitTest.Bisector.Supervisor.WorkingDirectory";
-	public const string UnitTest_Bisector_Supervisor_MaxMemoryPercent = "UnitTest.Bisector.Supervisor.MaxMemoryPercent";
 	public const string UnitTest_Bisector_Supervisor_MaxRestarts = "UnitTest.Bisector.Supervisor.MaxRestarts";
 	public const string UnitTest_FailFast = "UnitTest.FailFast";
 

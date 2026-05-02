@@ -13,6 +13,8 @@ namespace Mosa.Utility.UnitTestBisector.Persistent;
 
 public sealed class PersistentUnitTestBisectorSystem
 {
+    private const int WorkerContinueExitCode = 2;
+
     private readonly Stopwatch stopwatch = new();
     private readonly MosaSettings mosaSettings = new();
     private readonly object transformDiscoveryLock = new();
@@ -22,6 +24,7 @@ public sealed class PersistentUnitTestBisectorSystem
     private Type selectedStageType;
     private string selectedStageName;
     private HashSet<string> observedTransformNames = [];
+    private Dictionary<string, int> observedTransformCounts = new(StringComparer.Ordinal);
     private HashSet<string> bisectorDisabledTransformNames = [];
     private HashSet<string> effectiveDisabledTransformNames = [];
     private HashSet<string> forcedDisabledTransformNames = [];
@@ -36,6 +39,7 @@ public sealed class PersistentUnitTestBisectorSystem
             stopwatch.Start();
 
             var plan = ParsePlan(mosaSettings.BisectorPersistentPlan);
+            var order = ParseOrder(mosaSettings.BisectorPersistentOrder);
             var stateFile = GetFullStateFilePath();
             if (mosaSettings.BisectorPersistentResetState && File.Exists(stateFile))
             {
@@ -49,6 +53,7 @@ public sealed class PersistentUnitTestBisectorSystem
             selectedStageName = selectedStageType.Name;
             OutputStatusBisector($"Stage: {selectedStageType.FullName} ({selectedStageName})");
             OutputStatusBisector($"Plan: {plan}");
+            OutputStatusBisector($"Order: {order}");
             OutputStatusBisector($"State File: {stateFile}");
 
             OutputStatus("Discovering Unit Tests...");
@@ -62,11 +67,12 @@ public sealed class PersistentUnitTestBisectorSystem
             }
 
             var state = LoadOrCreateState(stateFile, plan);
-            EnsureStateCompatibility(state, plan);
+            EnsureStateCompatibility(state, plan, order);
 
             if (state.ObservedTransforms.Count == 0)
             {
                 OutputStatusBisector("Running transform discovery iteration...");
+                observedTransformCounts.Clear();
                 bisectorDisabledTransformNames = [];
                 RebuildEffectiveDisabledSet();
 
@@ -84,7 +90,16 @@ public sealed class PersistentUnitTestBisectorSystem
                     return 1;
                 }
 
-                state.ObservedTransforms = observed;
+                var filteredCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+                foreach (var name in observed)
+                {
+                    filteredCounts[name] = observedTransformCounts.TryGetValue(name, out var count) ? count : 0;
+                }
+
+                state.Order = order;
+                state.ObservedTransformCounts = filteredCounts;
+                state.RandomSeed = ResolveRandomSeed(state.RandomSeed);
+                state.ObservedTransforms = BuildIterationSequence(observed, filteredCounts, order, state.RandomSeed);
                 SaveState(stateFile, state);
 
                 OutputStatusBisector($"Discovered transforms for plan: {state.ObservedTransforms.Count}");
@@ -97,64 +112,16 @@ public sealed class PersistentUnitTestBisectorSystem
                     observedTransformNames.Add(transform);
                 }
 
+                state.ObservedTransformCounts ??= new Dictionary<string, int>(StringComparer.Ordinal);
+                state.Order = state.Order == OrderKind.Unspecified ? order : state.Order;
+                state.RandomSeed = ResolveRandomSeed(state.RandomSeed);
+
                 OutputStatusBisector($"Loaded transforms from state: {state.ObservedTransforms.Count}");
             }
 
-            if (!state.BaselineCompleted)
-            {
-                bisectorDisabledTransformNames = BuildDisabledSetForBaseline(plan, state.ObservedTransforms);
-                RebuildEffectiveDisabledSet();
-
-                OutputStatusBisector("Running baseline iteration...");
-                PrintDisabledTransforms();
-
-                var baselineResult = ExecuteIteration();
-                state.BaselineCompleted = true;
-                state.BaselinePassed = baselineResult.Passed;
-                SaveState(stateFile, state);
-
-                OutputStatusBisector($"Baseline Result: {(baselineResult.Passed ? "PASS" : "FAIL")}");
-            }
-            else
-            {
-                OutputStatusBisector($"Resuming after baseline. Baseline Result: {(state.BaselinePassed ? "PASS" : "FAIL")}");
-            }
-
-            while (state.NextIndex < state.ObservedTransforms.Count)
-            {
-                var transform = state.ObservedTransforms[state.NextIndex];
-                bisectorDisabledTransformNames = BuildDisabledSetForTransform(plan, state.ObservedTransforms, transform);
-                RebuildEffectiveDisabledSet();
-                var disabledSnapshot = effectiveDisabledTransformNames.OrderBy(x => x).ToList();
-
-                OutputStatusBisector($"Iteration {state.NextIndex + 1}/{state.ObservedTransforms.Count}");
-                OutputStatusBisector($"Transform: {transform}");
-                PrintDisabledTransforms();
-
-                var iterationResult = ExecuteIteration();
-                state.Results.Add(new PlanResult
-                {
-                    Transform = transform,
-                    Passed = iterationResult.Passed,
-                    DisabledTransforms = disabledSnapshot,
-                });
-                state.NextIndex++;
-                SaveState(stateFile, state);
-                WriteFailureReviewFile(stateFile, plan, state);
-
-                OutputStatusBisector($"Iteration Result: {(iterationResult.Passed ? "PASS" : "FAIL")}");
-                if (!iterationResult.Passed)
-                {
-                    OutputStatusBisector($"Failure state captured for review: transform={transform}, disabled={disabledSnapshot.Count}");
-                }
-            }
-
-            state.Completed = true;
-            SaveState(stateFile, state);
-            WriteFailureReviewFile(stateFile, plan, state);
-
-            PrintFinalReport(plan, state);
-            return 0;
+            return plan == PlanKind.RandomCombo
+                ? ExecuteRandomComboPlan(stateFile, state)
+                : ExecuteDeterministicPlan(stateFile, state, plan);
         }
         catch (Exception ex)
         {
@@ -172,7 +139,24 @@ public sealed class PersistentUnitTestBisectorSystem
         if (string.Equals(plan, "disable-one", StringComparison.OrdinalIgnoreCase))
             return PlanKind.DisableOne;
 
-        throw new InvalidOperationException($"Unknown plan '{plan}'. Valid values: enable-one, disable-one.");
+        if (string.Equals(plan, "random-combo", StringComparison.OrdinalIgnoreCase))
+            return PlanKind.RandomCombo;
+
+        throw new InvalidOperationException($"Unknown plan '{plan}'. Valid values: disable-one, enable-one, random-combo.");
+    }
+
+    private static OrderKind ParseOrder(string order)
+    {
+        if (string.IsNullOrWhiteSpace(order) || string.Equals(order, "original", StringComparison.OrdinalIgnoreCase))
+            return OrderKind.Original;
+
+        if (string.Equals(order, "count", StringComparison.OrdinalIgnoreCase) || string.Equals(order, "count-ascending", StringComparison.OrdinalIgnoreCase))
+            return OrderKind.CountAscending;
+
+        if (string.Equals(order, "random", StringComparison.OrdinalIgnoreCase))
+            return OrderKind.Random;
+
+        throw new InvalidOperationException($"Invalid order value '{order}'. Valid values: original, count, random.");
     }
 
     private string GetFullStateFilePath()
@@ -231,7 +215,7 @@ public sealed class PersistentUnitTestBisectorSystem
         File.WriteAllText(stateFile, json);
     }
 
-    private void EnsureStateCompatibility(PersistentState state, PlanKind plan)
+    private void EnsureStateCompatibility(PersistentState state, PlanKind plan, OrderKind order)
     {
         if (!string.Equals(state.StageTypeName, selectedStageType.FullName, StringComparison.Ordinal))
             throw new InvalidOperationException("State file stage type does not match current -bisect-stage.");
@@ -244,6 +228,12 @@ public sealed class PersistentUnitTestBisectorSystem
 
         if (!string.Equals(state.DisabledTransformsFile, mosaSettings.BisectorDisabledTransformsFile, StringComparison.Ordinal))
             throw new InvalidOperationException("State file disabled transforms file does not match current -bisect-disabled-file.");
+
+        if (state.Order == OrderKind.Unspecified)
+            state.Order = order;
+
+        if (state.Order != order)
+            throw new InvalidOperationException("State file order does not match current -bisect-order.");
     }
 
     private HashSet<string> BuildDisabledSetForBaseline(PlanKind plan, List<string> transforms)
@@ -330,6 +320,7 @@ public sealed class PersistentUnitTestBisectorSystem
         lock (transformDiscoveryLock)
         {
             observedTransformNames.Add(transformName);
+            observedTransformCounts[transformName] = observedTransformCounts.TryGetValue(transformName, out var count) ? count + 1 : 1;
         }
     }
 
@@ -577,6 +568,15 @@ public sealed class PersistentUnitTestBisectorSystem
     {
         DisableOne,
         EnableOne,
+        RandomCombo,
+    }
+
+    private enum OrderKind
+    {
+        Unspecified = 0,
+        Original = 1,
+        CountAscending = 2,
+        Random = 3,
     }
 
     private sealed class PersistentState
@@ -587,9 +587,12 @@ public sealed class PersistentUnitTestBisectorSystem
         public string UnitTestFilter { get; set; }
         public string DisabledTransformsFile { get; set; }
         public List<string> ObservedTransforms { get; set; } = [];
+        public Dictionary<string, int> ObservedTransformCounts { get; set; } = new(StringComparer.Ordinal);
         public bool BaselineCompleted { get; set; }
         public bool BaselinePassed { get; set; }
         public int NextIndex { get; set; }
+        public OrderKind Order { get; set; }
+        public int RandomSeed { get; set; }
         public List<PlanResult> Results { get; set; } = [];
         public bool Completed { get; set; }
     }
@@ -599,5 +602,166 @@ public sealed class PersistentUnitTestBisectorSystem
         public string Transform { get; set; }
         public bool Passed { get; set; }
         public List<string> DisabledTransforms { get; set; } = [];
+    }
+
+    private int ExecuteDeterministicPlan(string stateFile, PersistentState state, PlanKind plan)
+    {
+        if (!state.BaselineCompleted)
+        {
+            bisectorDisabledTransformNames = BuildDisabledSetForBaseline(plan, state.ObservedTransforms);
+            RebuildEffectiveDisabledSet();
+
+            OutputStatusBisector("Running baseline iteration...");
+            PrintDisabledTransforms();
+
+            var baselineResult = ExecuteIteration();
+            state.BaselineCompleted = true;
+            state.BaselinePassed = baselineResult.Passed;
+            SaveState(stateFile, state);
+
+            OutputStatusBisector($"Baseline Result: {(baselineResult.Passed ? "PASS" : "FAIL")}");
+        }
+        else
+        {
+            OutputStatusBisector($"Resuming after baseline. Baseline Result: {(state.BaselinePassed ? "PASS" : "FAIL")}");
+        }
+
+        while (state.NextIndex < state.ObservedTransforms.Count)
+        {
+            var transform = state.ObservedTransforms[state.NextIndex];
+            bisectorDisabledTransformNames = BuildDisabledSetForTransform(plan, state.ObservedTransforms, transform);
+            RebuildEffectiveDisabledSet();
+            var disabledSnapshot = effectiveDisabledTransformNames.OrderBy(x => x).ToList();
+
+            OutputStatusBisector($"Iteration {state.NextIndex + 1}/{state.ObservedTransforms.Count}");
+            OutputStatusBisector($"Transform: {transform}");
+            PrintDisabledTransforms();
+
+            var iterationResult = ExecuteIteration();
+            state.Results.Add(new PlanResult
+            {
+                Transform = transform,
+                Passed = iterationResult.Passed,
+                DisabledTransforms = disabledSnapshot,
+            });
+            state.NextIndex++;
+            SaveState(stateFile, state);
+            WriteFailureReviewFile(stateFile, plan, state);
+
+            OutputStatusBisector($"Iteration Result: {(iterationResult.Passed ? "PASS" : "FAIL")}");
+            if (!iterationResult.Passed)
+            {
+                OutputStatusBisector($"Failure state captured for review: transform={transform}, disabled={disabledSnapshot.Count}");
+            }
+
+            if (mosaSettings.BisectorPersistentWorkerIteration && state.NextIndex < state.ObservedTransforms.Count)
+                return WorkerContinueExitCode;
+        }
+
+        state.Completed = true;
+        SaveState(stateFile, state);
+        WriteFailureReviewFile(stateFile, plan, state);
+
+        PrintFinalReport(plan, state);
+        return 0;
+    }
+
+    private int ExecuteRandomComboPlan(string stateFile, PersistentState state)
+    {
+        if (!state.BaselineCompleted)
+        {
+            bisectorDisabledTransformNames = [];
+            RebuildEffectiveDisabledSet();
+
+            OutputStatusBisector("Running baseline iteration...");
+            PrintDisabledTransforms();
+
+            var baselineResult = ExecuteIteration();
+            state.BaselineCompleted = true;
+            state.BaselinePassed = baselineResult.Passed;
+            SaveState(stateFile, state);
+            OutputStatusBisector($"Baseline Result: {(baselineResult.Passed ? "PASS" : "FAIL")}{Environment.NewLine}");
+
+            if (mosaSettings.BisectorPersistentWorkerIteration)
+                return WorkerContinueExitCode;
+        }
+
+        var iterationsThisRun = mosaSettings.BisectorPersistentWorkerIteration ? 1 : Math.Max(1, mosaSettings.BisectorPersistentIterations);
+
+        for (var i = 0; i < iterationsThisRun; i++)
+        {
+            bisectorDisabledTransformNames = BuildRandomDisabledSet(state.ObservedTransforms, state.RandomSeed, state.NextIndex);
+            RebuildEffectiveDisabledSet();
+            var disabledSnapshot = effectiveDisabledTransformNames.OrderBy(x => x).ToList();
+
+            OutputStatusBisector($"Random Iteration {state.NextIndex + 1}");
+            PrintDisabledTransforms();
+
+            var iterationResult = ExecuteIteration();
+            state.Results.Add(new PlanResult
+            {
+                Transform = $"random-{state.NextIndex + 1}",
+                Passed = iterationResult.Passed,
+                DisabledTransforms = disabledSnapshot,
+            });
+
+            state.NextIndex++;
+            SaveState(stateFile, state);
+            WriteFailureReviewFile(stateFile, PlanKind.RandomCombo, state);
+
+            OutputStatusBisector($"Iteration Result: {(iterationResult.Passed ? "PASS" : "FAIL")}");
+        }
+
+        return mosaSettings.BisectorPersistentWorkerIteration ? WorkerContinueExitCode : 0;
+    }
+
+    private static List<string> BuildIterationSequence(List<string> observed, Dictionary<string, int> counts, OrderKind order, int randomSeed)
+    {
+        if (order == OrderKind.CountAscending)
+            return observed.OrderBy(name => counts.TryGetValue(name, out var count) ? count : 0).ThenBy(name => name).ToList();
+
+        if (order == OrderKind.Random)
+            return Shuffle(observed, randomSeed);
+
+        return observed;
+    }
+
+    private int ResolveRandomSeed(int existingSeed)
+    {
+        if (existingSeed != 0)
+            return existingSeed;
+
+        if (mosaSettings.BisectorPersistentRandomSeed != 0)
+            return mosaSettings.BisectorPersistentRandomSeed;
+
+        return Random.Shared.Next(1, int.MaxValue);
+    }
+
+    private static List<string> Shuffle(List<string> items, int seed)
+    {
+        var copy = items.ToList();
+        var random = new Random(seed);
+
+        for (var i = copy.Count - 1; i > 0; i--)
+        {
+            var j = random.Next(i + 1);
+            (copy[i], copy[j]) = (copy[j], copy[i]);
+        }
+
+        return copy;
+    }
+
+    private static HashSet<string> BuildRandomDisabledSet(List<string> transforms, int seed, int index)
+    {
+        var random = new Random(seed + (index * 7919));
+        var disabled = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var transform in transforms)
+        {
+            if (random.Next(2) == 0)
+                disabled.Add(transform);
+        }
+
+        return disabled;
     }
 }

@@ -274,10 +274,13 @@ Unit Test Settings
 	UnitTest.Bisector.Pairwise,"If true, enables pairwise bisector analysis mode"
 	UnitTest.Bisector.DisabledTransformsFile,Path to a text file listing transform names to force-disable (one per line) during bisector runs
 	UnitTest.Bisector.Persistent.StateFile,Path to the persistent bisector state file used to resume interrupted runs
-	UnitTest.Bisector.Persistent.Plan,"Persistent bisector plan: disable-one or enable-one"
+	UnitTest.Bisector.Persistent.Plan,"Persistent bisector plan: disable-one, enable-one, or random-combo"
+	UnitTest.Bisector.Persistent.Order,"Iteration order for deterministic plans: original, count, random"
+	UnitTest.Bisector.Persistent.Iterations,Number of random-combo iterations to execute per run (default 20)
+	UnitTest.Bisector.Persistent.RandomSeed,Optional random seed for deterministic random ordering/combinations (0 = auto)
 	UnitTest.Bisector.Persistent.ResetState,"If true, deletes existing persistent state before starting"
+	UnitTest.Bisector.Persistent.WorkerIteration,"If true, executes only one bisector iteration per process run"
 	UnitTest.Bisector.Supervisor.WorkingDirectory,Working directory for the supervised target process
-	UnitTest.Bisector.Supervisor.MaxMemoryPercent,Percentage of free memory at supervisor startup used as the target working set limit
 	UnitTest.Bisector.Supervisor.MaxRestarts,Maximum number of restarts before supervisor exits (0 means unlimited)
 
 Compiler X86 Settings
