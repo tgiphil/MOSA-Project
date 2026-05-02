@@ -209,11 +209,11 @@ Below are the command line arguments available:
 	-bisect-persist-state,UnitTest.Bisector.Persistent.StateFile,{value}
 	-bisect-plan,UnitTest.Bisector.Persistent.Plan,{value}
 	-bisect-reset-state,UnitTest.Bisector.Persistent.ResetState,true
+
+	Bisect Supervisor:
 	-bisect-target,UnitTest.Bisector.Supervisor.TargetPath,{value}
 	-bisect-working-dir,UnitTest.Bisector.Supervisor.WorkingDirectory,{value}
-	-bisect-poll-ms,UnitTest.Bisector.Supervisor.PollIntervalMs,{value}
-	-bisect-restart-delay-ms,UnitTest.Bisector.Supervisor.RestartDelayMs,{value}
-	-bisect-max-memory-mb,UnitTest.Bisector.Supervisor.MaxMemoryMB,{value}
+	-bisect-max-memory-percent,UnitTest.Bisector.Supervisor.MaxMemoryPercent,{value}
 	-bisect-max-restarts,UnitTest.Bisector.Supervisor.MaxRestarts,{value}
 
     Optimization Levels:

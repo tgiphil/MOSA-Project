@@ -49,4 +49,4 @@ Use ``Mosa.Utility.UnitTestBisector.Supervisor`` to run the bisector process in 
 
 .. code-block:: bash
 
-	dotnet bin/Mosa.Utility.UnitTestBisector.Supervisor.dll -bisect-target Mosa.Utility.UnitTestBisector.Persistent.exe -bisect -bisect-stage <StageTypeName> -bisect-persist-state artifact/bisect-state.json -bisect-max-memory-mb 2500
+	dotnet bin/Mosa.Utility.UnitTestBisector.Supervisor.dll -bisect-target Mosa.Utility.UnitTestBisector.Persistent.exe -bisect -bisect-stage <StageTypeName> -bisect-persist-state artifact/bisect-state.json -bisect-max-memory-percent 80

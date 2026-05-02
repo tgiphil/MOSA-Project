@@ -7,269 +7,256 @@ namespace Mosa.Utility.UnitTestBisector.Supervisor;
 
 internal sealed class ProcessSupervisor
 {
-    private readonly Stopwatch stopwatch = new();
-    private readonly MosaSettings settings;
-    private readonly string[] args;
-    private int restartCount;
+	private const int PollIntervalMs = 2000;
+	private const int RestartDelayMs = 3000;
 
-    public ProcessSupervisor(MosaSettings settings, string[] args)
-    {
-        this.settings = settings;
-        this.args = args ?? Array.Empty<string>();
-    }
+	private readonly Stopwatch stopwatch = new();
+	private readonly MosaSettings settings;
+	private readonly string[] args;
+	private int restartCount;
 
-    public int Run()
-    {
-        var targetPath = ResolveAndValidateTargetPath();
-        var targetArguments = BuildTargetArguments();
-        var workingDirectory = ResolveAndValidateWorkingDirectory(targetPath);
-        var pollIntervalMs = GetValidatedPollIntervalMs();
-        var restartDelayMs = GetValidatedRestartDelayMs();
-        var maxMemoryMB = GetValidatedMaxMemoryMB();
-        var maxRestarts = GetValidatedMaxRestarts();
+	public ProcessSupervisor(MosaSettings settings, string[] args)
+	{
+		this.settings = settings;
+		this.args = args ?? Array.Empty<string>();
+	}
 
-        stopwatch.Start();
-        OutputStatus("Supervisor started");
-        OutputStatus($"Target: {targetPath}");
-        OutputStatus($"Target Arguments: {targetArguments}");
-        OutputStatus($"Working Directory: {workingDirectory}");
-        OutputStatus($"Poll Interval: {pollIntervalMs} ms");
-        OutputStatus($"Restart Delay: {restartDelayMs} ms");
-        OutputStatus($"Memory Limit: {(maxMemoryMB <= 0 ? "disabled" : maxMemoryMB + " MB")}");
-        OutputStatus($"Max Restarts: {(maxRestarts <= 0 ? "unlimited" : maxRestarts)}");
+	public int Run()
+	{
+		var targetPath = ResolveAndValidateTargetPath();
+		var targetArguments = BuildTargetArguments();
+		var workingDirectory = ResolveAndValidateWorkingDirectory(targetPath);
+		var maxMemoryPercent = GetValidatedMaxMemoryPercent();
+		var maxMemoryMB = GetStartupMemoryLimitInMB(maxMemoryPercent);
+		var maxRestarts = GetValidatedMaxRestarts();
 
-        while (true)
-        {
-            using var process = StartTarget(targetPath, targetArguments, workingDirectory);
+		stopwatch.Start();
+		OutputStatus("Supervisor started");
+		OutputStatus($"Target: {targetPath}");
+		OutputStatus($"Target Arguments: {targetArguments}");
+		OutputStatus($"Working Directory: {workingDirectory}");
+		OutputStatus($"Poll Interval: {PollIntervalMs} ms");
+		OutputStatus($"Restart Delay: {RestartDelayMs} ms");
+		OutputStatus($"Memory Limit: {maxMemoryPercent}% of startup free memory ({maxMemoryMB} MB)");
+		OutputStatus($"Max Restarts: {(maxRestarts <= 0 ? "unlimited" : maxRestarts)}");
 
-            while (true)
-            {
-                if (process.HasExited)
-                {
-                    OutputStatus($"Target exited with code {process.ExitCode}");
-                    break;
-                }
+		while (true)
+		{
+			using var process = StartTarget(targetPath, targetArguments, workingDirectory);
 
-                if (IsMemoryExceeded(process, maxMemoryMB, out var memoryMB))
-                {
-                    OutputStatus($"Memory limit exceeded: {memoryMB} MB > {maxMemoryMB} MB. Terminating target.");
-                    TryTerminate(process);
-                    break;
-                }
+			while (true)
+			{
+				if (process.HasExited)
+				{
+					OutputStatus($"Target exited with code {process.ExitCode}");
+					break;
+				}
 
-                Thread.Sleep(pollIntervalMs);
-            }
+				if (IsMemoryExceeded(process, maxMemoryMB, out var memoryMB))
+				{
+					OutputStatus($"Memory limit exceeded: {memoryMB} MB > {maxMemoryMB} MB. Terminating target.");
+					TryTerminate(process);
+					break;
+				}
 
-            restartCount++;
-            if (maxRestarts > 0 && restartCount > maxRestarts)
-            {
-                OutputStatus("Maximum restart count reached. Exiting supervisor.");
-                return 0;
-            }
+				Thread.Sleep(PollIntervalMs);
+			}
 
-            if (restartDelayMs > 0)
-                Thread.Sleep(restartDelayMs);
+			restartCount++;
+			if (maxRestarts > 0 && restartCount > maxRestarts)
+			{
+				OutputStatus("Maximum restart count reached. Exiting supervisor.");
+				return 0;
+			}
 
-            OutputStatus($"Restarting target (restart #{restartCount})...");
-        }
-    }
+			Thread.Sleep(RestartDelayMs);
 
-    private string ResolveAndValidateTargetPath()
-    {
-        var configuredTargetPath = settings.BisectorSupervisorTargetPath;
+			OutputStatus($"Restarting target (restart #{restartCount})...");
+		}
+	}
 
-        if (!string.IsNullOrWhiteSpace(configuredTargetPath))
-        {
-            var resolvedConfiguredTargetPath = Path.IsPathRooted(configuredTargetPath)
-                ? configuredTargetPath
-                : Path.GetFullPath(configuredTargetPath);
+	private string ResolveAndValidateTargetPath()
+	{
+		var configuredTargetPath = settings.BisectorSupervisorTargetPath;
 
-            if (File.Exists(resolvedConfiguredTargetPath))
-                return resolvedConfiguredTargetPath;
-        }
+		if (!string.IsNullOrWhiteSpace(configuredTargetPath))
+		{
+			var resolvedConfiguredTargetPath = Path.IsPathRooted(configuredTargetPath)
+				? configuredTargetPath
+				: Path.GetFullPath(configuredTargetPath);
 
-        settings.LoadAppLocations();
+			if (File.Exists(resolvedConfiguredTargetPath))
+				return resolvedConfiguredTargetPath;
+		}
 
-        var discoveredTargetPath = settings.BisectorPersistentApp;
-        if (!string.IsNullOrWhiteSpace(discoveredTargetPath))
-        {
-            var resolvedDiscoveredTargetPath = Path.IsPathRooted(discoveredTargetPath)
-                ? discoveredTargetPath
-                : Path.GetFullPath(discoveredTargetPath);
+		settings.LoadAppLocations();
 
-            if (File.Exists(resolvedDiscoveredTargetPath))
-                return resolvedDiscoveredTargetPath;
-        }
+		var discoveredTargetPath = settings.BisectorPersistentApp;
+		if (!string.IsNullOrWhiteSpace(discoveredTargetPath))
+		{
+			var resolvedDiscoveredTargetPath = Path.IsPathRooted(discoveredTargetPath)
+				? discoveredTargetPath
+				: Path.GetFullPath(discoveredTargetPath);
 
-        if (!string.IsNullOrWhiteSpace(configuredTargetPath))
-        {
-            var resolvedConfiguredTargetPath = Path.IsPathRooted(configuredTargetPath)
-                ? configuredTargetPath
-                : Path.GetFullPath(configuredTargetPath);
+			if (File.Exists(resolvedDiscoveredTargetPath))
+				return resolvedDiscoveredTargetPath;
+		}
 
-            throw new InvalidOperationException($"Target does not exist: {resolvedConfiguredTargetPath}");
-        }
+		if (!string.IsNullOrWhiteSpace(configuredTargetPath))
+		{
+			var resolvedConfiguredTargetPath = Path.IsPathRooted(configuredTargetPath)
+				? configuredTargetPath
+				: Path.GetFullPath(configuredTargetPath);
 
-        throw new InvalidOperationException("Missing target path. Use -bisect-target.");
-    }
+			throw new InvalidOperationException($"Target does not exist: {resolvedConfiguredTargetPath}");
+		}
 
-    private string BuildTargetArguments()
-    {
-        var forwarded = new List<string>();
+		throw new InvalidOperationException("Missing target path. Use -bisect-target.");
+	}
 
-        for (var i = 0; i < args.Length; i++)
-        {
-            var arg = args[i];
+	private string BuildTargetArguments()
+	{
+		var forwarded = new List<string>();
 
-            if (IsSupervisorOption(arg, out var takesValue))
-            {
-                if (takesValue && i + 1 < args.Length)
-                    i++;
-                continue;
-            }
+		for (var i = 0; i < args.Length; i++)
+		{
+			var arg = args[i];
 
-            forwarded.Add(QuoteIfNeeded(arg));
-        }
+			if (IsSupervisorOption(arg, out var takesValue))
+			{
+				if (takesValue && i + 1 < args.Length)
+					i++;
+				continue;
+			}
 
-        return string.Join(" ", forwarded);
-    }
+			forwarded.Add(QuoteIfNeeded(arg));
+		}
 
-    private static bool IsSupervisorOption(string arg, out bool takesValue)
-    {
-        takesValue = true;
+		return string.Join(" ", forwarded);
+	}
 
-        if (string.Equals(arg, "-bisect-target", StringComparison.OrdinalIgnoreCase))
-            return true;
+	private static bool IsSupervisorOption(string arg, out bool takesValue)
+	{
+		takesValue = true;
 
-        if (string.Equals(arg, "-bisect-working-dir", StringComparison.OrdinalIgnoreCase))
-            return true;
+		if (string.Equals(arg, "-bisect-target", StringComparison.OrdinalIgnoreCase))
+			return true;
 
-        if (string.Equals(arg, "-bisect-poll-ms", StringComparison.OrdinalIgnoreCase))
-            return true;
+		if (string.Equals(arg, "-bisect-working-dir", StringComparison.OrdinalIgnoreCase))
+			return true;
 
-        if (string.Equals(arg, "-bisect-restart-delay-ms", StringComparison.OrdinalIgnoreCase))
-            return true;
+		if (string.Equals(arg, "-bisect-max-restarts", StringComparison.OrdinalIgnoreCase))
+			return true;
 
-        if (string.Equals(arg, "-bisect-max-memory-mb", StringComparison.OrdinalIgnoreCase))
-            return true;
+		if (string.Equals(arg, "-bisect-max-memory-percent", StringComparison.OrdinalIgnoreCase))
+			return true;
 
-        if (string.Equals(arg, "-bisect-max-restarts", StringComparison.OrdinalIgnoreCase))
-            return true;
+		return false;
+	}
 
-        return false;
-    }
+	private static string QuoteIfNeeded(string arg)
+	{
+		if (arg.Contains(' '))
+			return $"\"{arg.Replace("\"", "\\\"")}\"";
 
-    private static string QuoteIfNeeded(string arg)
-    {
-        if (arg.Contains(' '))
-            return $"\"{arg.Replace("\"", "\\\"")}\"";
+		return arg;
+	}
 
-        return arg;
-    }
+	private string ResolveAndValidateWorkingDirectory(string targetPath)
+	{
+		var workingDirectory = settings.BisectorSupervisorWorkingDirectory;
+		if (string.IsNullOrWhiteSpace(workingDirectory))
+			workingDirectory = Path.GetDirectoryName(targetPath) ?? Environment.CurrentDirectory;
+		else if (!Path.IsPathRooted(workingDirectory))
+			workingDirectory = Path.GetFullPath(workingDirectory);
 
-    private string ResolveAndValidateWorkingDirectory(string targetPath)
-    {
-        var workingDirectory = settings.BisectorSupervisorWorkingDirectory;
-        if (string.IsNullOrWhiteSpace(workingDirectory))
-            workingDirectory = Path.GetDirectoryName(targetPath) ?? Environment.CurrentDirectory;
-        else if (!Path.IsPathRooted(workingDirectory))
-            workingDirectory = Path.GetFullPath(workingDirectory);
+		if (!Directory.Exists(workingDirectory))
+			throw new InvalidOperationException($"Working directory does not exist: {workingDirectory}");
 
-        if (!Directory.Exists(workingDirectory))
-            throw new InvalidOperationException($"Working directory does not exist: {workingDirectory}");
+		return workingDirectory;
+	}
 
-        return workingDirectory;
-    }
+	private int GetValidatedMaxMemoryPercent()
+	{
+		var value = settings.BisectorSupervisorMaxMemoryPercent;
+		if (value <= 0 || value > 100)
+			throw new InvalidOperationException("Invalid value for -bisect-max-memory-percent. Range is 1-100.");
 
-    private int GetValidatedPollIntervalMs()
-    {
-        var value = settings.BisectorSupervisorPollIntervalMs;
-        if (value < 200)
-            throw new InvalidOperationException("Invalid value for -bisect-poll-ms. Minimum is 200.");
+		return value;
+	}
 
-        return value;
-    }
+	private int GetValidatedMaxRestarts()
+	{
+		var value = settings.BisectorSupervisorMaxRestarts;
+		if (value < 0)
+			throw new InvalidOperationException("Invalid value for -bisect-max-restarts. Minimum is 0.");
 
-    private int GetValidatedRestartDelayMs()
-    {
-        var value = settings.BisectorSupervisorRestartDelayMs;
-        if (value < 0)
-            throw new InvalidOperationException("Invalid value for -bisect-restart-delay-ms. Minimum is 0.");
+		return value;
+	}
 
-        return value;
-    }
+	private static long GetStartupMemoryLimitInMB(int percent)
+	{
+		var freeBytes = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+		if (freeBytes <= 0)
+			throw new InvalidOperationException("Unable to determine available memory at startup.");
 
-    private long GetValidatedMaxMemoryMB()
-    {
-        var value = settings.BisectorSupervisorMaxMemoryMB;
-        if (value < 0)
-            throw new InvalidOperationException("Invalid value for -bisect-max-memory-mb. Minimum is 0.");
+		var limitBytes = freeBytes * percent / 100;
+		var limitMB = limitBytes / (1024 * 1024);
 
-        return value;
-    }
+		return Math.Max(1, limitMB);
+	}
 
-    private int GetValidatedMaxRestarts()
-    {
-        var value = settings.BisectorSupervisorMaxRestarts;
-        if (value < 0)
-            throw new InvalidOperationException("Invalid value for -bisect-max-restarts. Minimum is 0.");
+	private Process StartTarget(string targetPath, string targetArguments, string workingDirectory)
+	{
+		var startInfo = new ProcessStartInfo
+		{
+			FileName = targetPath,
+			Arguments = targetArguments,
+			WorkingDirectory = workingDirectory,
+			UseShellExecute = false,
+		};
 
-        return value;
-    }
+		var process = Process.Start(startInfo);
+		if (process == null)
+			throw new InvalidOperationException($"Failed to start target: {targetPath}");
 
-    private Process StartTarget(string targetPath, string targetArguments, string workingDirectory)
-    {
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = targetPath,
-            Arguments = targetArguments,
-            WorkingDirectory = workingDirectory,
-            UseShellExecute = false,
-        };
+		OutputStatus($"Target started (PID: {process.Id})");
+		return process;
+	}
 
-        var process = Process.Start(startInfo);
-        if (process == null)
-            throw new InvalidOperationException($"Failed to start target: {targetPath}");
+	private static bool IsMemoryExceeded(Process process, long maxMemoryMB, out long memoryMB)
+	{
+		memoryMB = 0;
 
-        OutputStatus($"Target started (PID: {process.Id})");
-        return process;
-    }
+		try
+		{
+			process.Refresh();
+			memoryMB = process.WorkingSet64 / (1024 * 1024);
+			return memoryMB > maxMemoryMB;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 
-    private static bool IsMemoryExceeded(Process process, long maxMemoryMB, out long memoryMB)
-    {
-        memoryMB = 0;
-        if (maxMemoryMB <= 0)
-            return false;
+	private static void TryTerminate(Process process)
+	{
+		try
+		{
+			if (!process.HasExited)
+			{
+				process.Kill(entireProcessTree: true);
+				process.WaitForExit(5000);
+			}
+		}
+		catch
+		{
+		}
+	}
 
-        try
-        {
-            process.Refresh();
-            memoryMB = process.WorkingSet64 / (1024 * 1024);
-            return memoryMB > maxMemoryMB;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private static void TryTerminate(Process process)
-    {
-        try
-        {
-            if (!process.HasExited)
-            {
-                process.Kill(entireProcessTree: true);
-                process.WaitForExit(5000);
-            }
-        }
-        catch
-        {
-        }
-    }
-
-    private void OutputStatus(string status)
-    {
-        Console.WriteLine($"{stopwatch.Elapsed.TotalSeconds:00.00} | [Supervisor] {status}");
-    }
+	private void OutputStatus(string status)
+	{
+		Console.WriteLine($"{stopwatch.Elapsed.TotalSeconds:00.00} | [Supervisor] {status}");
+	}
 }

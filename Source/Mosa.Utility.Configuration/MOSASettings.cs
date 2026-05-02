@@ -17,15 +17,15 @@ public partial class MosaSettings
 		public const int MaxErrors = 20;
 		public const int ConnectionTimeOut = 15000; // in milliseconds
 		public const int TimeOut = 5000; // in milliseconds
+
 		public const int MaxAttempts = 20;
 		public const int Port = 11110;
+
 		public const int EmulatorMaxRuntime = 20; // in seconds
 		public const string BisectorPersistentStateFile = "unit-test-bisector-persistent-state.json";
 		public const string BisectorPersistentPlan = "disable-one";
 		public const string BisectorSupervisorTargetPath = "Mosa.Utility.UnitTestBisector.Persistent.exe";
-		public const int BisectorSupervisorPollIntervalMs = 2000;
-		public const int BisectorSupervisorRestartDelayMs = 3000;
-		public const long BisectorSupervisorMaxMemoryMB = 6144;
+		public const int BisectorSupervisorMaxMemoryPercent = 80;
 		public const int BisectorSupervisorMaxRestarts = 0;
 
 		public const int X86StackLocation = 0x30000;
@@ -579,22 +579,10 @@ public partial class MosaSettings
 		set => Settings.SetValue(Name.UnitTest_Bisector_Supervisor_WorkingDirectory, value);
 	}
 
-	public int BisectorSupervisorPollIntervalMs
+	public int BisectorSupervisorMaxMemoryPercent
 	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Supervisor_PollIntervalMs, Constant.BisectorSupervisorPollIntervalMs);
-		set => Settings.SetValue(Name.UnitTest_Bisector_Supervisor_PollIntervalMs, value);
-	}
-
-	public int BisectorSupervisorRestartDelayMs
-	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Supervisor_RestartDelayMs, Constant.BisectorSupervisorRestartDelayMs);
-		set => Settings.SetValue(Name.UnitTest_Bisector_Supervisor_RestartDelayMs, value);
-	}
-
-	public long BisectorSupervisorMaxMemoryMB
-	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Supervisor_MaxMemoryMB, Constant.BisectorSupervisorMaxMemoryMB);
-		set => Settings.SetValue(Name.UnitTest_Bisector_Supervisor_MaxMemoryMB, value);
+		get => Settings.GetValue(Name.UnitTest_Bisector_Supervisor_MaxMemoryPercent, Constant.BisectorSupervisorMaxMemoryPercent);
+		set => Settings.SetValue(Name.UnitTest_Bisector_Supervisor_MaxMemoryPercent, value);
 	}
 
 	public int BisectorSupervisorMaxRestarts
