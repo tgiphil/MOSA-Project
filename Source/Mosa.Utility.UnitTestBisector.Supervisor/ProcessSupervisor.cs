@@ -62,7 +62,7 @@ internal sealed class ProcessSupervisor
 
 		var discoveredTargetPath = settings.BisectorApp;
 		if (string.IsNullOrWhiteSpace(discoveredTargetPath))
-			throw new InvalidOperationException("Unable to locate persistent bisector target from app locations.");
+			throw new InvalidOperationException("Unable to locate bisector target from app locations.");
 
 		var resolvedDiscoveredTargetPath = Path.IsPathRooted(discoveredTargetPath)
 			? discoveredTargetPath

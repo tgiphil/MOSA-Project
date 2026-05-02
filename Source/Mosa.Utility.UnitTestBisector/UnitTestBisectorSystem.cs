@@ -346,7 +346,7 @@ public sealed class UnitTestBisectorSystem
 	{
 		var stateFile = mosaSettings.BisectorStateFile;
 		if (string.IsNullOrWhiteSpace(stateFile))
-			stateFile = "unit-test-bisector-persistent-state.json";
+			stateFile = "unit-test-bisector-state.json";
 
 		if (!Path.IsPathRooted(stateFile))
 			stateFile = Path.GetFullPath(stateFile);
@@ -354,11 +354,11 @@ public sealed class UnitTestBisectorSystem
 		return stateFile;
 	}
 
-	private PersistentState LoadOrCreateState(string stateFile, PlanKind plan)
+	private BisectorState LoadOrCreateState(string stateFile, PlanKind plan)
 	{
 		if (!File.Exists(stateFile))
 		{
-			return new PersistentState
+			return new BisectorState
 			{
 				Plan = plan,
 				StageTypeName = selectedStageType.FullName,
@@ -369,7 +369,7 @@ public sealed class UnitTestBisectorSystem
 		}
 
 		var content = File.ReadAllText(stateFile);
-		var state = JsonSerializer.Deserialize<PersistentState>(content);
+		var state = JsonSerializer.Deserialize<BisectorState>(content);
 		if (state == null)
 			throw new InvalidOperationException($"Unable to deserialize state file: {stateFile}");
 
@@ -388,7 +388,7 @@ public sealed class UnitTestBisectorSystem
 		return state;
 	}
 
-	private void SaveState(string stateFile, PersistentState state)
+	private void SaveState(string stateFile, BisectorState state)
 	{
 		var directory = Path.GetDirectoryName(stateFile);
 		if (!string.IsNullOrEmpty(directory))
@@ -398,7 +398,7 @@ public sealed class UnitTestBisectorSystem
 		File.WriteAllText(stateFile, json);
 	}
 
-	private void EnsureStateCompatibility(PersistentState state, PlanKind plan, OrderKind order)
+	private void EnsureStateCompatibility(BisectorState state, PlanKind plan, OrderKind order)
 	{
 		if (!string.Equals(state.StageTypeName, selectedStageType.FullName, StringComparison.Ordinal))
 			throw new InvalidOperationException("State file stage type does not match current -bisect-stage.");
@@ -622,7 +622,7 @@ public sealed class UnitTestBisectorSystem
 		OutputStatusBisector($"Effective Disabled: {effectiveDisabledTransformNames.Count}");
 	}
 
-	private void PrintFinalReport(PlanKind plan, PersistentState state)
+	private void PrintFinalReport(PlanKind plan, BisectorState state)
 	{
 		OutputStatusBisector($"Plan complete: {plan}");
 		OutputStatusBisector($"Final Stage: {selectedStageType.FullName} ({selectedStageName})");
@@ -643,7 +643,7 @@ public sealed class UnitTestBisectorSystem
 
 	private void OutputStatusBisector(string status)
 	{
-		Console.WriteLine($"{stopwatch.Elapsed.TotalSeconds:00.00} | [PersistentBisector] {status}");
+		Console.WriteLine($"{stopwatch.Elapsed.TotalSeconds:00.00} | [Bisector] {status}");
 	}
 
 	private void OutputStatus(string status)
@@ -669,12 +669,12 @@ public sealed class UnitTestBisectorSystem
 		}
 	}
 
-	private void WriteFailureReviewFile(string stateFile, PlanKind plan, PersistentState state)
+	private void WriteFailureReviewFile(string stateFile, PlanKind plan, BisectorState state)
 	{
 		var reviewFile = stateFile + ".failures.txt";
 		var lines = new List<string>
 		{
-			$"Persistent Unit Test Bisector Failure Review",
+			$"Unit Test Bisector Failure Review",
 			$"Stage: {selectedStageType.FullName} ({selectedStageName})",
 			$"Plan: {plan}",
 			$"State File: {stateFile}",
@@ -786,7 +786,7 @@ public sealed class UnitTestBisectorSystem
 		Random = 3,
 	}
 
-	private sealed class PersistentState
+	private sealed class BisectorState
 	{
 		public string StageTypeName { get; set; }
 
@@ -826,7 +826,7 @@ public sealed class UnitTestBisectorSystem
 		public List<string> DisabledTransforms { get; set; } = [];
 	}
 
-	private int ExecuteDeterministicPlan(string stateFile, PersistentState state, PlanKind plan)
+	private int ExecuteDeterministicPlan(string stateFile, BisectorState state, PlanKind plan)
 	{
 		if (!state.BaselineCompleted)
 		{
@@ -897,7 +897,7 @@ public sealed class UnitTestBisectorSystem
 		return 0;
 	}
 
-	private int ExecuteRandomComboPlan(string stateFile, PersistentState state)
+	private int ExecuteRandomComboPlan(string stateFile, BisectorState state)
 	{
 		if (!state.BaselineCompleted)
 		{

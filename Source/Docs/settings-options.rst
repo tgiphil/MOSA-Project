@@ -31,7 +31,7 @@ Application Location Settings
 	AppLocation.QemuEDK2ARM32, Location of the QEMU ARM32 UEFI firmware
 	AppLocation.QemuEDK2ARM64, Location of the QEMU ARM64 UEFI firmware
 	AppLocation.VirtualBox, Location of the VirtualBox application
-	AppLocation.UnitTestBisectorPersistent, Location of the persistent unit test bisector application used by the bisector supervisor
+	AppLocation.UnitTestBisector, Location of the unit test bisector application used by the bisector supervisor
 
 Compiler Settings
 -----------------
@@ -274,15 +274,13 @@ Unit Test Settings
 	UnitTest.Bisector.Masking,"If true, enables masking analysis mode in the unit test bisector"
 	UnitTest.Bisector.Pairwise,"If true, enables pairwise bisector analysis mode"
 	UnitTest.Bisector.DisabledTransformsFile,Path to a text file listing transform names to force-disable (one per line) during bisector runs
-	UnitTest.Bisector.Persistent.StateFile,Path to the persistent bisector state file used to resume interrupted runs
-	UnitTest.Bisector.Persistent.Plan,"Persistent bisector plan: disable-one, enable-one, random-combo, failure-inducing, or masking"
-	UnitTest.Bisector.Persistent.Order,"Iteration order for persistent plans: original, count, or random"
-	UnitTest.Bisector.Persistent.Iterations,Number of random-combo iterations to execute per run
-	UnitTest.Bisector.Persistent.RandomSeed,Optional random seed for deterministic random ordering/combinations (0 = auto)
-	UnitTest.Bisector.Persistent.ResetState,"If true, deletes existing persistent state before starting"
-	UnitTest.Bisector.Persistent.WorkerIteration,"If true, executes only one bisector iteration per process run"
-	UnitTest.Bisector.Supervisor.WorkingDirectory,Working directory for the supervised target process
-	UnitTest.Bisector.Supervisor.MaxRestarts,Maximum number of restarts before supervisor exits (0 means unlimited)
+	UnitTest.Bisector.StateFile,Path to the bisector state file used to resume interrupted runs
+	UnitTest.Bisector.Plan,"Bisector plan: disable-one, enable-one, random-combo, failure-inducing, or masking"
+	UnitTest.Bisector.Order,"Iteration order for bisector plans: original, count, or random"
+	UnitTest.Bisector.Iterations,Number of random-combo iterations to execute per run
+	UnitTest.Bisector.RandomSeed,Optional random seed for deterministic random ordering/combinations (0 = auto)
+	UnitTest.Bisector.ResetState,"If true, deletes existing state before starting"
+	UnitTest.Bisector.WorkerIteration,"If true, executes only one bisector iteration per process run"
 
 Compiler X86 Settings
 ---------------------

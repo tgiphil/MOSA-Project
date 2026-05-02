@@ -40,7 +40,7 @@ public static class AppLocations
         mosaSettings.MkisofsApp = FindMkisofs();
         mosaSettings.GDBApp = FindGDB();
         mosaSettings.GraphvizApp = FindGraphviz();
-        mosaSettings.BisectorApp = FindUnitTestBisectorPersistent();
+        mosaSettings.BisectorApp = FindUnitTestBisector();
     }
 
     private static string FindQemuX86()
@@ -484,7 +484,7 @@ public static class AppLocations
         return null;
     }
 
-    private static string FindUnitTestBisectorPersistent()
+    private static string FindUnitTestBisector()
     {
         var searchDirectories = new[]
         {
@@ -494,10 +494,10 @@ public static class AppLocations
             @"%APPDIR%\..\bin"
         };
 
-        var location = TryFind("Mosa.Utility.UnitTestBisector.Persistent.exe", searchDirectories);
+        var location = TryFind("Mosa.Utility.UnitTestBisector.exe", searchDirectories);
         if (location != null)
             return location;
 
-        return TryFind("Mosa.Utility.UnitTestBisector.Persistent.dll", searchDirectories);
+        return TryFind("Mosa.Utility.UnitTestBisector.dll", searchDirectories);
     }
 }

@@ -198,22 +198,22 @@ Below are the command line arguments available:
 	-maxerrors,UnitTest.MaxErrors,{value}
 
 	Bisect:
-	-bisect,UnitTest.Bisector.Persistent.Plan,disable-one
+	-bisect,UnitTest.Bisector.Plan,disable-one
 	-bisect-stage,UnitTest.Bisector.Stage,{value} (default: OptimizationStage)
 	-bisect-masking,UnitTest.Bisector.Masking,true
 	-bisect-masking-off,UnitTest.Bisector.Masking,false
 	-bisect-pairwise,UnitTest.Bisector.Pairwise,true
 	-bisect-pairwise-off,UnitTest.Bisector.Pairwise,false
 	-bisect-disabled-file,UnitTest.Bisector.DisabledTransformsFile,{value}
-	-bisect-persist-state,UnitTest.Bisector.Persistent.StateFile,{value}
-	-bisect-plan,UnitTest.Bisector.Persistent.Plan,{value} (disable-one|enable-one|random-combo|failure-inducing|masking)
-	-bisect-order,UnitTest.Bisector.Persistent.Order,{value}
-	-bisect-iterations,UnitTest.Bisector.Persistent.Iterations,{value}
-	-bisect-seed,UnitTest.Bisector.Persistent.RandomSeed,{value}
-	-bisect-reset-state,UnitTest.Bisector.Persistent.ResetState,true
+	-bisect-state,UnitTest.Bisector.StateFile,{value}
+	-bisect-plan,UnitTest.Bisector.Plan,{value} (disable-one|enable-one|random-combo|failure-inducing|masking)
+	-bisect-order,UnitTest.Bisector.Order,{value}
+	-bisect-iterations,UnitTest.Bisector.Iterations,{value}
+	-bisect-seed,UnitTest.Bisector.RandomSeed,{value}
+	-bisect-reset-state,UnitTest.Bisector.ResetState,true
 
 	Bisect Supervisor:
-	-bisect-worker-iteration,UnitTest.Bisector.Persistent.WorkerIteration,true
+	-bisect-worker-iteration,UnitTest.Bisector.WorkerIteration,true
 	-bisect-working-dir,UnitTest.Bisector.Supervisor.WorkingDirectory,{value}
 	-bisect-max-restarts,UnitTest.Bisector.Supervisor.MaxRestarts,{value}
 
