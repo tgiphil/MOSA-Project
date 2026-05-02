@@ -72,6 +72,8 @@ public class UnitTestEngine : IDisposable
 	private WatchDog WatchDog;
 
 	private int CompletedUnitTestCount;
+	private int TotalUnitTestCount;
+	private int LastProgressSecond = -1;
 
 	#endregion Private Data Members
 
@@ -227,12 +229,17 @@ public class UnitTestEngine : IDisposable
 	{
 		lock (Queue)
 		{
+			CompletedUnitTestCount = 0;
+			TotalUnitTestCount = 0;
+			LastProgressSecond = -1;
+
 			foreach (var unitTest in unitTests)
 			{
 				if (unitTest.Status == UnitTestStatus.Skipped)
 					continue;
 
 				Queue.Enqueue(unitTest);
+				TotalUnitTestCount++;
 			}
 		}
 	}
@@ -611,9 +618,19 @@ public class UnitTestEngine : IDisposable
 
 			CompletedUnitTestCount++;
 
-			if (CompletedUnitTestCount % 1000 == 0 && Stopwatch.Elapsed.Seconds != 0)
+			if (MosaSettings.Diagnostic && Stopwatch.Elapsed.TotalSeconds >= 1)
 			{
-				OutputStatus($"Unit Tests - Count: {CompletedUnitTestCount} Elapsed: {(int)Stopwatch.Elapsed.TotalSeconds} ({CompletedUnitTestCount / Stopwatch.Elapsed.TotalSeconds:F2} per second)");
+				var elapsedSeconds = (int)Stopwatch.Elapsed.TotalSeconds;
+
+				if (elapsedSeconds != LastProgressSecond)
+				{
+					LastProgressSecond = elapsedSeconds;
+
+					var percentage = TotalUnitTestCount > 0 ? (CompletedUnitTestCount * 100.0) / TotalUnitTestCount : 0;
+					var rate = CompletedUnitTestCount / Stopwatch.Elapsed.TotalSeconds;
+
+					OutputStatus($"[Unit Tests] Count: {CompletedUnitTestCount} ({percentage:F2}%) Elapsed: {elapsedSeconds} ({rate:F2} per second)");
+				}
 			}
 
 			UnitTestSystem.ParseResultData(unittest, data);
