@@ -42,6 +42,18 @@ Supported plans:
 - ``-bisect-plan disable-one``: disable one transform at a time
 - ``-bisect-plan enable-one``: enable one transform at a time
 - ``-bisect-plan random-combo``: randomly enable/disable all transforms each iteration (persistent, resumable)
+- ``-bisect-plan failure-inducing``: bisect to identify transforms that induce failing runs
+- ``-bisect-plan masking``: bisect to identify transforms whose removal induces failures
+
+Quick usage examples for the new plans:
+
+.. code-block:: bash
+
+	# Failure-inducing analysis
+	dotnet bin/Mosa.Utility.UnitTestBisector.Persistent.dll -bisect-plan failure-inducing -bisect-stage <StageTypeName> -filter <UnitTestFilter>
+
+	# Masking analysis
+	dotnet bin/Mosa.Utility.UnitTestBisector.Persistent.dll -bisect-plan masking -bisect-stage <StageTypeName> -filter <UnitTestFilter>
 
 Optional ordering for deterministic plans:
 

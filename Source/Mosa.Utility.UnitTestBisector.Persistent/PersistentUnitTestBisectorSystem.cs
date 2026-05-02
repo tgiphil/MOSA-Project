@@ -31,6 +31,7 @@ public sealed class PersistentUnitTestBisectorSystem
     private HashSet<string> bisectorDisabledTransformNames = [];
     private HashSet<string> effectiveDisabledTransformNames = [];
     private HashSet<string> forcedDisabledTransformNames = [];
+    private Bisector<string> bisector;
 
     public int Start(string[] args)
     {
@@ -44,9 +45,10 @@ public sealed class PersistentUnitTestBisectorSystem
             stopwatch.Start();
 
             var plan = ParsePlan(mosaSettings.BisectorPersistentPlan);
-            var order = ParseOrder(mosaSettings.BisectorPersistentOrder);
-            var stateFile = GetFullStateFilePath();
-            if (mosaSettings.BisectorPersistentResetState && File.Exists(stateFile))
+            var isBisectorPlan = IsBisectorPlan(plan);
+            var order = isBisectorPlan ? OrderKind.Unspecified : ParseOrder(mosaSettings.BisectorPersistentOrder);
+            var stateFile = isBisectorPlan ? string.Empty : GetFullStateFilePath();
+            if (!isBisectorPlan && mosaSettings.BisectorPersistentResetState && File.Exists(stateFile))
             {
                 File.Delete(stateFile);
                 OutputStatusBisector($"Deleted state file: {stateFile}");
@@ -58,8 +60,11 @@ public sealed class PersistentUnitTestBisectorSystem
             selectedStageName = selectedStageType.Name;
             OutputStatusBisector($"Stage: {selectedStageType.FullName} ({selectedStageName})");
             OutputStatusBisector($"Plan: {plan}");
-            OutputStatusBisector($"Order: {order}");
-            OutputStatusBisector($"State File: {stateFile}");
+            if (!isBisectorPlan)
+            {
+                OutputStatusBisector($"Order: {order}");
+                OutputStatusBisector($"State File: {stateFile}");
+            }
 
             OutputStatus("Discovering Unit Tests...");
             discoveredUnitTests = Discovery.DiscoverUnitTests(mosaSettings.UnitTestFilter);
@@ -70,6 +75,9 @@ public sealed class PersistentUnitTestBisectorSystem
                 OutputStatus("ERROR: No tests matched the filter.");
                 return 1;
             }
+
+            if (isBisectorPlan)
+                return ExecuteBisectorPlan(plan);
 
             var state = LoadOrCreateState(stateFile, plan);
             EnsureStateCompatibility(state, plan, order);
@@ -136,6 +144,170 @@ public sealed class PersistentUnitTestBisectorSystem
         }
     }
 
+    private static bool IsBisectorPlan(PlanKind plan)
+    {
+        return plan is PlanKind.FailureInducing or PlanKind.Masking;
+    }
+
+    private int ExecuteBisectorPlan(PlanKind plan)
+    {
+        if (!IsBisectorPlan(plan))
+            throw new InvalidOperationException($"Plan '{plan}' is not a bisector plan.");
+
+        OutputStatusBisector("Running transform discovery iteration...");
+        observedTransformCounts.Clear();
+        bisectorDisabledTransformNames = [];
+        RebuildEffectiveDisabledSet();
+
+        var discoveryResult = ExecuteIteration();
+        OutputStatusBisector($"Discovery Iteration: {(discoveryResult.Passed ? "PASS" : "FAIL")}");
+
+        if (hasCompilationFailure)
+            return 1;
+
+        var observed = observedTransformNames
+            .Where(name => !forcedDisabledTransformNames.Contains(name))
+            .OrderBy(name => name)
+            .ToList();
+
+        if (observed.Count == 0)
+        {
+            OutputStatusBisector("ERROR: No observed transforms were captured for the selected stage.");
+            return 1;
+        }
+
+        OutputStatusBisector($"Observed Transforms: {observed.Count}");
+        ReportForcedDisabledNotObserved();
+
+        if (plan == PlanKind.FailureInducing)
+        {
+            RunBisectorSession("Failure-Inducing", invertOutcome: false, discoveryResult);
+            return hasCompilationFailure ? 1 : 0;
+        }
+
+        OutputStatusBisector("Running masking pre-check (all transforms disabled)...");
+        bisectorDisabledTransformNames = [.. observed];
+        RebuildEffectiveDisabledSet();
+        var maskingPreCheckResult = ExecuteIteration();
+        bisectorDisabledTransformNames = [];
+        RebuildEffectiveDisabledSet();
+
+        if (hasCompilationFailure)
+            return 1;
+
+        OutputStatusBisector($"Masking Pre-Check -> Actual: {(maskingPreCheckResult.Passed ? "PASS" : "FAIL")}");
+
+        if (maskingPreCheckResult.Passed)
+        {
+            OutputStatusBisector("Masking pre-check passed (all-disabled still passes). No masking transforms identified.");
+            return 0;
+        }
+
+        RunBisectorSession("Masking", invertOutcome: true, discoveryResult);
+        return hasCompilationFailure ? 1 : 0;
+    }
+
+    private void RunBisectorSession(string sessionName, bool invertOutcome, IterationResult discoveryResult)
+    {
+        bisectorDisabledTransformNames = [];
+        RebuildEffectiveDisabledSet();
+        bisector = new Bisector<string>(observedTransformNames.Where(name => !forcedDisabledTransformNames.Contains(name)), enablePairwise: mosaSettings.BisectorPairwise);
+        var reportedBadItems = new HashSet<string>(StringComparer.Ordinal);
+
+        bisectorDisabledTransformNames = [.. bisector.GetNextDisabledItems()];
+        RebuildEffectiveDisabledSet();
+        var mappedBaseline = MapOutcome(discoveryResult.Passed, invertOutcome);
+        bisector.AcceptResult(mappedBaseline);
+        OutputStatusBisector($"{sessionName} Baseline -> Actual: {(discoveryResult.Passed ? "PASS" : "FAIL")}, Mapped: {(mappedBaseline ? "PASS" : "FAIL")}");
+        PrintNewlyConfirmedBadItems(sessionName, bisector, reportedBadItems);
+
+        while (!bisector.IsComplete)
+        {
+            bisectorDisabledTransformNames = [.. bisector.GetNextDisabledItems()];
+            RebuildEffectiveDisabledSet();
+            PrintIterationHeader(sessionName, bisector.GetStatus());
+            PrintDisabledTransforms();
+
+            var iterationResult = ExecuteIteration();
+            var mappedResult = MapOutcome(iterationResult.Passed, invertOutcome);
+
+            bisector.AcceptResult(mappedResult);
+            OutputStatusBisector($"Iteration Result -> Actual: {(iterationResult.Passed ? "PASS" : "FAIL")}, Mapped: {(mappedResult ? "PASS" : "FAIL")}");
+            PrintNewlyConfirmedBadItems(sessionName, bisector, reportedBadItems);
+            PrintStatus(bisector.GetStatus());
+
+            if (hasCompilationFailure)
+                return;
+        }
+
+        OutputStatusBisector($"{sessionName} bisector complete.");
+        PrintFinalReport(sessionName, bisector);
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+    }
+
+    private void PrintIterationHeader(string sessionName, Bisector<string>.BisectorStatus status)
+    {
+        OutputStatusBisector($"{sessionName} Iteration: {status.Iteration + 1}");
+        OutputStatusBisector($"Level: {status.Level}");
+        OutputStatusBisector($"Phase: {status.Phase}");
+        OutputStatusBisector($"Stage: {selectedStageType.FullName} ({selectedStageName})");
+    }
+
+    private static bool MapOutcome(bool passed, bool invertOutcome)
+    {
+        return invertOutcome ? !passed : passed;
+    }
+
+    private void PrintNewlyConfirmedBadItems(string sessionName, Bisector<string> sessionBisector, HashSet<string> reportedBadItems)
+    {
+        foreach (var transform in sessionBisector.ConfirmedBadItems.OrderBy(t => t))
+        {
+            if (reportedBadItems.Add(transform))
+                OutputStatusBisector($"{sessionName} Known Bad Item: {transform}");
+        }
+    }
+
+    private void PrintStatus(Bisector<string>.BisectorStatus status)
+    {
+        OutputStatusBisector($"Status.Iteration: {status.Iteration}");
+        OutputStatusBisector($"Status.TotalItems: {status.TotalItemCount}");
+        OutputStatusBisector($"Status.Suspects: {status.SuspectItemCount}");
+        OutputStatusBisector($"Status.BadItems: {status.ConfirmedBadItemCount}");
+        OutputStatusBisector($"Status.BadPairs: {status.ConfirmedBadPairCount}");
+        OutputStatusBisector($"Status.PairwiseCompleted: {status.PairwiseTestsCompleted}");
+        OutputStatusBisector($"Status.PairwiseRemaining: {status.PairwiseTestsRemaining}");
+    }
+
+    private void PrintFinalReport(string sessionName, Bisector<string> sessionBisector)
+    {
+        OutputStatusBisector($"{sessionName} Final Stage: {selectedStageType.FullName} ({selectedStageName})");
+        OutputStatusBisector("Forced Disabled Items:");
+        foreach (var transform in forcedDisabledTransformNames.OrderBy(t => t))
+        {
+            OutputStatusBisector($"  {transform}");
+        }
+
+        OutputStatusBisector("Confirmed Bad Items:");
+        foreach (var transform in sessionBisector.ConfirmedBadItems.OrderBy(t => t))
+        {
+            OutputStatusBisector($"  {transform}");
+        }
+
+        OutputStatusBisector("Confirmed Bad Pairs:");
+        foreach (var pair in sessionBisector.ConfirmedBadPairs.OrderBy(p => p.Item1).ThenBy(p => p.Item2))
+        {
+            OutputStatusBisector($"  {pair.Item1} + {pair.Item2}");
+        }
+
+        OutputStatusBisector("Remaining Suspects:");
+        foreach (var transform in sessionBisector.RemainingSuspectItems.OrderBy(t => t))
+        {
+            OutputStatusBisector($"  {transform}");
+        }
+    }
+
     private static PlanKind ParsePlan(string plan)
     {
         if (string.Equals(plan, "enable-one", StringComparison.OrdinalIgnoreCase))
@@ -147,7 +319,13 @@ public sealed class PersistentUnitTestBisectorSystem
         if (string.Equals(plan, "random-combo", StringComparison.OrdinalIgnoreCase))
             return PlanKind.RandomCombo;
 
-        throw new InvalidOperationException($"Unknown plan '{plan}'. Valid values: disable-one, enable-one, random-combo.");
+        if (string.Equals(plan, "failure-inducing", StringComparison.OrdinalIgnoreCase))
+            return PlanKind.FailureInducing;
+
+        if (string.Equals(plan, "masking", StringComparison.OrdinalIgnoreCase))
+            return PlanKind.Masking;
+
+        throw new InvalidOperationException($"Unknown plan '{plan}'. Valid values: disable-one, enable-one, random-combo, failure-inducing, masking.");
     }
 
     private static OrderKind ParseOrder(string order)
@@ -325,8 +503,11 @@ public sealed class PersistentUnitTestBisectorSystem
 
         lock (transformDiscoveryLock)
         {
-            observedTransformNames.Add(transformName);
+            var observed = observedTransformNames.Add(transformName);
             observedTransformCounts[transformName] = observedTransformCounts.TryGetValue(transformName, out var count) ? count + 1 : 1;
+
+            if (observed && bisector != null && !forcedDisabledTransformNames.Contains(transformName))
+                bisector.ObserveItem(transformName);
         }
     }
 
@@ -437,7 +618,7 @@ public sealed class PersistentUnitTestBisectorSystem
     private void PrintDisabledTransforms()
     {
         OutputStatusBisector($"Forced Disabled: {forcedDisabledTransformNames.Count}");
-        OutputStatusBisector($"Plan Disabled: {bisectorDisabledTransformNames.Count}");
+        OutputStatusBisector($"Session Disabled: {bisectorDisabledTransformNames.Count}");
         OutputStatusBisector($"Effective Disabled: {effectiveDisabledTransformNames.Count}");
     }
 
@@ -593,6 +774,8 @@ public sealed class PersistentUnitTestBisectorSystem
         DisableOne,
         EnableOne,
         RandomCombo,
+        FailureInducing,
+        Masking,
     }
 
     private enum OrderKind

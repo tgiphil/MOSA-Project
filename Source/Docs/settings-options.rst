@@ -275,7 +275,7 @@ Unit Test Settings
 	UnitTest.Bisector.Pairwise,"If true, enables pairwise bisector analysis mode"
 	UnitTest.Bisector.DisabledTransformsFile,Path to a text file listing transform names to force-disable (one per line) during bisector runs
 	UnitTest.Bisector.Persistent.StateFile,Path to the persistent bisector state file used to resume interrupted runs
-	UnitTest.Bisector.Persistent.Plan,"Persistent bisector plan: disable-one, enable-one, or random-combo"
+	UnitTest.Bisector.Persistent.Plan,"Persistent bisector plan: disable-one, enable-one, random-combo, failure-inducing, or masking"
 	UnitTest.Bisector.Persistent.Order,"Iteration order for persistent plans: original, count, or random"
 	UnitTest.Bisector.Persistent.Iterations,Number of random-combo iterations to execute per run
 	UnitTest.Bisector.Persistent.RandomSeed,Optional random seed for deterministic random ordering/combinations (0 = auto)
