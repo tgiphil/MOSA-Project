@@ -220,8 +220,30 @@ internal sealed class ProcessSupervisor
 		if (process == null)
 			throw new InvalidOperationException($"Failed to start target: {targetPath}");
 
+		TryEnableAllProcessors(process);
+
 		OutputStatus($"Target started (PID: {process.Id})");
 		return process;
+	}
+
+	private static void TryEnableAllProcessors(Process process)
+	{
+		try
+		{
+			var maxBits = IntPtr.Size * 8;
+			var processorCount = Math.Max(1, Math.Min(Environment.ProcessorCount, maxBits));
+
+			long mask;
+			if (processorCount >= 63)
+				mask = long.MaxValue;
+			else
+				mask = (1L << processorCount) - 1;
+
+			process.ProcessorAffinity = (IntPtr)mask;
+		}
+		catch
+		{
+		}
 	}
 
 	private static bool IsMemoryExceeded(Process process, long maxMemoryMB, out long memoryMB)
