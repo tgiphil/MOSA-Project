@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO.Pipes;
 using System.Net.Sockets;
 using Mosa.Compiler.Common;
+using Mosa.Compiler.Common.Exceptions;
 using Mosa.Compiler.Framework;
 using Mosa.Compiler.Framework.Linker;
 using Mosa.Compiler.MosaTypeSystem;
@@ -33,6 +34,8 @@ public class UnitTestEngine : IDisposable
 	#region Public Methods
 
 	public bool IsAborted => Aborted;
+
+	public string CompilationFailure { get; private set; }
 
 	public TypeSystem TypeSystem { get; internal set; }
 
@@ -112,6 +115,7 @@ public class UnitTestEngine : IDisposable
 
 	private void Initialize()
 	{
+		CompilationFailure = null;
 		Aborted = !Compile();
 
 		if (Aborted)
@@ -250,22 +254,57 @@ public class UnitTestEngine : IDisposable
 		}
 	}
 
+	private void NotifyEvent(CompilerEvent compilerEvent, string message, int threadID)
+	{
+		if (compilerEvent == CompilerEvent.Exception)
+		{
+			if (string.IsNullOrWhiteSpace(CompilationFailure))
+				CompilationFailure = message;
+			else if (!string.IsNullOrWhiteSpace(message) && !string.Equals(CompilationFailure, message, StringComparison.Ordinal))
+				CompilationFailure = $"{CompilationFailure}{Environment.NewLine}{message}";
+		}
+
+		if (CompilerHooks.IsStandardFilteredNotifyEvent(compilerEvent))
+			return;
+
+		if (compilerEvent == CompilerEvent.Diagnostic && !MosaSettings.Diagnostic)
+			return;
+
+		OutputStatus(CompilerHooks.GetStandardNotifyEventStatus(compilerEvent, message));
+	}
+
 	public bool Compile()
 	{
 		Stopwatch.Restart();
+		CompilationFailure = null;
 
 		var compilerHook = CreateCompilerHook();
 
-		var builder = new Builder(MosaSettings, compilerHook);
+		try
+		{
+			var builder = new Builder(MosaSettings, compilerHook);
 
-		builder.Build();
+			builder.Build();
 
-		Linker = builder.Linker;
-		TypeSystem = builder.TypeSystem;
+			Linker = builder.Linker;
+			TypeSystem = builder.TypeSystem;
 
-		MosaSettings = builder.MosaSettings; // Switch to builder settings
+			MosaSettings = builder.MosaSettings; // Switch to builder settings
 
-		return builder.IsSucccessful;
+			return builder.IsSucccessful;
+		}
+		catch (CompilerException ex)
+		{
+			CompilationFailure ??= ex.ToString();
+			OutputStatus($"ERROR: {CompilationFailure}");
+			return false;
+		}
+		catch (Exception ex)
+		{
+			CompilationFailure ??= ex.ToString();
+			OutputStatus($"ERROR: {CompilationFailure}");
+			return false;
+		}
 	}
 
 	private CompilerHooks CreateCompilerHook()
@@ -277,17 +316,6 @@ public class UnitTestEngine : IDisposable
 		compilerHooks.NotifyStatus ??= NotifyStatus;
 
 		return compilerHooks;
-	}
-
-	private void NotifyEvent(CompilerEvent compilerEvent, string message, int threadID)
-	{
-		if (CompilerHooks.IsStandardFilteredNotifyEvent(compilerEvent))
-			return;
-
-		if (compilerEvent == CompilerEvent.Diagnostic && !MosaSettings.Diagnostic)
-			return;
-
-		OutputStatus(CompilerHooks.GetStandardNotifyEventStatus(compilerEvent, message));
 	}
 
 	private void NotifyProgress(int totalMethods, int completedMethods)

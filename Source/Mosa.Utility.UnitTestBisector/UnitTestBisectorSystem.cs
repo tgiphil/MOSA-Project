@@ -25,6 +25,9 @@ public sealed class UnitTestBisectorSystem
 
 	private Bisector<string> bisector;
 
+	private bool hasCompilationFailure;
+	private string lastCompilationFailure;
+
 	public int Start(string[] args)
 	{
 		try
@@ -32,6 +35,9 @@ public sealed class UnitTestBisectorSystem
 			MosaSettings.LoadArguments(args);
 
 			MosaSettings.UnitTestFailFast = true;
+
+			hasCompilationFailure = false;
+			lastCompilationFailure = null;
 
 			Stopwatch.Start();
 
@@ -54,6 +60,9 @@ public sealed class UnitTestBisectorSystem
 
 			OutputStatusBisector("Starting discovery iteration...");
 			var discoveryResult = ExecuteIteration();
+
+			if (hasCompilationFailure)
+				return 1;
 
 			if (observedTransformNames.Count == 0)
 			{
@@ -80,6 +89,9 @@ public sealed class UnitTestBisectorSystem
 				bisectorDisabledTransformNames = [];
 				RebuildEffectiveDisabledSet();
 
+				if (hasCompilationFailure)
+					return 1;
+
 				OutputStatusBisector($"Masking Pre-Check -> Actual: {(maskingPreCheckResult.Passed ? "PASS" : "FAIL")}");
 
 				if (maskingPreCheckResult.Passed)
@@ -105,6 +117,9 @@ public sealed class UnitTestBisectorSystem
 			var allDisabledResult = ExecuteIteration();
 			bisectorDisabledTransformNames = [];
 			RebuildEffectiveDisabledSet();
+
+			if (hasCompilationFailure)
+				return 1;
 
 			OutputStatusBisector($"Masking Pre-Check -> Actual: {(allDisabledResult.Passed ? "PASS" : "FAIL")}");
 
@@ -190,6 +205,7 @@ public sealed class UnitTestBisectorSystem
 			using var unitTestEngine = new UnitTestEngine(MosaSettings, OutputStatus, CreateCompilerHooks);
 			if (unitTestEngine.IsAborted)
 			{
+				CaptureCompilationFailure(unitTestEngine.CompilationFailure);
 				OutputStatusBisector("Iteration compiler run aborted. Treating as FAIL.");
 				return new IterationResult(false);
 			}
@@ -426,6 +442,24 @@ public sealed class UnitTestBisectorSystem
 	private void OutputStatus(string status)
 	{
 		Console.WriteLine($"{Stopwatch.Elapsed.TotalSeconds:00.00} | {status}");
+	}
+
+	private void CaptureCompilationFailure(string failure)
+	{
+		if (string.IsNullOrWhiteSpace(failure))
+			return;
+
+		hasCompilationFailure = true;
+		if (string.Equals(lastCompilationFailure, failure, StringComparison.Ordinal))
+			return;
+
+		lastCompilationFailure = failure;
+		OutputStatusBisector("Compilation failure details:");
+		foreach (var line in failure.Split([Environment.NewLine], StringSplitOptions.None))
+		{
+			if (!string.IsNullOrWhiteSpace(line))
+				OutputStatusBisector($"  {line}");
+		}
 	}
 
 	private readonly record struct IterationResult(bool Passed);

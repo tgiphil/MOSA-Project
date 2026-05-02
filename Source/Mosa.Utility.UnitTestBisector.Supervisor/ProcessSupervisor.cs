@@ -127,9 +127,12 @@ internal sealed class ProcessSupervisor
 	{
 		var workingDirectory = settings.BisectorSupervisorWorkingDirectory;
 		if (string.IsNullOrWhiteSpace(workingDirectory))
-			workingDirectory = Path.GetDirectoryName(targetPath) ?? Environment.CurrentDirectory;
+			workingDirectory = Environment.CurrentDirectory;
 		else if (!Path.IsPathRooted(workingDirectory))
 			workingDirectory = Path.GetFullPath(workingDirectory);
+
+		if (string.IsNullOrWhiteSpace(workingDirectory))
+			workingDirectory = Path.GetDirectoryName(targetPath) ?? Environment.CurrentDirectory;
 
 		if (!Directory.Exists(workingDirectory))
 			throw new InvalidOperationException($"Working directory does not exist: {workingDirectory}");

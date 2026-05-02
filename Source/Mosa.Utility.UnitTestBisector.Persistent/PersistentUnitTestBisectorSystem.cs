@@ -20,6 +20,9 @@ public sealed class PersistentUnitTestBisectorSystem
     private readonly object transformDiscoveryLock = new();
     private readonly JsonSerializerOptions jsonSerializerOptions = new() { WriteIndented = true };
 
+    private bool hasCompilationFailure;
+    private string lastCompilationFailure;
+
     private List<UnitTestInfo> discoveredUnitTests = [];
     private Type selectedStageType;
     private string selectedStageName;
@@ -35,6 +38,8 @@ public sealed class PersistentUnitTestBisectorSystem
         {
             mosaSettings.LoadArguments(args);
             mosaSettings.UnitTestFailFast = true;
+            hasCompilationFailure = false;
+            lastCompilationFailure = null;
 
             stopwatch.Start();
 
@@ -263,6 +268,7 @@ public sealed class PersistentUnitTestBisectorSystem
             using var unitTestEngine = new UnitTestEngine(mosaSettings, OutputStatus, CreateCompilerHooks);
             if (unitTestEngine.IsAborted)
             {
+                CaptureCompilationFailure(unitTestEngine.CompilationFailure);
                 OutputStatusBisector("Iteration compiler run aborted. Treating as FAIL.");
                 return new IterationResult(false);
             }
@@ -464,6 +470,24 @@ public sealed class PersistentUnitTestBisectorSystem
         Console.WriteLine($"{stopwatch.Elapsed.TotalSeconds:00.00} | {status}");
     }
 
+    private void CaptureCompilationFailure(string failure)
+    {
+        if (string.IsNullOrWhiteSpace(failure))
+            return;
+
+        hasCompilationFailure = true;
+        if (string.Equals(lastCompilationFailure, failure, StringComparison.Ordinal))
+            return;
+
+        lastCompilationFailure = failure;
+        OutputStatusBisector("Compilation failure details:");
+        foreach (var line in failure.Split([Environment.NewLine], StringSplitOptions.None))
+        {
+            if (!string.IsNullOrWhiteSpace(line))
+                OutputStatusBisector($"  {line}");
+        }
+    }
+
     private void WriteFailureReviewFile(string stateFile, PlanKind plan, PersistentState state)
     {
         var reviewFile = stateFile + ".failures.txt";
@@ -620,6 +644,12 @@ public sealed class PersistentUnitTestBisectorSystem
             SaveState(stateFile, state);
 
             OutputStatusBisector($"Baseline Result: {(baselineResult.Passed ? "PASS" : "FAIL")}");
+
+            if (hasCompilationFailure)
+            {
+                WriteFailureReviewFile(stateFile, plan, state);
+                return 1;
+            }
         }
         else
         {
@@ -654,6 +684,9 @@ public sealed class PersistentUnitTestBisectorSystem
                 OutputStatusBisector($"Failure state captured for review: transform={transform}, disabled={disabledSnapshot.Count}");
             }
 
+            if (hasCompilationFailure)
+                return 1;
+
             if (mosaSettings.BisectorPersistentWorkerIteration && state.NextIndex < state.ObservedTransforms.Count)
                 return WorkerContinueExitCode;
         }
@@ -681,6 +714,12 @@ public sealed class PersistentUnitTestBisectorSystem
             state.BaselinePassed = baselineResult.Passed;
             SaveState(stateFile, state);
             OutputStatusBisector($"Baseline Result: {(baselineResult.Passed ? "PASS" : "FAIL")}{Environment.NewLine}");
+
+            if (hasCompilationFailure)
+            {
+                WriteFailureReviewFile(stateFile, PlanKind.RandomCombo, state);
+                return 1;
+            }
 
             if (mosaSettings.BisectorPersistentWorkerIteration)
                 return WorkerContinueExitCode;
@@ -710,6 +749,9 @@ public sealed class PersistentUnitTestBisectorSystem
             WriteFailureReviewFile(stateFile, PlanKind.RandomCombo, state);
 
             OutputStatusBisector($"Iteration Result: {(iterationResult.Passed ? "PASS" : "FAIL")}");
+
+            if (hasCompilationFailure)
+                return 1;
         }
 
         return mosaSettings.BisectorPersistentWorkerIteration ? WorkerContinueExitCode : 0;
