@@ -31,6 +31,7 @@ Application Location Settings
 	AppLocation.QemuEDK2ARM32, Location of the QEMU ARM32 UEFI firmware
 	AppLocation.QemuEDK2ARM64, Location of the QEMU ARM64 UEFI firmware
 	AppLocation.VirtualBox, Location of the VirtualBox application
+	AppLocation.UnitTestBisectorPersistent, Location of the persistent unit test bisector application used by the bisector supervisor
 
 Compiler Settings
 -----------------
@@ -68,7 +69,7 @@ Compiler Debug Settings
     CompilerDebug.PreLinkHashFile,File name to emit a list of all methods with their hash value prior to linking
     CompilerDebug.Statistics,"If true, enables statistics gathering"
 	CompilerDebug.CounterFilter,Filters the global counters within the global counters file
-	
+
 Compiler Diagnostic Settings
 ----------------------------
 
@@ -275,8 +276,8 @@ Unit Test Settings
 	UnitTest.Bisector.DisabledTransformsFile,Path to a text file listing transform names to force-disable (one per line) during bisector runs
 	UnitTest.Bisector.Persistent.StateFile,Path to the persistent bisector state file used to resume interrupted runs
 	UnitTest.Bisector.Persistent.Plan,"Persistent bisector plan: disable-one, enable-one, or random-combo"
-	UnitTest.Bisector.Persistent.Order,"Iteration order for deterministic plans: original, count, random"
-	UnitTest.Bisector.Persistent.Iterations,Number of random-combo iterations to execute per run (default 20)
+	UnitTest.Bisector.Persistent.Order,"Iteration order for persistent plans: original, count, or random"
+	UnitTest.Bisector.Persistent.Iterations,Number of random-combo iterations to execute per run
 	UnitTest.Bisector.Persistent.RandomSeed,Optional random seed for deterministic random ordering/combinations (0 = auto)
 	UnitTest.Bisector.Persistent.ResetState,"If true, deletes existing persistent state before starting"
 	UnitTest.Bisector.Persistent.WorkerIteration,"If true, executes only one bisector iteration per process run"
