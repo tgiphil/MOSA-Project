@@ -33,7 +33,7 @@ Use ``Mosa.Utility.UnitTestBisector`` to run bisector plans that can resume afte
 
 .. code-block:: bash
 
-	dotnet bin/Mosa.Utility.UnitTestBisector.dll -bisect -bisect-persist-state artifact/bisect-state.json
+	dotnet bin/Mosa.Utility.UnitTestBisector.dll -bisect -bisect-state artifact/bisect-state.json
 
 ``-bisect`` is an alias for ``-bisect-plan disable-one``.
 
@@ -46,6 +46,13 @@ Supported plans:
 - ``-bisect-plan random-combo``: randomly enable/disable all transforms each iteration (resumable)
 - ``-bisect-plan failure-inducing``: bisect to identify transforms that induce failing runs
 - ``-bisect-plan masking``: bisect to identify transforms whose removal induces failures
+
+Observation scoping with ``-filter``:
+
+- when ``-filter`` is provided, observed transforms are limited to methods selected by that filter
+- without ``-filter``, observed transforms come from all compiled methods
+
+With ``-filter``, continued passes can still surface additional transforms from the same filtered methods as optimization state changes across iterations.
 
 Quick usage examples for the new plans:
 
@@ -75,4 +82,4 @@ Use ``Mosa.Utility.UnitTestBisector.Supervisor`` to run one bisector worker iter
 
 .. code-block:: bash
 
-	dotnet bin/Mosa.Utility.UnitTestBisector.Supervisor.exe -bisect -bisect-persist-state artifact/bisect-state.json -bisect-worker-iteration
+	dotnet bin/Mosa.Utility.UnitTestBisector.Supervisor.exe -bisect -bisect-state artifact/bisect-state.json -bisect-worker-iteration

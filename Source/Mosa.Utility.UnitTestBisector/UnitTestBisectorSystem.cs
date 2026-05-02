@@ -24,6 +24,8 @@ public sealed class UnitTestBisectorSystem
 	private string lastCompilationFailure;
 
 	private List<UnitTestInfo> discoveredUnitTests = [];
+	private HashSet<string> selectedTestMethodNames = [];
+	private bool observeFilterOnly;
 	private Type selectedStageType;
 	private string selectedStageName;
 	private HashSet<string> observedTransformNames = [];
@@ -47,8 +49,8 @@ public sealed class UnitTestBisectorSystem
 			var plan = ParsePlan(mosaSettings.BisectorPlan);
 			var isBisectorPlan = IsBisectorPlan(plan);
 			var order = isBisectorPlan ? OrderKind.Unspecified : ParseOrder(mosaSettings.BisectorOrder);
-			var stateFile = isBisectorPlan ? string.Empty : GetFullStateFilePath();
-			if (!isBisectorPlan && mosaSettings.BisectorResetState && File.Exists(stateFile))
+			var stateFile = GetFullStateFilePath();
+			if (mosaSettings.BisectorResetState && File.Exists(stateFile))
 			{
 				File.Delete(stateFile);
 				OutputStatusBisector($"Deleted state file: {stateFile}");
@@ -63,12 +65,20 @@ public sealed class UnitTestBisectorSystem
 			if (!isBisectorPlan)
 			{
 				OutputStatusBisector($"Order: {order}");
-				OutputStatusBisector($"State File: {stateFile}");
 			}
+			OutputStatusBisector($"State File: {stateFile}");
 
 			OutputStatus("Discovering Unit Tests...");
 			discoveredUnitTests = Discovery.DiscoverUnitTests(mosaSettings.UnitTestFilter);
+			selectedTestMethodNames = discoveredUnitTests
+				.Select(x => x.FullMethodName)
+				.Where(x => !string.IsNullOrWhiteSpace(x))
+				.ToHashSet(StringComparer.Ordinal);
+			observeFilterOnly = !string.IsNullOrWhiteSpace(mosaSettings.UnitTestFilter) && selectedTestMethodNames.Count != 0;
 			OutputStatus($"Found Tests: {discoveredUnitTests.Count} in {stopwatch.ElapsedMilliseconds / 1000.0:F2} secs");
+			OutputStatusBisector($"Observe Filter Methods Only: {(observeFilterOnly ? "ON" : "OFF")}");
+			if (observeFilterOnly)
+				OutputStatusBisector($"Observed Methods In Scope: {selectedTestMethodNames.Count}");
 
 			if (discoveredUnitTests.Count == 0)
 			{
@@ -77,7 +87,7 @@ public sealed class UnitTestBisectorSystem
 			}
 
 			if (isBisectorPlan)
-				return ExecuteBisectorPlan(plan);
+				return ExecuteBisectorPlan(plan, stateFile);
 
 			var state = LoadOrCreateState(stateFile, plan);
 			EnsureStateCompatibility(state, plan, order);
@@ -149,10 +159,20 @@ public sealed class UnitTestBisectorSystem
 		return plan is PlanKind.FailureInducing or PlanKind.Masking;
 	}
 
-	private int ExecuteBisectorPlan(PlanKind plan)
+	private int ExecuteBisectorPlan(PlanKind plan, string stateFile)
 	{
 		if (!IsBisectorPlan(plan))
 			throw new InvalidOperationException($"Plan '{plan}' is not a bisector plan.");
+
+		var state = new BisectorState
+		{
+			Plan = plan,
+			StageTypeName = selectedStageType.FullName,
+			StageName = selectedStageName,
+			UnitTestFilter = mosaSettings.UnitTestFilter,
+			DisabledTransformsFile = mosaSettings.BisectorDisabledTransformsFile,
+			Order = OrderKind.Unspecified,
+		};
 
 		OutputStatusBisector("Running transform discovery iteration...");
 		observedTransformCounts.Clear();
@@ -160,10 +180,16 @@ public sealed class UnitTestBisectorSystem
 		RebuildEffectiveDisabledSet();
 
 		var discoveryResult = ExecuteIteration();
+		state.BaselineCompleted = true;
+		state.BaselinePassed = discoveryResult.Passed;
 		OutputStatusBisector($"Discovery Iteration: {(discoveryResult.Passed ? "PASS" : "FAIL")}");
 
 		if (hasCompilationFailure)
+		{
+			SaveState(stateFile, state);
+			WriteFailureReviewFile(stateFile, plan, state);
 			return 1;
+		}
 
 		var observed = observedTransformNames
 			.Where(name => !forcedDisabledTransformNames.Contains(name))
@@ -172,6 +198,7 @@ public sealed class UnitTestBisectorSystem
 
 		if (observed.Count == 0)
 		{
+			SaveState(stateFile, state);
 			OutputStatusBisector("ERROR: No observed transforms were captured for the selected stage.");
 			return 1;
 		}
@@ -179,9 +206,19 @@ public sealed class UnitTestBisectorSystem
 		OutputStatusBisector($"Observed Transforms: {observed.Count}");
 		ReportForcedDisabledNotObserved();
 
+		state.ObservedTransforms = observed;
+		state.ObservedTransformCounts = observed.ToDictionary(
+			name => name,
+			name => observedTransformCounts.TryGetValue(name, out var count) ? count : 0,
+			StringComparer.Ordinal);
+		SaveState(stateFile, state);
+
 		if (plan == PlanKind.FailureInducing)
 		{
 			RunBisectorSession("Failure-Inducing", invertOutcome: false, discoveryResult);
+			state.Completed = !hasCompilationFailure;
+			SaveState(stateFile, state);
+			WriteFailureReviewFile(stateFile, plan, state);
 			return hasCompilationFailure ? 1 : 0;
 		}
 
@@ -193,17 +230,27 @@ public sealed class UnitTestBisectorSystem
 		RebuildEffectiveDisabledSet();
 
 		if (hasCompilationFailure)
+		{
+			SaveState(stateFile, state);
+			WriteFailureReviewFile(stateFile, plan, state);
 			return 1;
+		}
 
 		OutputStatusBisector($"Masking Pre-Check -> Actual: {(maskingPreCheckResult.Passed ? "PASS" : "FAIL")}");
 
 		if (maskingPreCheckResult.Passed)
 		{
+			state.Completed = true;
+			SaveState(stateFile, state);
+			WriteFailureReviewFile(stateFile, plan, state);
 			OutputStatusBisector("Masking pre-check passed (all-disabled still passes). No masking transforms identified.");
 			return 0;
 		}
 
 		RunBisectorSession("Masking", invertOutcome: true, discoveryResult);
+		state.Completed = !hasCompilationFailure;
+		SaveState(stateFile, state);
+		WriteFailureReviewFile(stateFile, plan, state);
 		return hasCompilationFailure ? 1 : 0;
 	}
 
@@ -496,9 +543,12 @@ public sealed class UnitTestBisectorSystem
 		};
 	}
 
-	private void NotifyTransformObserved(string stageName, string transformName)
+	private void NotifyTransformObserved(string stageName, string transformName, string methodFullName)
 	{
 		if (!string.Equals(stageName, selectedStageName, StringComparison.Ordinal))
+			return;
+
+		if (observeFilterOnly && !selectedTestMethodNames.Contains(methodFullName))
 			return;
 
 		lock (transformDiscoveryLock)
