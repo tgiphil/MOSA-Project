@@ -222,6 +222,16 @@ public sealed class UnitTestBisectorSystem
 			return hasCompilationFailure ? 1 : 0;
 		}
 
+		if (!discoveryResult.Passed)
+		{
+			OutputStatusBisector("Masking baseline is FAIL. Falling back to failure-inducing bisector to narrow failing transforms.");
+			RunBisectorSession("Failure-Inducing", invertOutcome: false, discoveryResult);
+			state.Completed = !hasCompilationFailure;
+			SaveState(stateFile, state);
+			WriteFailureReviewFile(stateFile, plan, state);
+			return hasCompilationFailure ? 1 : 0;
+		}
+
 		OutputStatusBisector("Running masking pre-check (all transforms disabled)...");
 		bisectorDisabledTransformNames = [.. observed];
 		RebuildEffectiveDisabledSet();
