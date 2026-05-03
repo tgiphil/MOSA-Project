@@ -215,7 +215,8 @@ public sealed class UnitTestBisectorSystem
 
 		if (plan == PlanKind.FailureInducing)
 		{
-			RunBisectorSession("Failure-Inducing", invertOutcome: false, discoveryResult);
+			state.Results = RunBisectorSession("Failure-Inducing", invertOutcome: false, discoveryResult);
+			state.NextIndex = state.Results.Count;
 			state.Completed = !hasCompilationFailure;
 			SaveState(stateFile, state);
 			WriteFailureReviewFile(stateFile, plan, state);
@@ -225,7 +226,8 @@ public sealed class UnitTestBisectorSystem
 		if (!discoveryResult.Passed)
 		{
 			OutputStatusBisector("Masking baseline is FAIL. Falling back to failure-inducing bisector to narrow failing transforms.");
-			RunBisectorSession("Failure-Inducing", invertOutcome: false, discoveryResult);
+			state.Results = RunBisectorSession("Failure-Inducing", invertOutcome: false, discoveryResult);
+			state.NextIndex = state.Results.Count;
 			state.Completed = !hasCompilationFailure;
 			SaveState(stateFile, state);
 			WriteFailureReviewFile(stateFile, plan, state);
@@ -257,15 +259,17 @@ public sealed class UnitTestBisectorSystem
 			return 0;
 		}
 
-		RunBisectorSession("Masking", invertOutcome: true, discoveryResult);
+		state.Results = RunBisectorSession("Masking", invertOutcome: true, discoveryResult);
+		state.NextIndex = state.Results.Count;
 		state.Completed = !hasCompilationFailure;
 		SaveState(stateFile, state);
 		WriteFailureReviewFile(stateFile, plan, state);
 		return hasCompilationFailure ? 1 : 0;
 	}
 
-	private void RunBisectorSession(string sessionName, bool invertOutcome, IterationResult discoveryResult)
+	private List<PlanResult> RunBisectorSession(string sessionName, bool invertOutcome, IterationResult discoveryResult)
 	{
+		var sessionResults = new List<PlanResult>();
 		bisectorDisabledTransformNames = [];
 		RebuildEffectiveDisabledSet();
 		bisector = new Bisector<string>(observedTransformNames.Where(name => !forcedDisabledTransformNames.Contains(name)), enablePairwise: mosaSettings.BisectorPairwise);
@@ -275,6 +279,12 @@ public sealed class UnitTestBisectorSystem
 		RebuildEffectiveDisabledSet();
 		var mappedBaseline = MapOutcome(discoveryResult.Passed, invertOutcome);
 		bisector.AcceptResult(mappedBaseline);
+		sessionResults.Add(new PlanResult
+		{
+			Transform = "baseline",
+			Passed = discoveryResult.Passed,
+			DisabledTransforms = effectiveDisabledTransformNames.OrderBy(x => x).ToList(),
+		});
 		OutputStatusBisector($"{sessionName} Baseline -> Actual: {(discoveryResult.Passed ? "PASS" : "FAIL")}, Mapped: {(mappedBaseline ? "PASS" : "FAIL")}");
 		PrintNewlyConfirmedBadItems(sessionName, bisector, reportedBadItems);
 
@@ -282,11 +292,19 @@ public sealed class UnitTestBisectorSystem
 		{
 			bisectorDisabledTransformNames = [.. bisector.GetNextDisabledItems()];
 			RebuildEffectiveDisabledSet();
-			PrintIterationHeader(sessionName, bisector.GetStatus());
+			var status = bisector.GetStatus();
+			PrintIterationHeader(sessionName, status);
 			PrintDisabledTransforms();
 
 			var iterationResult = ExecuteIteration();
 			var mappedResult = MapOutcome(iterationResult.Passed, invertOutcome);
+
+			sessionResults.Add(new PlanResult
+			{
+				Transform = $"iter-{status.Iteration + 1}-{status.Level}-{status.Phase}",
+				Passed = iterationResult.Passed,
+				DisabledTransforms = effectiveDisabledTransformNames.OrderBy(x => x).ToList(),
+			});
 
 			bisector.AcceptResult(mappedResult);
 			OutputStatusBisector($"Iteration Result -> Actual: {(iterationResult.Passed ? "PASS" : "FAIL")}, Mapped: {(mappedResult ? "PASS" : "FAIL")}");
@@ -294,7 +312,7 @@ public sealed class UnitTestBisectorSystem
 			PrintStatus(bisector.GetStatus());
 
 			if (hasCompilationFailure)
-				return;
+				return sessionResults;
 		}
 
 		OutputStatusBisector($"{sessionName} bisector complete.");
@@ -302,6 +320,7 @@ public sealed class UnitTestBisectorSystem
 
 		GC.Collect();
 		GC.WaitForPendingFinalizers();
+		return sessionResults;
 	}
 
 	private void PrintIterationHeader(string sessionName, Bisector<string>.BisectorStatus status)
