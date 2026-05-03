@@ -22,7 +22,7 @@ public partial class MosaSettings
 		public const int Port = 11110;
 
 		public const int EmulatorMaxRuntime = 20; // in seconds
-		public const string BisectorStateFile = "unit-test-bisector-state.json";
+		public const string BisectorStateFile = "bisector-state.json";
 		public const string BisectorPlan = "disable-one";
 		public const string BisectorOrder = "original";
 		public const int BisectorIterations = 20;
