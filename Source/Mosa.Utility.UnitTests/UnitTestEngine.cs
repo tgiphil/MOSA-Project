@@ -629,7 +629,7 @@ public class UnitTestEngine : IDisposable
 					var percentage = TotalUnitTestCount > 0 ? (CompletedUnitTestCount * 100.0) / TotalUnitTestCount : 0;
 					var rate = CompletedUnitTestCount / Stopwatch.Elapsed.TotalSeconds;
 
-					OutputStatus($"[Unit Tests] Count: {CompletedUnitTestCount} ({percentage:F2}%) | Elapsed: {elapsedSeconds} ({rate:F2} per second)");
+					OutputStatus($"[Unit Tests] Count: {CompletedUnitTestCount} ({percentage:F1}%) | Elapsed: {elapsedSeconds} ({rate:F1}/s)");
 				}
 			}
 
