@@ -902,6 +902,7 @@ public partial class MosaSettings
 		PlatformOptimizations = true;
 		InlineMethods = true;
 		InlineExplicit = true;
+		Emulator = "qemu";
 		EmulatorDisplay = false;
 		EmulatorCores = 1;
 

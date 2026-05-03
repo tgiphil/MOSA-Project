@@ -577,7 +577,9 @@ public sealed class UnitTestBisectorSystem
 		if (!string.Equals(stageName, selectedStageName, StringComparison.Ordinal))
 			return;
 
-		if (observeFilterOnly && !selectedTestMethodNames.Contains(methodFullName))
+		// When bisector is active, observe all transforms regardless of filter
+		// The filter is only for limiting which tests run, not which transforms are observed during bisection
+		if (bisector == null && observeFilterOnly && !selectedTestMethodNames.Contains(methodFullName))
 			return;
 
 		lock (transformDiscoveryLock)
