@@ -1,7 +1,7 @@
 mkdir %temp%\MOSA
 del /Q %temp%\MOSA\qemu-installer.exe
 
-curl https://qemu.weilnetz.de/w64/qemu-w64-setup-20260416.exe --output %temp%\MOSA\qemu-installer.exe
+curl https://qemu.weilnetz.de/w64/qemu-w64-setup-20260501.exe --output %temp%\MOSA\qemu-installer.exe
 
 del /S /Q qemu
 7zip\7z.exe x -wqemu -oqemu -x!*.nsis -y %temp%\MOSA\qemu-installer.exe
@@ -82,6 +82,10 @@ del /S /Q qemu\share\firmware\60-edk2-riscv*.json
 del /S /Q qemu\share\firmware\60-edk2-loongarch64*.json
 del /S /Q qemu\share\dtb\pegasos1.dtb
 del /S /Q qemu\share\dtb\pegasos2.dtb
-del /S /Q qemu\share\u-boot-sam460.bin
+del /S /Q qemu\share\u-boot-sam460.binS
 del /S /Q qemu\share\hppa-firmware64.img
 del /S /Q qemu\share\hppa-firmware.img
+del /S /Q qemu\libEGL*.dll
+del /S /Q qemu\libGLES*.dll
+del /S /Q qemu\libVk*.dll
+del /S /Q qemu\share\u-boot-sam460.bin
