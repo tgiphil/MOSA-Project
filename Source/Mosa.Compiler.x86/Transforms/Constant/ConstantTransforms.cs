@@ -11,8 +11,8 @@ public static class ConstantTransforms
 {
 	public static readonly List<BaseTransform> List = new()
 	{
-		new Movsx16To32(),
-		new Movsx8To32(),
-		new Cmp32(),
+		Movsx16To32.Instance,
+		Movsx8To32.Instance,
+		Cmp32.Instance,
 	};
 }

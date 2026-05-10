@@ -6,7 +6,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Auto.Simplification;
 
 public sealed class Add32v1 : BaseTransform
 {
-	public Add32v1() : base(IR.Add32, TransformType.Auto | TransformType.Optimization)
+	public static readonly Add32v1 Instance = new();
+
+	private Add32v1() : base(IR.Add32, TransformType.Auto | TransformType.Optimization)
 	{
 	}
 
@@ -39,7 +41,9 @@ public sealed class Add32v1 : BaseTransform
 
 public sealed class Add32v1_v1 : BaseTransform
 {
-	public Add32v1_v1() : base(IR.Add32, TransformType.Auto | TransformType.Optimization)
+	public static readonly Add32v1_v1 Instance = new();
+
+	private Add32v1_v1() : base(IR.Add32, TransformType.Auto | TransformType.Optimization)
 	{
 	}
 

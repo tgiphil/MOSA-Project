@@ -526,16 +526,12 @@ public partial class MainForm : Form
 
 	private bool IsTransformDisabled(string stageName, string transformName)
 	{
-		if (string.IsNullOrWhiteSpace(tbTransformStage.Text))
+		var filter = tbTransformStage.Text;
+
+		if (!string.IsNullOrEmpty(filter) && !string.Equals(stageName, filter, StringComparison.Ordinal))
 			return false;
 
-		if (!tbTransformStage.Text.Contains(stageName))
-			return false;
-
-		if (DisabledTransformNames.Contains(transformName))
-			return true;
-
-		return false;
+		return DisabledTransformNames.Contains(transformName);
 	}
 
 	private void UpdateDisabledTransformNames()

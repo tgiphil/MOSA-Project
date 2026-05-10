@@ -1,4 +1,4 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
 
@@ -6,6 +6,8 @@ namespace Mosa.Compiler.Framework.Transforms.BasicBlocks;
 
 public class MergeBlocks : BaseBlockTransform
 {
+	public static readonly MergeBlocks Instance = new();
+
 	public override int Process(Transform transform)
 	{
 		var basicBlocks = transform.BasicBlocks;

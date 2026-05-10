@@ -47,4 +47,33 @@ internal sealed class BisectorState
 	public bool MaskingPreCheckCompleted { get; set; }
 
 	public bool MaskingPreCheckPassed { get; set; }
+
+	// Bisector algorithm status — populated via ApplyStatus() before and after each test run
+	public string BisectorLevel { get; set; }
+
+	public string BisectorPhase { get; set; }
+
+	public int TotalItemCount { get; set; }
+
+	public int SuspectItemCount { get; set; }
+
+	public int ConfirmedBadItemCount { get; set; }
+
+	public int ConfirmedBadPairCount { get; set; }
+
+	public int PairwiseTestsCompleted { get; set; }
+
+	public int PairwiseTestsRemaining { get; set; }
+
+	public void ApplyStatus(Mosa.Compiler.Framework.Bisector<string>.BisectorStatus status)
+	{
+		BisectorLevel = status.Level.ToString();
+		BisectorPhase = status.Phase.ToString();
+		TotalItemCount = status.TotalItemCount;
+		SuspectItemCount = status.SuspectItemCount;
+		ConfirmedBadItemCount = status.ConfirmedBadItemCount;
+		ConfirmedBadPairCount = status.ConfirmedBadPairCount;
+		PairwiseTestsCompleted = status.PairwiseTestsCompleted;
+		PairwiseTestsRemaining = status.PairwiseTestsRemaining;
+	}
 }

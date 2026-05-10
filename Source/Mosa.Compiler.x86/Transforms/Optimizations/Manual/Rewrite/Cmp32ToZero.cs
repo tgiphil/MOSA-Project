@@ -1,4 +1,4 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Compiler.Framework;
 
@@ -6,7 +6,9 @@ namespace Mosa.Compiler.x86.Transforms.Optimizations.Manual.Rewrite;
 
 public sealed class Cmp32ToZero : BaseTransform
 {
-	public Cmp32ToZero() : base(X86.Cmp32, TransformType.Manual | TransformType.Optimization, true)
+	public static readonly Cmp32ToZero Instance = new();
+
+	private Cmp32ToZero() : base(X86.Cmp32, TransformType.Manual | TransformType.Optimization, true)
 	{
 	}
 

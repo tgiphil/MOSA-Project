@@ -1,4 +1,4 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Compiler.Framework.Common;
 
@@ -6,6 +6,8 @@ namespace Mosa.Compiler.Framework.Transforms.BasicBlocks;
 
 public class RemoveUnreachableBlocks : BaseBlockTransform
 {
+	public static readonly RemoveUnreachableBlocks Instance = new();
+
 	public override int Process(Transform transform)
 	{
 		var basicBlocks = transform.BasicBlocks;

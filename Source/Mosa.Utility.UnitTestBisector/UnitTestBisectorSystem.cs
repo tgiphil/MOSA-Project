@@ -95,9 +95,9 @@ public sealed partial class UnitTestBisectorSystem
 				OutputStatusBisector("Running transform discovery iteration...");
 				effectiveDisabledTransformNames = [];
 
-				var discoveryResult = ExecuteIteration(state.IterationNumber, discoveredUnitTests);
+				var discoveryResult = ExecuteIteration(state, stateFile, discoveredUnitTests);
 				OutputStatusBisector($"Discovery Iteration: {(discoveryResult.Passed ? "PASS" : "FAIL")}");
-				OutputIterationStatus(state.IterationNumber);
+				OutputIterationStatus(state);
 
 				var transforms = registeredTransformNames
 					.OrderBy(name => name)
@@ -171,12 +171,12 @@ public sealed partial class UnitTestBisectorSystem
 			OutputStatusBisector("Running transform discovery iteration...");
 			effectiveDisabledTransformNames = [];
 
-			var discoveryResult = ExecuteIteration(state.IterationNumber, discoveredUnitTests);
+			var discoveryResult = ExecuteIteration(state, stateFile, discoveredUnitTests);
 			state.BaselineCompleted = true;
 			state.BaselinePassed = discoveryResult.Passed;
 			RecalculateCounters(state);
 			OutputStatusBisector($"Discovery Iteration: {(discoveryResult.Passed ? "PASS" : "FAIL")}");
-			OutputIterationStatus(state.IterationNumber, state);
+			OutputIterationStatus(state);
 
 			if (hasCompilationFailure || hasRestartsExceeded)
 			{
@@ -239,7 +239,7 @@ public sealed partial class UnitTestBisectorSystem
 			{
 				OutputStatusBisector("Running masking pre-check (all transforms disabled)...");
 				effectiveDisabledTransformNames = [.. state.Transforms];
-				var preCheckResult = ExecuteIteration(state.IterationNumber, discoveredUnitTests);
+				var preCheckResult = ExecuteIteration(state, stateFile, discoveredUnitTests);
 				effectiveDisabledTransformNames = [];
 
 				if (hasCompilationFailure || hasRestartsExceeded)
@@ -252,7 +252,7 @@ public sealed partial class UnitTestBisectorSystem
 				state.MaskingPreCheckCompleted = true;
 				state.MaskingPreCheckPassed = preCheckResult.Passed;
 				OutputStatusBisector($"Masking Pre-Check -> Actual: {(preCheckResult.Passed ? "PASS" : "FAIL")}");
-				OutputIterationStatus(state.IterationNumber);
+				OutputIterationStatus(state);
 
 				if (preCheckResult.Passed)
 				{
@@ -338,29 +338,28 @@ public sealed partial class UnitTestBisectorSystem
 
 		// Run one iteration
 		effectiveDisabledTransformNames = [.. bisector.GetNextDisabledItems()];
-		var status = bisector.GetStatus();
-		state.IterationNumber = status.Iteration + 1;
-		OutputIterationHeader(sessionName, status);
+		state.ApplyStatus(bisector.GetStatus());
+		state.IterationNumber = bisector.GetStatus().Iteration + 1;
+		OutputIterationHeader(sessionName, state);
 
-		var iterationResult = ExecuteIteration(state.IterationNumber, discoveredUnitTests);
+		var iterationResult = ExecuteIteration(state, stateFile, discoveredUnitTests);
 		var mappedResult = MapOutcome(iterationResult.Passed, invertOutcome);
 
 		state.Results.Add(new PlanResult
 		{
-			Transform = $"iter-{status.Iteration + 1}-{status.Level}-{status.Phase}",
+			Transform = $"iter-{state.IterationNumber}-{state.BisectorLevel}-{state.BisectorPhase}",
 			Passed = iterationResult.Passed,
 			DisabledTransforms = effectiveDisabledTransformNames.OrderBy(x => x).ToList(),
 		});
 		state.NextIndex = state.Results.Count;
 
+		bisector.AcceptResult(mappedResult);
+		state.ApplyStatus(bisector.GetStatus());
+		OutputStatusBisector($"Iteration Result -> Actual: {(iterationResult.Passed ? "PASS" : "FAIL")}, Mapped: {(mappedResult ? "PASS" : "FAIL")}");
+		OutputNewlyConfirmedBadItems(sessionName, bisector, reportedBadItems);
 		SaveState(stateFile, state);
 		WriteFailureReviewFile(stateFile, state.Plan, state);
-
-		bisector.AcceptResult(mappedResult);
-		OutputStatusBisector($"Iteration Result -> Actual: {(iterationResult.Passed ? "PASS" : "FAIL")}, Mapped: {(mappedResult ? "PASS" : "FAIL")}");
-		OutputIterationStatus(state.IterationNumber);
-		OutputNewlyConfirmedBadItems(sessionName, bisector, reportedBadItems);
-		OutputBisectorStatus(bisector.GetStatus());
+		OutputIterationStatus(state);
 
 		if (hasRestartsExceeded)
 		{
@@ -396,13 +395,13 @@ public sealed partial class UnitTestBisectorSystem
 			OutputStatusBisector("Running baseline iteration...");
 			OutputStatusBisector($"Iteration: {state.IterationNumber}");
 
-			var baselineResult = ExecuteIteration(state.IterationNumber, discoveredUnitTests);
+			var baselineResult = ExecuteIteration(state, stateFile, discoveredUnitTests);
 			state.BaselineCompleted = true;
 			state.BaselinePassed = baselineResult.Passed;
 			SaveState(stateFile, state);
 
 			OutputStatusBisector($"Baseline Result: {(baselineResult.Passed ? "PASS" : "FAIL")}");
-			OutputIterationStatus(state.IterationNumber, state);
+			OutputIterationStatus(state, totalCount: state.Transforms.Count);
 
 			if (hasCompilationFailure || hasRestartsExceeded)
 			{
@@ -415,7 +414,7 @@ public sealed partial class UnitTestBisectorSystem
 		else
 		{
 			OutputStatusBisector($"Resuming after baseline. Baseline Result: {(state.BaselinePassed ? "PASS" : "FAIL")}");
-			OutputIterationStatus(state.IterationNumber, state, state.Transforms.Count);
+			OutputIterationStatus(state, totalCount: state.Transforms.Count);
 		}
 
 		while (state.NextIndex < state.Transforms.Count)
@@ -427,7 +426,7 @@ public sealed partial class UnitTestBisectorSystem
 
 			OutputStatusBisector($"Transform: {transform}");
 
-			var iterationResult = ExecuteIteration(state.IterationNumber, discoveredUnitTests);
+			var iterationResult = ExecuteIteration(state, stateFile, discoveredUnitTests);
 			state.Results.Add(new PlanResult
 			{
 				Transform = transform,
@@ -441,7 +440,7 @@ public sealed partial class UnitTestBisectorSystem
 			OutputStatusBisector($"Iteration Result: {(iterationResult.Passed ? "PASS" : "FAIL")}");
 			if (!iterationResult.Passed)
 				OutputStatusBisector($"Failure state captured for review: transform={transform}, disabled={disabledSnapshot.Count}");
-			OutputIterationStatus(state.IterationNumber, state, state.Transforms.Count);
+			OutputIterationStatus(state, totalCount: state.Transforms.Count);
 
 			if (hasCompilationFailure || hasRestartsExceeded)
 			{
@@ -477,13 +476,13 @@ public sealed partial class UnitTestBisectorSystem
 
 			OutputStatusBisector("Running baseline iteration...");
 
-			var baselineResult = ExecuteIteration(state.IterationNumber, discoveredUnitTests);
+			var baselineResult = ExecuteIteration(state, stateFile, discoveredUnitTests);
 			state.BaselineCompleted = true;
 			state.BaselinePassed = baselineResult.Passed;
 			SaveState(stateFile, state);
 
 			OutputStatusBisector($"Baseline Result: {(baselineResult.Passed ? "PASS" : "FAIL")}");
-			OutputIterationStatus(state.IterationNumber, state);
+			OutputIterationStatus(state);
 
 			if (hasCompilationFailure || hasRestartsExceeded)
 			{
@@ -512,7 +511,7 @@ public sealed partial class UnitTestBisectorSystem
 
 			OutputStatusBisector($"Random Iteration {iterationNumber}");
 
-			var iterationResult = ExecuteIteration(state.IterationNumber, discoveredUnitTests);
+			var iterationResult = ExecuteIteration(state, stateFile, discoveredUnitTests);
 			state.Results.Add(new PlanResult
 			{
 				Transform = $"random-{iterationNumber}",
@@ -525,7 +524,7 @@ public sealed partial class UnitTestBisectorSystem
 			WriteFailureReviewFile(stateFile, PlanKind.RandomCombo, state);
 
 			OutputStatusBisector($"Iteration Result: {(iterationResult.Passed ? "PASS" : "FAIL")}");
-			OutputIterationStatus(state.IterationNumber, state);
+			OutputIterationStatus(state);
 
 			if (hasCompilationFailure || hasRestartsExceeded)
 			{
@@ -552,10 +551,12 @@ public sealed partial class UnitTestBisectorSystem
 
 	#region Iteration Execution
 
-	private IterationResult ExecuteIteration(int iterationNumber, List<UnitTestInfo> discoveredUnitTests)
+	private IterationResult ExecuteIteration(BisectorState state, string stateFile, List<UnitTestInfo> discoveredUnitTests)
 	{
+		SaveState(stateFile, state);
+
 		using var assertCapture = new AssertCaptureScope();
-		OutputIterationStatus(iterationNumber);
+		OutputIterationStatus(state);
 
 		try
 		{
@@ -925,22 +926,20 @@ public sealed partial class UnitTestBisectorSystem
 
 	#region Output
 
-	private void OutputIterationHeader(string sessionName, Bisector<string>.BisectorStatus status)
+	private void OutputIterationHeader(string sessionName, BisectorState state)
 	{
-		OutputStatusBisector($"{sessionName} Iteration: {status.Iteration + 1} | Level: {status.Level} | Phase: {status.Phase} | Stage: {(string.IsNullOrEmpty(mosaSettings.BisectorStage) ? "All" : mosaSettings.BisectorStage)}");
+		OutputStatusBisector($"{sessionName} Iteration: {state.IterationNumber} | Level: {state.BisectorLevel} | Phase: {state.BisectorPhase} | Stage: {(string.IsNullOrEmpty(mosaSettings.BisectorStage) ? "All" : mosaSettings.BisectorStage)}");
 	}
 
-	private void OutputBisectorStatus(Bisector<string>.BisectorStatus status)
-	{
-		OutputStatusBisector($"Iteration: {status.Iteration} | Transforms: {status.TotalItemCount} | Suspects: {status.SuspectItemCount} | BadItems: {status.ConfirmedBadItemCount} | BadPairs: {status.ConfirmedBadPairCount}");
-		OutputStatusBisector($"PairwiseCompleted: {status.PairwiseTestsCompleted} | PairwiseRemaining: {status.PairwiseTestsRemaining}");
-	}
-
-	private void OutputIterationStatus(int iterationNumber, BisectorState state = null, int? totalCount = null)
+	private void OutputIterationStatus(BisectorState state, int? totalCount = null)
 	{
 		var totalPart = totalCount.HasValue ? $"/{totalCount}" : string.Empty;
-		var statePart = state != null ? $" | Passes: {state.PassCount} | Failures: {state.FailureCount}" : string.Empty;
-		OutputStatusBisector($"Iteration: {iterationNumber}{totalPart} | Transforms: {registeredTransformNames.Count} | Disabled: {effectiveDisabledTransformNames.Count}{statePart}");
+		OutputStatusBisector($"Iteration: {state.IterationNumber}{totalPart} | Passes: {state.PassCount} | Failures: {state.FailureCount} | Transforms: {registeredTransformNames.Count} | Disabled: {effectiveDisabledTransformNames.Count} ");
+
+		if (state.TotalItemCount > 0)
+		{
+			OutputStatusBisector($"Suspects: {state.SuspectItemCount} | BadItems: {state.ConfirmedBadItemCount} | BadPairs: {state.ConfirmedBadPairCount} | PairwiseCompleted: {state.PairwiseTestsCompleted} | PairwiseRemaining: {state.PairwiseTestsRemaining}");
+		}
 	}
 
 	private void OutputNewlyConfirmedBadItems(string sessionName, Bisector<string> sessionBisector, HashSet<string> reportedBadItems)
@@ -992,4 +991,3 @@ public sealed partial class UnitTestBisectorSystem
 
 	#endregion Output
 }
-
