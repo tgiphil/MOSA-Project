@@ -86,10 +86,8 @@ public class Builder : BaseLauncher
 
 	private bool Compile()
 	{
-		//OutputStatus($"Search Folder(s): {string.Join(", ", new List<string>(MosaSettings.SearchPaths.ToArray()))}");
 		OutputStatus($"Output file: {MosaSettings.OutputFile}");
-		OutputStatus($"Available Cores: {Environment.ProcessorCount}");
-		OutputStatus($"Max Threads: {MosaSettings.MaxThreads}");
+		OutputStatus($"Available Cores: {Environment.ProcessorCount} | Max Threads: {MosaSettings.MaxThreads}");
 		OutputStatus($"Platform: {MosaSettings.Platform}");
 		OutputStatus($"Compiling: {MosaSettings.SourceFiles[0]}");
 
@@ -284,15 +282,15 @@ public class Builder : BaseLauncher
 					AddCounters(message);
 					break;
 				}
-			case CompilerEvent.CompilerStart
-				or CompilerEvent.CompilerEnd
-				or CompilerEvent.CompilingMethodsStart
-				or CompilerEvent.CompilingMethodsCompleted
-				or CompilerEvent.InlineMethodsScheduled
-				or CompilerEvent.LinkingStart
-				or CompilerEvent.LinkingEnd
+			case CompilerEvent.Error
 				or CompilerEvent.Warning
-				or CompilerEvent.Error
+				//or CompilerEvent.CompilerStart
+				//or CompilerEvent.CompilerEnd
+				//or CompilerEvent.CompilingMethodsStart
+				//or CompilerEvent.CompilingMethodsCompleted
+				//or CompilerEvent.InlineMethodsScheduled
+				//or CompilerEvent.LinkingStart
+				//or CompilerEvent.LinkingEnd
 				or CompilerEvent.Diagnostic:
 				{
 					if (compilerEvent == CompilerEvent.Diagnostic && !MosaSettings.Diagnostic)

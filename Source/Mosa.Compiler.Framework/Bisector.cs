@@ -30,33 +30,17 @@ public sealed class Bisector<TItem>
 
 	public readonly record struct Pair(TItem Item1, TItem Item2);
 
-	public sealed class BisectorStatus
-	{
-		internal BisectorStatus(int iteration, BisectorLevel level, BisectorPhase phase, int totalItemCount, int suspectItemCount, int confirmedBadItemCount, int confirmedBadPairCount, bool hasOutstandingExperiment, int pairwiseTestsCompleted, int pairwiseTestsRemaining)
-		{
-			Iteration = iteration;
-			Level = level;
-			Phase = phase;
-			TotalItemCount = totalItemCount;
-			SuspectItemCount = suspectItemCount;
-			ConfirmedBadItemCount = confirmedBadItemCount;
-			ConfirmedBadPairCount = confirmedBadPairCount;
-			HasOutstandingExperiment = hasOutstandingExperiment;
-			PairwiseTestsCompleted = pairwiseTestsCompleted;
-			PairwiseTestsRemaining = pairwiseTestsRemaining;
-		}
-
-		public int Iteration { get; }
-		public BisectorLevel Level { get; }
-		public BisectorPhase Phase { get; }
-		public int TotalItemCount { get; }
-		public int SuspectItemCount { get; }
-		public int ConfirmedBadItemCount { get; }
-		public int ConfirmedBadPairCount { get; }
-		public bool HasOutstandingExperiment { get; }
-		public int PairwiseTestsCompleted { get; }
-		public int PairwiseTestsRemaining { get; }
-	}
+	public sealed record BisectorStatus(
+		int Iteration,
+		BisectorLevel Level,
+		BisectorPhase Phase,
+		int TotalItemCount,
+		int SuspectItemCount,
+		int ConfirmedBadItemCount,
+		int ConfirmedBadPairCount,
+		bool HasOutstandingExperiment,
+		int PairwiseTestsCompleted,
+		int PairwiseTestsRemaining);
 
 	private enum ExperimentKind
 	{
@@ -66,23 +50,11 @@ public sealed class Bisector<TItem>
 		PairwiseCheck,
 	}
 
-	private sealed class OutstandingExperiment
-	{
-		public OutstandingExperiment(ExperimentKind kind, HashSet<TItem> disabledItems, List<TItem> subset, TItem item, Pair pair)
-		{
-			Kind = kind;
-			DisabledItems = disabledItems;
-			Subset = subset;
-			Item = item;
-			Pair = pair;
-		}
-
-		public ExperimentKind Kind { get; }
-		public HashSet<TItem> DisabledItems { get; }
-		public List<TItem> Subset { get; }
-		public TItem Item { get; }
-		public Pair Pair { get; }
-	}
+	private sealed record OutstandingExperiment(
+		ExperimentKind Kind,
+		List<TItem> Subset,
+		TItem Item,
+		Pair Pair);
 
 	private readonly IEqualityComparer<TItem> comparer;
 	private readonly List<TItem> allItems = new();
@@ -247,43 +219,6 @@ public sealed class Bisector<TItem>
 		return new BisectorStatus(iteration, currentLevel, currentPhase, allItems.Count, currentSuspects.Count, confirmedBadItems.Count, confirmedBadPairs.Count, outstandingExperiment != null, pairwiseTestsCompleted, pairwiseTestsRemaining);
 	}
 
-	public void ObserveItem(TItem item)
-	{
-		if (item is null)
-			throw new ArgumentNullException(nameof(item));
-
-		if (ContainsItem(allItems, item))
-			return;
-
-		allItems.Add(item);
-		unresolvedItems.Add(item);
-
-		if (currentPhase == BisectorPhase.Complete)
-			return;
-
-		if (!ContainsItem(currentSuspects, item))
-			currentSuspects.Add(item);
-
-		switch (currentPhase)
-		{
-			case BisectorPhase.Reduction:
-				if (!ContainsItem(reductionCandidates, item))
-					reductionCandidates.Add(item);
-				break;
-
-			case BisectorPhase.SingleItemChecks:
-				singleItemQueue.Enqueue(item);
-				break;
-
-			case BisectorPhase.PairwiseChecks:
-				for (var i = 0; i < currentSuspects.Count - 1; i++)
-				{
-					pairwiseQueue.Add(new Pair(currentSuspects[i], item));
-				}
-				break;
-		}
-	}
-
 	private void ProcessBaselineResult(BisectorResult result)
 	{
 		if (result == BisectorResult.Pass)
@@ -389,18 +324,13 @@ public sealed class Bisector<TItem>
 		singleItemQueue = new Queue<TItem>();
 		currentSuspects = new List<TItem>();
 
-		var queued = new HashSet<TItem>(comparer);
-
 		foreach (var item in prioritizedItems)
 		{
 			if (!unresolvedItems.Contains(item))
 				continue;
 
-			if (queued.Add(item))
-			{
-				currentSuspects.Add(item);
-				singleItemQueue.Enqueue(item);
-			}
+			currentSuspects.Add(item);
+			singleItemQueue.Enqueue(item);
 		}
 	}
 
@@ -424,12 +354,6 @@ public sealed class Bisector<TItem>
 
 	private void BeginPairwiseChecks()
 	{
-		if (!enablePairwise)
-		{
-			currentPhase = BisectorPhase.Complete;
-			return;
-		}
-
 		currentLevel = BisectorLevel.Level2Pairwise;
 		currentPhase = BisectorPhase.PairwiseChecks;
 		currentSuspects = currentSuspects.Where(unresolvedItems.Contains).ToList();
@@ -456,8 +380,8 @@ public sealed class Bisector<TItem>
 
 	private HashSet<TItem> CreateAndTrackExperiment(ExperimentKind kind, HashSet<TItem> disabledItems, List<TItem> subset, TItem item, Pair pair)
 	{
-		outstandingExperiment = new OutstandingExperiment(kind, disabledItems, subset, item, pair);
-		return new HashSet<TItem>(disabledItems, comparer);
+		outstandingExperiment = new OutstandingExperiment(kind, subset, item, pair);
+		return disabledItems;
 	}
 
 	private HashSet<TItem> CreateDisabledSet()
@@ -470,7 +394,7 @@ public sealed class Bisector<TItem>
 		var disabledItems = CreateDisabledSet();
 		var enabled = new HashSet<TItem>(enabledSubset, comparer);
 
-		foreach (var item in reductionCandidates)
+		foreach (var item in GetOrderedActiveItems())
 		{
 			if (!enabled.Contains(item))
 				disabledItems.Add(item);
@@ -526,16 +450,5 @@ public sealed class Bisector<TItem>
 		}
 
 		return orderedItems;
-	}
-
-	private bool ContainsItem(IEnumerable<TItem> items, TItem item)
-	{
-		foreach (var existing in items)
-		{
-			if (comparer.Equals(existing, item))
-				return true;
-		}
-
-		return false;
 	}
 }

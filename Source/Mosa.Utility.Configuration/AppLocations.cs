@@ -1,10 +1,10 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Runtime.InteropServices;
 
 namespace Mosa.Utility.Configuration;
 
-public static class AppLocationsSettings
+public static class AppLocations
 {
 	private static readonly string ProgramFiles86 = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
 	private static readonly string ProgramFiles = Environment.GetEnvironmentVariable("ProgramFiles");
@@ -40,6 +40,7 @@ public static class AppLocationsSettings
 		mosaSettings.MkisofsApp = FindMkisofs();
 		mosaSettings.GDBApp = FindGDB();
 		mosaSettings.GraphvizApp = FindGraphviz();
+		mosaSettings.BisectorApp = FindUnitTestBisector();
 	}
 
 	private static string FindQemuX86()
@@ -481,5 +482,22 @@ public static class AppLocationsSettings
 			return location;
 
 		return null;
+	}
+
+	private static string FindUnitTestBisector()
+	{
+		var searchDirectories = new[]
+		{
+			@"%APPDIR%",
+			@"%CURRENT%",
+			@"%CURRENT%\..\bin",
+			@"%APPDIR%\..\bin"
+		};
+
+		var location = TryFind("Mosa.Utility.UnitTestBisector.exe", searchDirectories);
+		if (location != null)
+			return location;
+
+		return TryFind("Mosa.Utility.UnitTestBisector.dll", searchDirectories);
 	}
 }

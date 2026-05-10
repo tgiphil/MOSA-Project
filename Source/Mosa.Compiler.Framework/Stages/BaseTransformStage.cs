@@ -23,6 +23,8 @@ public abstract class BaseTransformStage : BaseMethodCompilerStage
 	protected bool EnableBlockOptimizations;
 	protected bool AreCPURegistersAllocated;
 
+	protected virtual bool AllowTransformHooks => false;
+
 	protected int MaxPasses;
 
 	protected readonly Dictionary<string, Counter> TransformCounters = new();
@@ -43,6 +45,20 @@ public abstract class BaseTransformStage : BaseMethodCompilerStage
 	{
 		TransformCountStage = $"{Name}.Transforms";
 		OptimizationCountStage = $"{Name}.Optimizations";
+
+		foreach (var list in transforms)
+		{
+			if (list == null)
+				continue;
+
+			if (AllowTransformHooks)
+				foreach (var transform in list)
+					Compiler.CompilerHooks.RegisterTransform?.Invoke(Name, transform.Name);
+		}
+
+		if (AllowTransformHooks)
+			foreach (var transform in blockTransforms)
+				Compiler.CompilerHooks.RegisterTransform?.Invoke(Name, transform.Name);
 	}
 
 	protected override void Finish()
@@ -236,10 +252,11 @@ public abstract class BaseTransformStage : BaseMethodCompilerStage
 		{
 			var transform = instructionTransforms[i];
 
-			Compiler.CompilerHooks.NotifyTransformObserved?.Invoke(Name, transform.Name);
-
-			if (Compiler.CompilerHooks.IsTransformDisabled?.Invoke(Name, transform.Name) == true)
-				continue;
+			if (AllowTransformHooks)
+			{
+				if (Compiler.CompilerHooks.IsTransformDisabled?.Invoke(Name, transform.Name) == true)
+					continue;
+			}
 
 			var updated = Transform.ApplyTransform(context, transform);
 
@@ -269,6 +286,12 @@ public abstract class BaseTransformStage : BaseMethodCompilerStage
 
 		foreach (var transform in blockTransforms)
 		{
+			if (AllowTransformHooks)
+			{
+				if (Compiler.CompilerHooks.IsTransformDisabled?.Invoke(Name, transform.Name) == true)
+					continue;
+			}
+
 			var count = transform.Process(Transform);
 
 			var updated = count != 0;

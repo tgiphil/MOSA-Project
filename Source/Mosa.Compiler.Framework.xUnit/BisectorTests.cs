@@ -139,7 +139,7 @@ public class BisectorTests
 	public void Level2StartsAutomaticallyAfterSingleItemChecks()
 	{
 		var items = new HashSet<string> { "A", "B", "C", "D" };
-		var session = new Bisector<string>(items);
+		var session = new Bisector<string>(items, enablePairwise: true);
 
 		var disabledItems = session.GetNextDisabledItems();
 		Assert.Empty(disabledItems);
@@ -164,7 +164,7 @@ public class BisectorTests
 	public void PairwiseInteractionIsDetected()
 	{
 		var items = new HashSet<string> { "A", "B", "C", "D" };
-		var session = new Bisector<string>(items);
+		var session = new Bisector<string>(items, enablePairwise: true);
 
 		RunUntilComplete(session, disabledItems =>
 		{
@@ -181,7 +181,7 @@ public class BisectorTests
 	public void PairwiseStatusTracksCompletedAndRemainingTests()
 	{
 		var items = new HashSet<string> { "A", "B", "C", "D" };
-		var session = new Bisector<string>(items);
+		var session = new Bisector<string>(items, enablePairwise: true);
 
 		session.GetNextDisabledItems();
 		session.AcceptResult(false);
@@ -227,30 +227,6 @@ public class BisectorTests
 		Assert.Equal(1, status.Iteration);
 		Assert.False(status.HasOutstandingExperiment);
 		Assert.Equal(Bisector<string>.BisectorPhase.Reduction, status.Phase);
-	}
-
-	[Fact]
-	public void ObserveItemAddsNewCandidateDuringSingleItemChecks()
-	{
-		var session = new Bisector<string>(new[] { "A", "B", "C", "D" });
-
-		session.GetNextDisabledItems();
-		session.AcceptResult(false);
-
-		session.ObserveItem("Z");
-
-		var seenZ = false;
-		while (!session.IsComplete)
-		{
-			var disabledItems = session.GetNextDisabledItems();
-			if (!disabledItems.Contains("Z"))
-				seenZ = true;
-
-			session.AcceptResult(true);
-		}
-
-		Assert.True(seenZ);
-		Assert.Contains("Z", session.RemainingSuspectItems);
 	}
 
 	private static void RunUntilComplete(Bisector<string> session, Func<IReadOnlySet<string>, bool> passEvaluator)
