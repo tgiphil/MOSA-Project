@@ -55,10 +55,6 @@ public abstract class BaseTransformStage : BaseMethodCompilerStage
 				foreach (var transform in list)
 					Compiler.CompilerHooks.RegisterTransform?.Invoke(Name, transform.Name);
 		}
-
-		if (AllowTransformHooks)
-			foreach (var transform in blockTransforms)
-				Compiler.CompilerHooks.RegisterTransform?.Invoke(Name, transform.Name);
 	}
 
 	protected override void Finish()
@@ -286,12 +282,6 @@ public abstract class BaseTransformStage : BaseMethodCompilerStage
 
 		foreach (var transform in blockTransforms)
 		{
-			if (AllowTransformHooks)
-			{
-				if (Compiler.CompilerHooks.IsTransformDisabled?.Invoke(Name, transform.Name) == true)
-					continue;
-			}
-
 			var count = transform.Process(Transform);
 
 			var updated = count != 0;
