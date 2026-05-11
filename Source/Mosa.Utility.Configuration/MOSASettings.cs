@@ -350,6 +350,12 @@ public partial class MosaSettings
 		set => Settings.SetValue(Name.AppLocation_Ndisasm, value);
 	}
 
+	public string FilePostfix
+	{
+		get => Settings.GetValue(Name.FilePostfix, null);
+		set => Settings.SetValue(Name.FilePostfix, value);
+	}
+
 	public string OutputFile
 	{
 		get => Settings.GetValue(Name.Compiler_OutputFile, null);
@@ -1047,6 +1053,11 @@ public partial class MosaSettings
 		else
 		{
 			baseFilename = "_mosa_";
+		}
+
+		if (!string.IsNullOrWhiteSpace(FilePostfix))
+		{
+			baseFilename = $"{baseFilename}-{FilePostfix}";
 		}
 
 		if (OutputFile is null or "%DEFAULT%")

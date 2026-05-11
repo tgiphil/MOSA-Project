@@ -57,6 +57,8 @@ public static class CommandLineArguments
 			new Argument { Name = "-reduce-size", Setting = Name.Optimizations_ReduceCodeSize, Value = "true"},
 			new Argument { Name = "-scanwindow", Setting = Name.Optimizations_ScanWindow},
 
+			new Argument { Name = "-postfix", Setting = Name.FilePostfix},
+
 			// Compiler - Platforms:
 			new Argument { Name = "-platform", Setting = Name.Compiler_Platform},
 			new Argument { Name = "-x86", Setting = Name.Compiler_Platform, Value = "x86"},
