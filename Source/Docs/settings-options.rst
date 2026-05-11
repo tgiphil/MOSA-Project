@@ -255,6 +255,7 @@ Common Settings
    :widths: 50, 200
 
     DefaultFolder,Default folder for output files
+    FilePostfix,Postfix string appended to output file names
     SearchPaths,Folder to search for files
     TemporaryFolder,Specifies a temporary folder
 
