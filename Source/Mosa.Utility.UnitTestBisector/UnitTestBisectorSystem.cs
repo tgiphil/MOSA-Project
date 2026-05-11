@@ -553,6 +553,7 @@ public sealed partial class UnitTestBisectorSystem
 
 	private IterationResult ExecuteIteration(BisectorState state, string stateFile, List<UnitTestInfo> discoveredUnitTests)
 	{
+		state.CurrentDisabledTransforms = effectiveDisabledTransformNames.OrderBy(x => x).ToList();
 		SaveState(stateFile, state);
 
 		using var assertCapture = new AssertCaptureScope();

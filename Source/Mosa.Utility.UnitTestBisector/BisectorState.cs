@@ -32,6 +32,8 @@ internal sealed class BisectorState
 
 	public List<PlanResult> Results { get; set; } = [];
 
+	public List<string> CurrentDisabledTransforms { get; set; } = [];
+
 	public bool Completed { get; set; }
 
 	public string LastExitKind { get; set; } = Constant.ExitKindUnknown;
