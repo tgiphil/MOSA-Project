@@ -257,9 +257,9 @@ public static class ManualTransforms
 		Useless.LoadParamSignExtend16x64Double.Instance,
 		Useless.LoadParamSignExtend32x64Double.Instance,
 
-		Useless.ZeroExtend8x32Compare32x32.Instance,
-		Useless.ZeroExtend8x64Compare32x64.Instance,
-		Useless.ZeroExtend8x64Compare64x64.Instance,
+		//Useless.ZeroExtend8x32Compare32x32.Instance,  // TODO: Validate
+		//Useless.ZeroExtend8x64Compare32x64.Instance,  // TODO: Validate
+		//Useless.ZeroExtend8x64Compare64x64.Instance,  // TODO: Validate
 
 		Useless.Store8ZeroExtend8x32.Instance,
 		Useless.Store16ZeroExtend16x32.Instance,

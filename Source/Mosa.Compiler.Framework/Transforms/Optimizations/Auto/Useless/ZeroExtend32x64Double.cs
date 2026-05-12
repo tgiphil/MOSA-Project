@@ -35,6 +35,6 @@ public sealed class ZeroExtend32x64Double : BaseTransform
 
 		var t1 = context.Operand1.Definitions[0].Operand1;
 
-		context.SetInstruction(IR.Move64, result, t1);
+		context.SetInstruction(IR.ZeroExtend32x64, result, t1);
 	}
 }

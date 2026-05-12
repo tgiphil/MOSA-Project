@@ -35,6 +35,6 @@ public sealed class SignExtend8x32Double : BaseTransform
 
 		var t1 = context.Operand1.Definitions[0].Operand1;
 
-		context.SetInstruction(IR.Move32, result, t1);
+		context.SetInstruction(IR.SignExtend8x32, result, t1);
 	}
 }
