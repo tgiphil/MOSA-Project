@@ -46,14 +46,16 @@ public abstract class BaseTransformStage : BaseMethodCompilerStage
 		TransformCountStage = $"{Name}.Transforms";
 		OptimizationCountStage = $"{Name}.Optimizations";
 
-		foreach (var list in transforms)
+		if (AllowTransformHooks)
 		{
-			if (list == null)
-				continue;
+			foreach (var list in transforms)
+			{
+				if (list == null)
+					continue;
 
-			if (AllowTransformHooks)
 				foreach (var transform in list)
 					Compiler.CompilerHooks.RegisterTransform?.Invoke(Name, transform.Name);
+			}
 		}
 	}
 
