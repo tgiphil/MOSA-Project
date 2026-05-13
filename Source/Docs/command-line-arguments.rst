@@ -209,7 +209,7 @@ Below are the command line arguments available:
 	-bisect-pairwise-off,UnitTest.Bisector.Pairwise,false
 	-bisect-disabled-file,UnitTest.Bisector.DisabledTransformsFile,{value}
 	-bisect-state,UnitTest.Bisector.StateFile,{value}
-	-bisect-plan,UnitTest.Bisector.Plan,{value} (disable-one|enable-one|random-combo|failure-inducing|masking)
+	-bisect-plan,UnitTest.Bisector.Plan,{value} (disable-one|enable-one|random|failure-inducing|masking)
 	-bisect-order,UnitTest.Bisector.Order,{value}
 	-bisect-iterations,UnitTest.Bisector.Iterations,{value}
 	-bisect-seed,UnitTest.Bisector.RandomSeed,{value}

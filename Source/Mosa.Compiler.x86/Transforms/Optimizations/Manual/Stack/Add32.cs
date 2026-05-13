@@ -14,7 +14,6 @@ public sealed class Add32 : BaseTransform
 {
 	public static readonly Add32 Instance = new();
 
-
 	private Add32() : base(X86.Add32, TransformType.Manual | TransformType.Optimization)
 	{
 	}
@@ -41,7 +40,7 @@ public sealed class Add32 : BaseTransform
 		if (next.Instruction != X86.Sub32)
 			return false;
 
-		if (context.Operand1.Register != CPURegister.ESP)
+		if (next.Result.Register != CPURegister.ESP)
 			return false;
 
 		if (!next.Operand2.IsConstant)

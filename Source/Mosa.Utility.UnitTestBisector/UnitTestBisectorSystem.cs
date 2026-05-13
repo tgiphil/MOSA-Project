@@ -129,7 +129,7 @@ public sealed partial class UnitTestBisectorSystem
 				OutputStatusBisector($"Loaded transforms from state: {state.Transforms.Count}");
 			}
 
-			return plan == PlanKind.RandomCombo
+			return plan == PlanKind.Random
 				? ExecuteRandomComboPlan(stateFile, state, discoveredUnitTests)
 				: ExecuteDeterministicPlan(stateFile, state, plan, discoveredUnitTests);
 		}
@@ -488,7 +488,7 @@ public sealed partial class UnitTestBisectorSystem
 			{
 				SetLastExit(state, Constant.ExitKindFailure, 1);
 				SaveState(stateFile, state);
-				WriteFailureReviewFile(stateFile, PlanKind.RandomCombo, state);
+				WriteFailureReviewFile(stateFile, PlanKind.Random, state);
 				return 1;
 			}
 
@@ -521,7 +521,7 @@ public sealed partial class UnitTestBisectorSystem
 
 			state.NextIndex++;
 			SaveState(stateFile, state);
-			WriteFailureReviewFile(stateFile, PlanKind.RandomCombo, state);
+			WriteFailureReviewFile(stateFile, PlanKind.Random, state);
 
 			OutputStatusBisector($"Iteration Result: {(iterationResult.Passed ? "PASS" : "FAIL")}");
 			OutputIterationStatus(state);
@@ -530,7 +530,7 @@ public sealed partial class UnitTestBisectorSystem
 			{
 				SetLastExit(state, Constant.ExitKindFailure, 1);
 				SaveState(stateFile, state);
-				WriteFailureReviewFile(stateFile, PlanKind.RandomCombo, state);
+				WriteFailureReviewFile(stateFile, PlanKind.Random, state);
 				return 1;
 			}
 		}
@@ -754,10 +754,10 @@ public sealed partial class UnitTestBisectorSystem
 		{
 			"enable-one" => PlanKind.EnableOne,
 			"disable-one" => PlanKind.DisableOne,
-			"random-combo" => PlanKind.RandomCombo,
+			"random" => PlanKind.Random,
 			"failure-inducing" => PlanKind.FailureInducing,
 			"masking" => PlanKind.Masking,
-			_ => throw new InvalidOperationException($"Unknown plan '{plan}'. Valid values: disable-one, enable-one, random-combo, failure-inducing, masking."),
+			_ => throw new InvalidOperationException($"Unknown plan '{plan}'. Valid values: disable-one, enable-one, random, failure-inducing, masking."),
 		};
 	}
 

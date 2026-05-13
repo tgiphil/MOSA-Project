@@ -6,7 +6,7 @@ internal enum PlanKind
 {
 	DisableOne,
 	EnableOne,
-	RandomCombo,
+	Random,
 	FailureInducing,
 	Masking,
 }
