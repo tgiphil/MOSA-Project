@@ -133,37 +133,37 @@ public static class ManualTransforms
 		Memory.StoreLoadParam64.Instance,
 		Memory.StoreLoadParamR4.Instance,
 		Memory.StoreLoadParamR8.Instance,
-		Memory.StoreLoadParamObject.Instance, // Dup for MP
+		Memory.StoreLoadParamObject.Instance, // Duplicate for Managed Pointers
 
 		Memory.LoadStoreParam32.Instance,
 		Memory.LoadStoreParam64.Instance,
 		Memory.LoadStoreParamR4.Instance,
 		Memory.LoadStoreParamR8.Instance,
-		Memory.LoadStoreParamObject.Instance, // Dup for MP
+		Memory.LoadStoreParamObject.Instance, // Duplicate for Managed Pointers
 
 		Memory.DoubleStoreParam32.Instance,
 		Memory.DoubleStoreParam64.Instance,
 		Memory.DoubleStoreParamR4.Instance,
 		Memory.DoubleStoreParamR8.Instance,
-		Memory.DoubleStoreParamObject.Instance, // Dup for MP
+		Memory.DoubleStoreParamObject.Instance, // Duplicate for Managed Pointers
 
 		Memory.LoadStore32.Instance,
 		Memory.LoadStore64.Instance,
 		Memory.LoadStoreR4.Instance,
 		Memory.LoadStoreR8.Instance,
-		Memory.LoadStoreObject.Instance, // Dup for MP
+		Memory.LoadStoreObject.Instance, // Duplicate for Managed Pointers
 
 		Memory.StoreLoad32.Instance,
 		Memory.StoreLoad64.Instance,
 		Memory.StoreLoadR4.Instance,
 		Memory.StoreLoadR8.Instance,
-		Memory.StoreLoadObject.Instance, // Dup for MP
+		Memory.StoreLoadObject.Instance, // Duplicate for Managed Pointers
 
 		Memory.DoubleStore32.Instance,
 		Memory.DoubleStore64.Instance,
 		Memory.DoubleStoreR4.Instance,
 		Memory.DoubleStoreR8.Instance,
-		Memory.DoubleStoreObject.Instance, // Dup for MP
+		Memory.DoubleStoreObject.Instance, // Duplicate for Managed Pointers
 
 		Memory.LoadZeroExtend16x32Store16.Instance,
 		Memory.LoadZeroExtend16x64Store16.Instance,
@@ -192,13 +192,13 @@ public static class ManualTransforms
 		Memory.DoubleLoad64.Instance,
 		Memory.DoubleLoadR4.Instance,
 		Memory.DoubleLoadR8.Instance,
-		Memory.DoubleLoadParamObject.Instance, // Dup for MP
+		Memory.DoubleLoadParamObject.Instance, // Duplicate for Managed Pointers
 
 		Memory.DoubleLoadParam32.Instance,
 		Memory.DoubleLoadParam64.Instance,
 		Memory.DoubleLoadParamR4.Instance,
 		Memory.DoubleLoadParamR8.Instance,
-		Memory.DoubleLoadParamObject.Instance, // Dup for MP
+		Memory.DoubleLoadParamObject.Instance, // Duplicate for Managed Pointers
 
 		Rewrite.Branch32GreaterOrEqualThanZero.Instance,
 		Rewrite.Branch32LessThanZero.Instance,
@@ -220,7 +220,7 @@ public static class ManualTransforms
 		CodeMotion.Load64.Instance,
 		CodeMotion.LoadR4.Instance,
 		CodeMotion.LoadR8.Instance,
-		CodeMotion.LoadObject.Instance, // Dup for MP
+		CodeMotion.LoadObject.Instance, // Duplicate for Managed Pointers
 		CodeMotion.LoadCompound.Instance,
 
 		CodeMotion.LoadSignExtend16x32.Instance,

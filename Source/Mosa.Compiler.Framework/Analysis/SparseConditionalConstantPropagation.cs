@@ -945,7 +945,7 @@ public sealed class SparseConditionalConstantPropagation
 	{
 		if (instruction == IR.Neg32)
 		{
-			result = (uint)-((int)operand1);
+			result = (ulong)(uint)-((int)operand1);
 			return true;
 		}
 		else if (instruction == IR.Neg64)
@@ -953,7 +953,12 @@ public sealed class SparseConditionalConstantPropagation
 			result = (ulong)-((long)operand1);
 			return true;
 		}
-		else if (instruction == IR.Not32 || instruction == IR.Not64)
+		else if (instruction == IR.Not32)
+		{
+			result = (ulong)(uint)~operand1;
+			return true;
+		}
+		else if (instruction == IR.Not64)
 		{
 			result = ~operand1;
 			return true;
@@ -1021,59 +1026,104 @@ public sealed class SparseConditionalConstantPropagation
 
 	private static bool IntegerOperation(BaseInstruction instruction, ulong operand1, ulong operand2, ConditionCode conditionCode, out ulong result)
 	{
-		if (instruction == IR.Add32
-			|| instruction == IR.Add64)
+		if (instruction == IR.Add32)
+		{
+			result = (ulong)(uint)(operand1 + operand2);
+			return true;
+		}
+		else if (instruction == IR.Add64)
 		{
 			result = operand1 + operand2;
 			return true;
 		}
-		else if (instruction == IR.Sub32
-				 || instruction == IR.Sub64)
+		else if (instruction == IR.Sub32)
+		{
+			result = (ulong)(uint)(operand1 - operand2);
+			return true;
+		}
+		else if (instruction == IR.Sub64)
 		{
 			result = operand1 - operand2;
 			return true;
 		}
-		else if (instruction == IR.MulUnsigned32
-				 || instruction == IR.MulSigned32
-				 || instruction == IR.MulUnsigned64
-				 || instruction == IR.MulSigned64)
+		else if (instruction == IR.MulUnsigned32 || instruction == IR.MulSigned32)
+		{
+			result = (ulong)(uint)(operand1 * operand2);
+			return true;
+		}
+		else if (instruction == IR.MulUnsigned64 || instruction == IR.MulSigned64)
 		{
 			result = operand1 * operand2;
 			return true;
 		}
-		else if ((instruction == IR.DivUnsigned32 || instruction == IR.DivUnsigned64) && operand2 != 0)
+		else if (instruction == IR.DivUnsigned32 && operand2 != 0)
+		{
+			result = (ulong)((uint)operand1 / (uint)operand2);
+			return true;
+		}
+		else if (instruction == IR.DivUnsigned64 && operand2 != 0)
 		{
 			result = operand1 / operand2;
 			return true;
 		}
-		else if ((instruction == IR.DivSigned32 || instruction == IR.DivSigned64) && operand2 != 0)
+		else if (instruction == IR.DivSigned32 && operand2 != 0)
+		{
+			result = (ulong)(uint)((int)operand1 / (int)operand2);
+			return true;
+		}
+		else if (instruction == IR.DivSigned64 && operand2 != 0)
 		{
 			result = (ulong)((long)operand1 / (long)operand2);
 			return true;
 		}
-		else if ((instruction == IR.RemUnsigned32 || instruction == IR.RemUnsigned64) && operand2 != 0)
+		else if (instruction == IR.RemUnsigned32 && operand2 != 0)
+		{
+			result = (ulong)((uint)operand1 % (uint)operand2);
+			return true;
+		}
+		else if (instruction == IR.RemUnsigned64 && operand2 != 0)
 		{
 			result = operand1 % operand2;
 			return true;
 		}
-		else if ((instruction == IR.RemSigned32 || instruction == IR.RemSigned64) && operand2 != 0)
+		else if (instruction == IR.RemSigned32 && operand2 != 0)
+		{
+			result = (ulong)(uint)((int)operand1 % (int)operand2);
+			return true;
+		}
+		else if (instruction == IR.RemSigned64 && operand2 != 0)
 		{
 			result = (ulong)((long)operand1 % (long)operand2);
 			return true;
 		}
-		else if (instruction == IR.ArithShiftRight32 || instruction == IR.ArithShiftRight64)
+		else if (instruction == IR.ArithShiftRight32)
 		{
-			result = (ulong)((long)operand1 >> (int)operand2);
+			result = (ulong)(uint)((int)operand1 >> ((int)operand2 & 31));
 			return true;
 		}
-		else if (instruction == IR.ShiftRight32 || instruction == IR.ShiftRight64)
+		else if (instruction == IR.ArithShiftRight64)
 		{
-			result = operand1 >> (int)operand2;
+			result = (ulong)((long)operand1 >> ((int)operand2 & 63));
 			return true;
 		}
-		else if (instruction == IR.ShiftLeft32 || instruction == IR.ShiftLeft64)
+		else if (instruction == IR.ShiftRight32)
 		{
-			result = operand1 << (int)operand2;
+			result = (ulong)((uint)operand1 >> ((int)operand2 & 31));
+			return true;
+		}
+		else if (instruction == IR.ShiftRight64)
+		{
+			result = operand1 >> ((int)operand2 & 63);
+			return true;
+		}
+		else if (instruction == IR.ShiftLeft32)
+		{
+			result = (ulong)(uint)((uint)operand1 << ((int)operand2 & 31));
+			return true;
+		}
+		else if (instruction == IR.ShiftLeft64)
+		{
+			result = operand1 << ((int)operand2 & 63);
 			return true;
 		}
 		else if (instruction == IR.Compare32x32)

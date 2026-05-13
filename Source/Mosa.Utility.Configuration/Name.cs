@@ -123,8 +123,10 @@ public static class Name
 
 	public const string BootLoaderTimeout = "BootLoader.Timeout";
 
+	public const string FilePostfix = "FilePostfix";
 	public const string SearchPaths = "SearchPaths";
 	public const string TemporaryFolder = "TemporaryFolder";
+
 	public const string UnitTest_Connection_MaxAttempts = "UnitTest.Connection.MaxAttempts";
 	public const string UnitTest_Connection_TimeOut = "UnitTest.Connection.TimeOut";
 	public const string UnitTest_Filter = "UnitTest.Filter";
