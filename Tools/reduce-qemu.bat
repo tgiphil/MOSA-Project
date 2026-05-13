@@ -82,7 +82,7 @@ del /S /Q qemu\share\firmware\60-edk2-riscv*.json
 del /S /Q qemu\share\firmware\60-edk2-loongarch64*.json
 del /S /Q qemu\share\dtb\pegasos1.dtb
 del /S /Q qemu\share\dtb\pegasos2.dtb
-del /S /Q qemu\share\u-boot-sam460.binS
+del /S /Q qemu\share\u-boot-sam460.bin
 del /S /Q qemu\share\hppa-firmware64.img
 del /S /Q qemu\share\hppa-firmware.img
 del /S /Q qemu\libEGL*.dll

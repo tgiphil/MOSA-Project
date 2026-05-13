@@ -25,8 +25,7 @@ Below are the command line arguments available:
     -o,Compiler.OutputFile,{value}
 
     -path,SearchPaths,{list}
-	-postfix,FilePostfix,{value}
-	-path,SearchPaths,{list}
+    -postfix,FilePostfix,{value}
 
     -threading,Compiler.Multithreading,true
     -threading-off,Compiler.Multithreading,false
@@ -62,11 +61,11 @@ Below are the command line arguments available:
     -looprange-off,Optimizations.LoopRangeTracker,false
     -devirtualization,Optimizations.Devirtualization,true
     -devirtualization-off,Optimizations.Devirtualization,false
-	-inline-level,Optimizations.Inline.Maximum,{value}
+    -inline-level,Optimizations.Inline.Maximum,{value}
 	-reduce-size,Optimizations.ReduceCodeSize,true
 	-scanwindow,Optimizations.ScanWindow,{value}
 
-	Compiler - Platform:
+    Compiler - Platform:
     -platform,Compiler.Platform,{value}
     -x86,Compiler.Platform,x86
     -x64,Compiler.Platform,x64
