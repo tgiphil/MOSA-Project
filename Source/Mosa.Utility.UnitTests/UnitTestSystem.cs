@@ -18,8 +18,8 @@ public class UnitTestSystem
 	{
 		try
 		{
-			MosaSettings.LoadArguments(args);
 			Stopwatch.Start();
+			MosaSettings.LoadArguments(args);
 
 			OutputStatus("Discovering Unit Tests...");
 
@@ -104,4 +104,3 @@ public class UnitTestSystem
 		Console.WriteLine($"{Stopwatch.Elapsed.TotalSeconds:00.00} | {status}");
 	}
 }
-

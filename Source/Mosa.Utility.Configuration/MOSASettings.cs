@@ -22,14 +22,12 @@ public partial class MosaSettings
 		public const int Port = 11110;
 
 		public const int EmulatorMaxRuntime = 20; // in seconds
-		public const string BisectorStateFile = "bisector-state.json";
+
 		public const string BisectorPlan = "disable-one";
 		public const string BisectorOrder = "original";
 		public const int BisectorIterations = 20;
 		public const int BisectorRandomSeed = 0;
 		public const int BisectorMaxRestarts = 5;
-
-		public const string BisectorStage = null;
 
 		public const int X86StackLocation = 0x30000;
 		public const int X64StackLocation = 0x30000;
@@ -536,14 +534,8 @@ public partial class MosaSettings
 
 	public string BisectorStage
 	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Stage, Constant.BisectorStage);
+		get => Settings.GetValue(Name.UnitTest_Bisector_Stage, null);
 		set => Settings.SetValue(Name.UnitTest_Bisector_Stage, value);
-	}
-
-	public bool BisectorMasking
-	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Masking, true);
-		set => Settings.SetValue(Name.UnitTest_Bisector_Masking, value);
 	}
 
 	public bool BisectorPairwise
@@ -554,7 +546,7 @@ public partial class MosaSettings
 
 	public string BisectorStateFile
 	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_StateFile, Constant.BisectorStateFile);
+		get => Settings.GetValue(Name.UnitTest_Bisector_StateFile, null);
 		set => Settings.SetValue(Name.UnitTest_Bisector_StateFile, value);
 	}
 
@@ -592,12 +584,6 @@ public partial class MosaSettings
 	{
 		get => Settings.GetValue(Name.UnitTest_Bisector_WorkerIteration, false);
 		set => Settings.SetValue(Name.UnitTest_Bisector_WorkerIteration, value);
-	}
-
-	public string BisectorWorkingDirectory
-	{
-		get => Settings.GetValue(Name.UnitTest_Bisector_Supervisor_WorkingDirectory, null);
-		set => Settings.SetValue(Name.UnitTest_Bisector_Supervisor_WorkingDirectory, value);
 	}
 
 	public int BisectorMaxRestarts
@@ -1052,7 +1038,7 @@ public partial class MosaSettings
 		}
 		else
 		{
-			baseFilename = "_mosa_";
+			baseFilename = "Mosa";
 		}
 
 		if (!string.IsNullOrWhiteSpace(FilePostfix))
@@ -1103,6 +1089,11 @@ public partial class MosaSettings
 		if (PostLinkHashFile == "%DEFAULT%")
 		{
 			PostLinkHashFile = Path.Combine(DefaultFolder, $"{baseFilename}-postlink-hash.txt");
+		}
+
+		if (BisectorStateFile == "%DEFAULT%")
+		{
+			BisectorStateFile = Path.Combine(DefaultFolder, $"{baseFilename}-bisector-state.json");
 		}
 
 		if (AsmFile == "%DEFAULT%")
