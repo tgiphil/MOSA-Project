@@ -6,14 +6,14 @@ namespace Mosa.Utility.UnitTests;
 
 internal static class Program
 {
-	private static int Main(string[] args)
+	private static void Main(string[] args)
 	{
 		RegisterPlatforms();
 
 		var unitTestSystem = new UnitTestSystem();
-		var returncode = unitTestSystem.Start(args);
+		var returnCode = unitTestSystem.Start(args);
 
-		return returncode;
+		Environment.Exit(returnCode);
 	}
 
 	private static void RegisterPlatforms()
