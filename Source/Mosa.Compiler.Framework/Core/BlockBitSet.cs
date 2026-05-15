@@ -2,7 +2,7 @@
 
 using System.Collections;
 
-namespace Mosa.Compiler.Framework.Common;
+namespace Mosa.Compiler.Framework.Core;
 
 public sealed class BlockBitSet
 {

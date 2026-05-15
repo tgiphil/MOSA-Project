@@ -2,7 +2,7 @@
 
 using System.Collections;
 using System.Diagnostics;
-using Mosa.Compiler.Framework.Common;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Analysis;
 
