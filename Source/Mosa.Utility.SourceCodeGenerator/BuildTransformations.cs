@@ -136,12 +136,14 @@ public class BuildTransformations : BuildBaseTemplate
 		DestinationFile = $"{type}/{name}{subName}.cs";
 		AddSourceHeader();
 
+		Lines.AppendLine($"using Mosa.Compiler.Framework.Core;");
+
 		if (!Path.Contains("Framework"))
 		{
-			Lines.AppendLine($"using Mosa.Compiler.Framework;");
+			Lines.AppendLine($"");
 			Lines.AppendLine();
 		}
-
+		Lines.AppendLine();
 		Lines.AppendLine($"namespace {Path}.{type};");
 		Lines.AppendLine();
 

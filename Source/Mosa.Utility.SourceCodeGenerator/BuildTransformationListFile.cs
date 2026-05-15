@@ -18,7 +18,7 @@ public class BuildTransformationListFile : BuildBaseTemplate
 
 	protected override void Body()
 	{
-		Lines.AppendLine("using Mosa.Compiler.Framework;");
+		Lines.AppendLine("using Mosa.Compiler.Framework.Core;");
 		Lines.AppendLine();
 
 		Lines.AppendLine($"namespace {Namespace};");

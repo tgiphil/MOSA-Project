@@ -3,7 +3,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Resources;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Utility.Configuration;
 
 namespace Mosa.Utility.Launcher;

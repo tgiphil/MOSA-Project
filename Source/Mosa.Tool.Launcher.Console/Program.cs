@@ -1,7 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Platforms;
 using Mosa.Utility.Configuration;
 using Mosa.Utility.Launcher;

@@ -35,9 +35,9 @@ public sealed class MosaLinker
 
 	public static readonly SectionKind[] SectionKinds = [SectionKind.Text, SectionKind.Data, SectionKind.ROData, SectionKind.BSS];
 
-	public Compiler Compiler { get; set; }
+	public Core.Compiler Compiler { get; set; }
 
-	public MosaLinker(Compiler compiler)
+	public MosaLinker(Core.Compiler compiler)
 	{
 		Compiler = compiler;
 

@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.ConstantFolding;
 
 public sealed class Switch : BaseTransform
@@ -49,6 +51,6 @@ public sealed class Switch : BaseTransform
 			context.SetNop();
 		}
 
-		Framework.Transform.UpdatePhiBlocks(targets);
+		Core.Transform.UpdatePhiBlocks(targets);
 	}
 }

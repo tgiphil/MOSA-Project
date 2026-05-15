@@ -1,6 +1,6 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Framework.Platform;
 
 namespace Mosa.Compiler.x64;

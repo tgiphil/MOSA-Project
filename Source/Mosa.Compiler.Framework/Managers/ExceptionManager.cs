@@ -1,6 +1,7 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Compiler.Common;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.MosaTypeSystem;
 
 namespace Mosa.Compiler.Framework.Stages;
@@ -8,7 +9,7 @@ namespace Mosa.Compiler.Framework.Stages;
 /// <summary>
 /// Exception Manager
 /// </summary>
-/// <seealso cref="Mosa.Compiler.Framework.BaseTransformManager" />
+/// <seealso cref="Core.BaseTransformManager" />
 public class ExceptionManager : BaseTransformManager
 {
 	public readonly List<BasicBlock> LeaveTargets = new();
@@ -20,7 +21,7 @@ public class ExceptionManager : BaseTransformManager
 
 	public Operand ExceptionHandlerMethod { get; private set; }
 
-	public override void Initialize(Compiler compiler)
+	public override void Initialize(Core.Compiler compiler)
 	{
 		ExceptionHandler = compiler.PlatformInternalRuntimeType.FindMethodByName("ExceptionHandler");
 		ExceptionHandlerMethod = Operand.CreateLabel(ExceptionHandler, compiler.Architecture.Is32BitPlatform);

@@ -2,6 +2,8 @@
 
 namespace Mosa.Compiler.Framework.Stages;
 
+using Mosa.Compiler.Framework.Core;
+
 /// <summary>
 ///	Stop the method compiler - use in development
 /// </summary>

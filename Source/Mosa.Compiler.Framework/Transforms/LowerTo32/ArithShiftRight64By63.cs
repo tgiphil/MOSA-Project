@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.LowerTo32;
 
 public sealed class ArithShiftRight64By63 : BaseLowerTo32Transform

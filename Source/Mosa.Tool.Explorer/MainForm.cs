@@ -4,8 +4,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using Mosa.Compiler.Common;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Framework.CompilerStages;
+
+using Mosa.Compiler.Framework.Core;
+
 using Mosa.Compiler.Framework.Stages;
 using Mosa.Compiler.Framework.Stages.Diagnostic;
 using Mosa.Compiler.MosaTypeSystem;

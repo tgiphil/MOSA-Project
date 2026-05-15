@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.LowerTo32;
 
 public sealed class ShiftLeft64ByConstant32Plus : BaseLowerTo32Transform

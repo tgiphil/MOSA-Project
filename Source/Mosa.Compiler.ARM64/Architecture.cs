@@ -2,7 +2,8 @@
 
 using Mosa.Compiler.ARM64.Stages;
 using Mosa.Compiler.Common.Exceptions;
-using Mosa.Compiler.Framework;
+
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Framework.Linker.Elf;
 using Mosa.Compiler.Framework.Stages;
 using Mosa.Utility.Configuration;

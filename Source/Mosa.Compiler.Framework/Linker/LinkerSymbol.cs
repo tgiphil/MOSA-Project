@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using Mosa.Compiler.Common;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.MosaTypeSystem;
 
 namespace Mosa.Compiler.Framework.Linker;
@@ -39,7 +40,7 @@ public sealed class LinkerSymbol
 
 	private readonly object _lock = new object();
 
-	public Compiler Compiler { get; internal set; }
+	public Core.Compiler Compiler { get; internal set; }
 
 	//public int Version { get; set; } // for debugging
 

@@ -1,0 +1,56 @@
+﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+namespace Mosa.Compiler.Framework.Core;
+
+public abstract class BaseBlockTransform : IComparable<BaseBlockTransform>
+{
+	#region Properties
+
+	public bool Log { get; private set; }
+
+	public string Name { get; init; }
+
+	public virtual int Priority { get; } = 0;
+
+	#endregion Properties
+
+	#region Constructors
+
+	public BaseBlockTransform(bool log = false)
+	{
+		Log = log;
+
+		Name = GetType().FullName.Replace("Mosa.Compiler.Framework.", string.Empty);
+	}
+
+	#endregion Constructors
+
+	#region Abstract Methods
+
+	public abstract int Process(Transform transform);
+
+	#endregion Abstract Methods
+
+	#region Internals
+
+	int IComparable<BaseBlockTransform>.CompareTo(BaseBlockTransform other)
+	{
+		return Priority.CompareTo(other.Priority);
+	}
+
+	#endregion Internals
+
+	#region Block Helpers
+
+	protected static void RemoveRemainingInstructionInBlock(Context context)
+	{
+		BaseTransform.RemoveRemainingInstructionInBlock(context);
+	}
+
+	protected static BasicBlock GetOtherBranchTarget(BasicBlock block, BasicBlock target)
+	{
+		return BaseTransform.GetOtherBranchTarget(block, target);
+	}
+
+	#endregion Block Helpers
+}

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Compiler.Common.Exceptions;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Intrinsic;
 

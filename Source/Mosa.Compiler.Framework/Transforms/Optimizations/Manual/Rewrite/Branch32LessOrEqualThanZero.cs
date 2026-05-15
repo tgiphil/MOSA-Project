@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Rewrite;
 
 public sealed class Branch32LessOrEqualThanZero : BaseTransform
@@ -34,6 +36,6 @@ public sealed class Branch32LessOrEqualThanZero : BaseTransform
 
 		RemoveRemainingInstructionInBlock(context);
 
-		Framework.Transform.UpdatePhiBlock(phiBlock);
+		Core.Transform.UpdatePhiBlock(phiBlock);
 	}
 }

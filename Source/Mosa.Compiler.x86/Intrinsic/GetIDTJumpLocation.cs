@@ -2,7 +2,7 @@
 
 using System.Diagnostics;
 using Mosa.Compiler.Common.Exceptions;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Intrinsic;
 

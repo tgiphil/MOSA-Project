@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Text;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Framework.RegisterAllocator.RedBlackTree;
 
 namespace Mosa.Compiler.Framework.RegisterAllocator;

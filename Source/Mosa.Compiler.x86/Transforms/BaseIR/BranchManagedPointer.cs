@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.BaseIR;
 
@@ -17,7 +17,7 @@ public sealed class BranchManagedPointer : BaseIRTransform
 
 	public override void Transform(Context context, Transform transform)
 	{
-		Framework.Transform.MoveConstantRight(context);
+		Framework.Core.Transform.MoveConstantRight(context);
 
 		var target = context.BranchTarget1;
 		var condition = context.ConditionCode;

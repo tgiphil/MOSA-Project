@@ -1,0 +1,19 @@
+﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+namespace Mosa.Compiler.Framework.Core;
+
+public delegate void StubMethodDelegate(Context context, Transform transform);
+
+/// <summary>
+/// Used for defining targets when using intrinsic replacements
+/// </summary>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+public class StubMethodAttribute : Attribute
+{
+	public string Target { get; }
+
+	public StubMethodAttribute(string target)
+	{
+		Target = target;
+	}
+}

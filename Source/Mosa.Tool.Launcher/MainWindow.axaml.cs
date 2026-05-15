@@ -8,7 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Mosa.Compiler.Common;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Platforms;
 using Mosa.Utility.Configuration;
 using Mosa.Utility.Launcher;

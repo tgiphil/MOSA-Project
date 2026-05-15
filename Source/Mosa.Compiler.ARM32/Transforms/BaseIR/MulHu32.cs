@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 
@@ -17,7 +17,7 @@ public sealed class MulHu32 : BaseIRTransform
 
 	public override void Transform(Context context, Transform transform)
 	{
-		Framework.Transform.MoveConstantRight(context);
+		Framework.Core.Transform.MoveConstantRight(context);
 
 		var result = context.Result;
 		var operand1 = context.Operand1;

@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 
@@ -19,7 +19,7 @@ public sealed class MulOverflowOut32 : BaseIRTransform
 	{
 		var result2 = context.Result2;
 
-		Framework.Transform.MoveConstantRight(context);
+		Framework.Core.Transform.MoveConstantRight(context);
 
 		Translate(transform, context, ARM32.Mul, false, InstructionOption.SetFlags);
 
