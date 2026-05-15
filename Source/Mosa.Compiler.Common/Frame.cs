@@ -6,13 +6,6 @@ namespace Mosa.Compiler.Common
 {
 	public static class Frame
 	{
-		public static string MethodName
-		{
-			get
-			{
-				var stackTrace = new StackTrace();
-				return stackTrace.GetFrame(1).GetMethod().Name;
-			}
-		}
+		public static string MethodName => new StackTrace().GetFrame(1).GetMethod().Name;
 	}
 }

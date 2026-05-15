@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Mosa.Compiler.Framework;
+using Mosa.Compiler.Common;
 using Mosa.Utility.Configuration;
 using Mosa.Utility.UnitTests;
 
