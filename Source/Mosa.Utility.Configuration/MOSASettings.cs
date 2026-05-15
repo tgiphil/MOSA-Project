@@ -867,8 +867,6 @@ public partial class MosaSettings
 		EmitBinary = true;
 		TraceLevel = 0;
 
-		ImageFile = "%DEFAULT%";
-
 		DebugFile = null;
 		AsmFile = null;
 		MapFile = null;
@@ -1038,7 +1036,7 @@ public partial class MosaSettings
 		}
 		else
 		{
-			baseFilename = "Mosa";
+			baseFilename = "MOSA";
 		}
 
 		if (!string.IsNullOrWhiteSpace(FilePostfix))

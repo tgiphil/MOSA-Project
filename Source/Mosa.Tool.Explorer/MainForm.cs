@@ -44,7 +44,7 @@ public partial class MainForm : Form
 	private readonly CompilerInformation CompilerInformation = new CompilerInformation();
 	private readonly BindingList<CounterEntry> MethodCounters = new BindingList<CounterEntry>();
 	private readonly MethodStore MethodStore = new MethodStore();
-	private readonly HashSet<string> DisabledTransformNames = new HashSet<string>(StringComparer.Ordinal);
+	private readonly HashSet<string> DisabledTransformList = new HashSet<string>(StringComparer.Ordinal);
 
 	private MosaSettings MosaSettings = new MosaSettings();
 
@@ -85,7 +85,7 @@ public partial class MainForm : Form
 		RegisterPlatforms();
 
 		CreateAppRegistryKey();
-		UpdateDisabledTransformNames();
+		PopulateDisabledTranformList();
 
 		Stopwatch.Restart();
 	}
@@ -476,7 +476,7 @@ public partial class MainForm : Form
 
 		Compiler.ScheduleAll();
 
-		UpdateDisabledTransformNames();
+		PopulateDisabledTranformList();
 
 		toolStrip1.Enabled = false;
 
@@ -531,14 +531,16 @@ public partial class MainForm : Form
 		if (!string.IsNullOrEmpty(filter) && !string.Equals(stageName, filter, StringComparison.Ordinal))
 			return false;
 
-		return DisabledTransformNames.Contains(transformName);
+		return DisabledTransformList.Contains(transformName);
 	}
 
-	private void UpdateDisabledTransformNames()
+	private void PopulateDisabledTranformList()
 	{
-		DisabledTransformNames.Clear();
+		DisabledTransformList.Clear();
 
-		foreach (var line in tbDisabledTransforms.Lines)
+		var lines = tbDisabledTransforms.Lines;
+
+		foreach (var line in lines)
 		{
 			var text = line.Trim();
 
@@ -551,13 +553,13 @@ public partial class MainForm : Form
 			if (text.Contains('|'))
 				text = text.Split('|')[1].Trim();
 
-			DisabledTransformNames.Add(text);
-		}
-	}
+			text = text.Replace("\"", string.Empty).Replace(",", string.Empty).Trim('\t').Trim();
 
-	private void DisabledTransformsTextBox_TextChanged(object sender, EventArgs e)
-	{
-		UpdateDisabledTransformNames();
+			if (text.Length == 0)
+				continue;
+
+			DisabledTransformList.Add(text);
+		}
 	}
 
 	private void DumpAllMethodStagesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -775,7 +777,7 @@ public partial class MainForm : Form
 
 		CompilerInformation.Stopwatch.Reset();
 
-		UpdateDisabledTransformNames();
+		PopulateDisabledTranformList();
 
 		Compiler.CompileSingleMethod(method);
 	}
