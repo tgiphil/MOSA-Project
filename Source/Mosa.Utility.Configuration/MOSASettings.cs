@@ -1044,6 +1044,11 @@ public partial class MosaSettings
 			baseFilename = $"{baseFilename}-{FilePostfix}";
 		}
 
+		if (!string.IsNullOrWhiteSpace(FilePostfix))
+		{
+			baseFilename = $"{baseFilename}-{FilePostfix}";
+		}
+
 		if (OutputFile is null or "%DEFAULT%")
 		{
 			OutputFile = Path.Combine(DefaultFolder, $"{baseFilename}.bin");
