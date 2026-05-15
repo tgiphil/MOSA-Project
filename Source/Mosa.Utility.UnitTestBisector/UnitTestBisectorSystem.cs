@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Mosa.Compiler.Framework;
+using Mosa.Compiler.Common;
 using Mosa.Utility.Configuration;
 using Mosa.Utility.UnitTests;
 
@@ -13,13 +14,15 @@ public sealed partial class UnitTestBisectorSystem
 	private readonly record struct IterationResult(bool Passed);
 
 	private readonly Stopwatch stopwatch = new();
-	private readonly MosaSettings mosaSettings = new();
+	private readonly MosaSettings MosaSettings = new();
 	private readonly JsonSerializerOptions jsonSerializerOptions = new() { WriteIndented = true };
 
 	private bool hasCompilationFailure;
 	private bool hasRestartsExceeded;
 	private string lastCompilationFailure;
+
 	private string unitTestFilter;
+	private string stageName;
 
 	private readonly object registerTransformLock = new();
 
@@ -34,26 +37,32 @@ public sealed partial class UnitTestBisectorSystem
 		{
 			OutputStatusBisector($"Bisector started");
 
-			mosaSettings.LoadArguments(args);
-			mosaSettings.UnitTestFailFast = true;
-			unitTestFilter = mosaSettings.UnitTestFilter;
+			MosaSettings.LoadArguments(args);
+			MosaSettings.ResolveDefaults();
+			MosaSettings.ResolveFileAndPathSettings();
+			SetRequiredSettings();
+
+			unitTestFilter = MosaSettings.UnitTestFilter;
+			stageName = MosaSettings.BisectorStage;
+
 			hasCompilationFailure = false;
 			hasRestartsExceeded = false;
 			lastCompilationFailure = null;
 
 			stopwatch.Start();
 
-			var plan = ParsePlan(mosaSettings.BisectorPlan);
+			var plan = ParsePlan(MosaSettings.BisectorPlan);
 			var isBisectorPlan = IsBisectorPlan(plan);
-			var order = isBisectorPlan ? OrderKind.Unspecified : ParseOrder(mosaSettings.BisectorOrder);
+			var order = isBisectorPlan ? OrderKind.Unspecified : ParseOrder(MosaSettings.BisectorOrder);
 			var stateFile = GetFullStateFilePath();
-			if (mosaSettings.BisectorResetState && File.Exists(stateFile))
+
+			if (MosaSettings.BisectorResetState && File.Exists(stateFile))
 			{
 				File.Delete(stateFile);
 				OutputStatusBisector($"Deleted state file: {stateFile}");
 			}
 
-			var stageDisplay = string.IsNullOrEmpty(mosaSettings.BisectorStage) ? "All" : mosaSettings.BisectorStage;
+			var stageDisplay = string.IsNullOrEmpty(stageName) ? "All" : stageName;
 
 			OutputStatusBisector($"State File: {stateFile}");
 			OutputStatusBisector($"Stage: {stageDisplay} | Plan: {plan} | Order: {order}");
@@ -73,7 +82,7 @@ public sealed partial class UnitTestBisectorSystem
 				var bisectorState = LoadOrCreateState(stateFile, plan);
 				EnsureStateCompatibility(bisectorState, plan, OrderKind.Unspecified);
 
-				if (mosaSettings.BisectorWorkerIteration)
+				if (MosaSettings.BisectorWorkerIteration)
 					return ExecuteBisectorPlan(plan, stateFile, bisectorState, discoveredUnitTests);
 
 				// Run all iterations in-process when not running under the supervisor
@@ -139,6 +148,11 @@ public sealed partial class UnitTestBisectorSystem
 			OutputStatus($"Exception: {ex.StackTrace}");
 			return 1;
 		}
+	}
+
+	private void SetRequiredSettings()
+	{
+		MosaSettings.UnitTestFailFast = true;
 	}
 
 	private void ResetIterationState()
@@ -305,7 +319,7 @@ public sealed partial class UnitTestBisectorSystem
 	{
 		effectiveDisabledTransformNames = [];
 
-		var enablePairwise = mosaSettings.BisectorPairwise || invertOutcome;
+		var enablePairwise = MosaSettings.BisectorPairwise || invertOutcome;
 		var bisector = new Bisector<string>(state.Transforms, enablePairwise: enablePairwise);
 		var reportedBadItems = new HashSet<string>(StringComparer.Ordinal);
 
@@ -450,7 +464,7 @@ public sealed partial class UnitTestBisectorSystem
 				return 1;
 			}
 
-			if (mosaSettings.BisectorWorkerIteration && state.NextIndex < state.Transforms.Count)
+			if (MosaSettings.BisectorWorkerIteration && state.NextIndex < state.Transforms.Count)
 			{
 				SetLastExit(state, Constant.ExitKindContinue, Constant.WorkerContinueExitCode);
 				SaveState(stateFile, state);
@@ -492,7 +506,7 @@ public sealed partial class UnitTestBisectorSystem
 				return 1;
 			}
 
-			if (mosaSettings.BisectorWorkerIteration)
+			if (MosaSettings.BisectorWorkerIteration)
 			{
 				SetLastExit(state, Constant.ExitKindContinue, Constant.WorkerContinueExitCode);
 				SaveState(stateFile, state);
@@ -500,7 +514,7 @@ public sealed partial class UnitTestBisectorSystem
 			}
 		}
 
-		var iterationsThisRun = mosaSettings.BisectorWorkerIteration ? 1 : Math.Max(1, mosaSettings.BisectorIterations);
+		var iterationsThisRun = MosaSettings.BisectorWorkerIteration ? 1 : Math.Max(1, MosaSettings.BisectorIterations);
 
 		for (var i = 0; i < iterationsThisRun; i++)
 		{
@@ -535,7 +549,7 @@ public sealed partial class UnitTestBisectorSystem
 			}
 		}
 
-		if (mosaSettings.BisectorWorkerIteration)
+		if (MosaSettings.BisectorWorkerIteration)
 		{
 			SetLastExit(state, Constant.ExitKindContinue, Constant.WorkerContinueExitCode);
 			SaveState(stateFile, state);
@@ -561,7 +575,7 @@ public sealed partial class UnitTestBisectorSystem
 
 		try
 		{
-			using var unitTestEngine = new UnitTestEngine(mosaSettings, OutputStatus, CreateCompilerHooks);
+			using var unitTestEngine = new UnitTestEngine(MosaSettings, OutputStatus, CreateCompilerHooks);
 			if (unitTestEngine.IsAborted)
 			{
 				if (!string.IsNullOrWhiteSpace(unitTestEngine.CompilationFailure))
@@ -625,7 +639,7 @@ public sealed partial class UnitTestBisectorSystem
 
 	private void RegisterTransform(string stageName, string transformName)
 	{
-		if (!string.IsNullOrEmpty(mosaSettings.BisectorStage) && !string.Equals(stageName, mosaSettings.BisectorStage, StringComparison.Ordinal))
+		if (!string.IsNullOrEmpty(this.stageName) && !string.Equals(stageName, this.stageName, StringComparison.Ordinal))
 			return;
 
 		lock (registerTransformLock)
@@ -636,7 +650,7 @@ public sealed partial class UnitTestBisectorSystem
 
 	private bool IsTransformDisabled(string stageName, string transformName)
 	{
-		if (!string.IsNullOrEmpty(mosaSettings.BisectorStage) && !string.Equals(stageName, mosaSettings.BisectorStage, StringComparison.Ordinal))
+		if (!string.IsNullOrEmpty(this.stageName) && !string.Equals(stageName, this.stageName, StringComparison.Ordinal))
 			return false;
 
 		return effectiveDisabledTransformNames.Contains(transformName);
@@ -653,7 +667,7 @@ public sealed partial class UnitTestBisectorSystem
 			return new BisectorState
 			{
 				Plan = plan,
-				StageName = mosaSettings.BisectorStage,
+				StageName = stageName,
 				UnitTestFilter = unitTestFilter,
 				IterationNumber = Constant.BaselineIterationNumber,
 				LastExitKind = Constant.ExitKindUnknown,
@@ -712,7 +726,7 @@ public sealed partial class UnitTestBisectorSystem
 
 	private void EnsureStateCompatibility(BisectorState state, PlanKind plan, OrderKind order)
 	{
-		if (!string.Equals(state.StageName, mosaSettings.BisectorStage, StringComparison.Ordinal))
+		if (!string.Equals(state.StageName, stageName, StringComparison.Ordinal))
 			throw new InvalidOperationException($"State file stage does not match current {Constant.OptionBisectStage}.");
 
 		if (state.Plan != plan)
@@ -838,8 +852,8 @@ public sealed partial class UnitTestBisectorSystem
 		if (existingSeed != 0)
 			return existingSeed;
 
-		if (mosaSettings.BisectorRandomSeed != 0)
-			return mosaSettings.BisectorRandomSeed;
+		if (MosaSettings.BisectorRandomSeed != 0)
+			return MosaSettings.BisectorRandomSeed;
 
 		return Random.Shared.Next(1, int.MaxValue);
 	}
@@ -850,7 +864,7 @@ public sealed partial class UnitTestBisectorSystem
 
 	private string GetFullStateFilePath()
 	{
-		var stateFile = mosaSettings.BisectorStateFile;
+		var stateFile = MosaSettings.BisectorStateFile;
 
 		if (!Path.IsPathRooted(stateFile))
 			stateFile = Path.GetFullPath(stateFile);
@@ -882,7 +896,7 @@ public sealed partial class UnitTestBisectorSystem
 		var lines = new List<string>
 		{
 			$"Unit Test Bisector Failure Review",
-			$"Stage: {(string.IsNullOrEmpty(mosaSettings.BisectorStage) ? "All" : mosaSettings.BisectorStage)}",
+			$"Stage: {(string.IsNullOrEmpty(stageName) ? "All" : stageName)}",
 			$"Plan: {plan}",
 			$"State File: {stateFile}",
 			$"Baseline: {(state.BaselinePassed ? "PASS" : "FAIL")}",
@@ -929,7 +943,7 @@ public sealed partial class UnitTestBisectorSystem
 
 	private void OutputIterationHeader(string sessionName, BisectorState state)
 	{
-		OutputStatusBisector($"{sessionName} Iteration: {state.IterationNumber} | Level: {state.BisectorLevel} | Phase: {state.BisectorPhase} | Stage: {(string.IsNullOrEmpty(mosaSettings.BisectorStage) ? "All" : mosaSettings.BisectorStage)}");
+		OutputStatusBisector($"{sessionName} Iteration: {state.IterationNumber} | Level: {state.BisectorLevel} | Phase: {state.BisectorPhase} | Stage: {(string.IsNullOrEmpty(stageName) ? "All" : stageName)}");
 	}
 
 	private void OutputIterationStatus(BisectorState state, int? totalCount = null)
@@ -954,7 +968,7 @@ public sealed partial class UnitTestBisectorSystem
 
 	private void OutputFinalReport(string sessionName, Bisector<string> sessionBisector)
 	{
-		OutputStatusBisector($"{sessionName} Final Stage: {(string.IsNullOrEmpty(mosaSettings.BisectorStage) ? "All" : mosaSettings.BisectorStage)}");
+		OutputStatusBisector($"{sessionName} Final Stage: {(string.IsNullOrEmpty(stageName) ? "All" : stageName)}");
 		OutputStatusBisector("Confirmed Bad Items:");
 		foreach (var transform in sessionBisector.ConfirmedBadItems.OrderBy(t => t))
 			OutputStatusBisector($"  {transform}");
@@ -971,7 +985,7 @@ public sealed partial class UnitTestBisectorSystem
 	private void OutputFinalReport(PlanKind plan, BisectorState state)
 	{
 		OutputStatusBisector($"Plan complete: {plan}");
-		OutputStatusBisector($"Final Stage: {(string.IsNullOrEmpty(mosaSettings.BisectorStage) ? "All" : mosaSettings.BisectorStage)}");
+		OutputStatusBisector($"Final Stage: {(string.IsNullOrEmpty(stageName) ? "All" : stageName)}");
 		OutputStatusBisector($"Baseline: {(state.BaselinePassed ? "PASS" : "FAIL")}");
 		OutputStatusBisector($"Iterations: {state.TotalIterationCount} | Passes: {state.PassCount} | Failures: {state.FailureCount}");
 

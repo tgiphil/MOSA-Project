@@ -11,9 +11,9 @@ internal static class Program
 		RegisterPlatforms();
 
 		var unitTestSystem = new UnitTestSystem();
-		var returncode = unitTestSystem.Start(args);
+		var returnCode = unitTestSystem.Start(args);
 
-		Environment.Exit(returncode);
+		Environment.Exit(returnCode);
 	}
 
 	private static void RegisterPlatforms()

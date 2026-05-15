@@ -14,6 +14,9 @@ internal static class Program
 	internal static void Main(string[] args)
 	{
 		var compiler = new Compiler();
-		compiler.Run(args);
+
+		var returnCode = compiler.Run(args);
+
+		Environment.Exit(returnCode);
 	}
 }

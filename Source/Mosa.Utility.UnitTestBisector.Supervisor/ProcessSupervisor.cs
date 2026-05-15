@@ -6,61 +6,53 @@ using Mosa.Utility.Configuration;
 
 namespace Mosa.Utility.UnitTestBisector.Supervisor;
 
-internal sealed class ProcessSupervisor
+internal sealed partial class ProcessSupervisor
 {
 	private const int RestartDelayMs = 1000;
 	private const int WorkerContinueExitCode = 2;
 
 	private const string OptionBisectWorkerIteration = "-bisect-worker-iteration";
 	private const string OptionBisectState = "-bisect-state";
-	private const string OptionBisectWorkingDir = "-bisect-working-dir";
-	private const string OptionBisectMaxRestarts = "-bisect-max-restarts";
-	private const string OptionBisectReset = "-bisect-reset";
 
-	private readonly struct StateSnapshot(bool found, bool completed, int iterationNumber, int totalIterationCount, int passCount, int nextIndex, string lastExitKind, int lastExitCode)
+	private static readonly HashSet<string> BisectOptions = new(StringComparer.Ordinal)
 	{
-		public bool Found { get; } = found;
+		"-bisect-worker-iteration",
+		"-bisect-state",
+		"-bisect-max-restarts",
+		"-bisect-reset"
+	};
 
-		public bool Completed { get; } = completed;
+	private readonly Stopwatch Stopwatch = new();
+	private readonly MosaSettings MosaSettings = new();
 
-		public int IterationNumber { get; } = iterationNumber;
-
-		public int TotalIterationCount { get; } = totalIterationCount;
-
-		public int PassCount { get; } = passCount;
-
-		public int NextIndex { get; } = nextIndex;
-
-		public string LastExitKind { get; } = lastExitKind;
-
-		public int LastExitCode { get; } = lastExitCode;
-	}
-
-	private readonly Stopwatch stopwatch = new();
-	private readonly MosaSettings settings;
-	private readonly string[] args;
+	private string[] args;
 	private int restartCount;
 
-	public ProcessSupervisor(MosaSettings settings, string[] args)
+	public ProcessSupervisor()
 	{
-		this.settings = settings;
-		this.args = args ?? Array.Empty<string>();
 	}
 
-	public int Run()
+	public int Start(string[] args)
 	{
-		var targetPath = ResolveAndValidateTargetPath();
-		settings.BisectorWorkerIteration = true;
-		var workingDirectory = ResolveAndValidateWorkingDirectory(targetPath);
-		var maxRestarts = GetValidatedMaxRestarts();
-		var stateFile = ResolveStateFilePath(settings.BisectorStateFile, workingDirectory);
-		var targetArguments = BuildTargetArguments(stateFile);
+		this.args = args;
+		Stopwatch.Start();
+
+		MosaSettings.SetDefaultSettings();
+		MosaSettings.LoadAppLocations();
+		SetDefaultSettings();
+		MosaSettings.LoadArguments(args);
+		MosaSettings.NormalizeSettings();
+		MosaSettings.ResolveDefaults();
+		MosaSettings.ResolveFileAndPathSettings();
+		MosaSettings.AddStandardPlugs();
+		MosaSettings.ExpandSearchPaths();
+
+		var targetArguments = BuildTargetArguments(MosaSettings.BisectorStateFile);
 		var supervisorIteration = 0;
 
-		if (settings.BisectorResetState && File.Exists(stateFile))
-			File.Delete(stateFile);
+		if (MosaSettings.BisectorResetState && File.Exists(MosaSettings.BisectorStateFile))
+			File.Delete(MosaSettings.BisectorStateFile);
 
-		stopwatch.Start();
 		OutputStatus("Supervisor started");
 		OutputStatus($"Target Arguments: {targetArguments}");
 
@@ -69,7 +61,7 @@ internal sealed class ProcessSupervisor
 			supervisorIteration++;
 			OutputStatus($"Supervisor Iteration: {supervisorIteration}");
 
-			var before = ReadStateSnapshot(stateFile, $"Supervisor iteration {supervisorIteration} pre-launch state");
+			var before = ReadStateSnapshot(MosaSettings.BisectorStateFile, $"Supervisor iteration {supervisorIteration} pre-launch state");
 			if (before.Found && before.Completed)
 			{
 				OutputStatus("State indicates completed=true before launch. Exiting supervisor.");
@@ -79,11 +71,11 @@ internal sealed class ProcessSupervisor
 				return 0;
 			}
 
-			using var process = StartTarget(targetPath, targetArguments, workingDirectory);
+			using var process = StartTarget(MosaSettings.BisectorApp, targetArguments);
 			process.WaitForExit();
 			var exitCode = process.ExitCode;
 
-			var after = ReadStateSnapshot(stateFile, $"Supervisor iteration {supervisorIteration} post-exit state");
+			var after = ReadStateSnapshot(MosaSettings.BisectorStateFile, $"Supervisor iteration {supervisorIteration} post-exit state");
 
 			if (after.Found && after.Completed)
 			{
@@ -127,7 +119,7 @@ internal sealed class ProcessSupervisor
 			restartCount++;
 			OutputStatus($"abnormal-exit-retry (restart #{restartCount})");
 
-			if (maxRestarts > 0 && restartCount > maxRestarts)
+			if (MosaSettings.BisectorMaxRestarts > 0 && restartCount > MosaSettings.BisectorMaxRestarts)
 			{
 				OutputStatus("Maximum restart count reached. Exiting supervisor.");
 				return exitCode;
@@ -137,22 +129,12 @@ internal sealed class ProcessSupervisor
 		}
 	}
 
-	private string ResolveAndValidateTargetPath()
+	private void SetDefaultSettings()
 	{
-		settings.LoadAppLocations();
+		if (string.IsNullOrEmpty(MosaSettings.BisectorStateFile))
+			MosaSettings.BisectorStateFile = "%DEFAULT%";
 
-		var discoveredTargetPath = settings.BisectorApp;
-		if (string.IsNullOrWhiteSpace(discoveredTargetPath))
-			throw new InvalidOperationException("Unable to locate bisector target from app locations.");
-
-		var resolvedDiscoveredTargetPath = Path.IsPathRooted(discoveredTargetPath)
-			? discoveredTargetPath
-			: Path.GetFullPath(discoveredTargetPath);
-
-		if (!File.Exists(resolvedDiscoveredTargetPath))
-			throw new InvalidOperationException($"Discovered target does not exist: {resolvedDiscoveredTargetPath}");
-
-		return resolvedDiscoveredTargetPath;
+		MosaSettings.BisectorWorkerIteration = true;
 	}
 
 	private string BuildTargetArguments(string stateFile)
@@ -163,17 +145,13 @@ internal sealed class ProcessSupervisor
 		{
 			var arg = args[i];
 
-			if (IsSupervisorOption(arg, out var takesValue))
-			{
-				if (takesValue && i + 1 < args.Length)
-					i++;
+			if (BisectOptions.Contains(arg))
 				continue;
-			}
 
 			forwarded.Add(QuoteIfNeeded(arg));
 		}
 
-		if (settings.BisectorWorkerIteration)
+		if (MosaSettings.BisectorWorkerIteration)
 			forwarded.Add(OptionBisectWorkerIteration);
 
 		forwarded.Add(OptionBisectState);
@@ -182,64 +160,12 @@ internal sealed class ProcessSupervisor
 		return string.Join(" ", forwarded);
 	}
 
-	private static bool IsSupervisorOption(string arg, out bool takesValue)
-	{
-		takesValue = arg switch
-		{
-			var option when string.Equals(option, OptionBisectWorkerIteration, StringComparison.OrdinalIgnoreCase) => false,
-			var option when string.Equals(option, OptionBisectReset, StringComparison.OrdinalIgnoreCase) => false,
-			var option when string.Equals(option, OptionBisectWorkingDir, StringComparison.OrdinalIgnoreCase) => true,
-			var option when string.Equals(option, OptionBisectMaxRestarts, StringComparison.OrdinalIgnoreCase) => true,
-			var option when string.Equals(option, OptionBisectState, StringComparison.OrdinalIgnoreCase) => true,
-			_ => false,
-		};
-
-		return takesValue || string.Equals(arg, OptionBisectWorkerIteration, StringComparison.OrdinalIgnoreCase) || string.Equals(arg, OptionBisectReset, StringComparison.OrdinalIgnoreCase);
-	}
-
 	private static string QuoteIfNeeded(string arg)
 	{
 		if (arg.Contains(' '))
 			return $"\"{arg.Replace("\"", "\\\"")}" + "\"";
 
 		return arg;
-	}
-
-	private string ResolveAndValidateWorkingDirectory(string targetPath)
-	{
-		var workingDirectory = settings.BisectorWorkingDirectory;
-		if (string.IsNullOrWhiteSpace(workingDirectory))
-			workingDirectory = Environment.CurrentDirectory;
-		else if (!Path.IsPathRooted(workingDirectory))
-			workingDirectory = Path.GetFullPath(workingDirectory);
-
-		if (string.IsNullOrWhiteSpace(workingDirectory))
-			workingDirectory = Path.GetDirectoryName(targetPath) ?? Environment.CurrentDirectory;
-
-		if (!Directory.Exists(workingDirectory))
-			throw new InvalidOperationException($"Working directory does not exist: {workingDirectory}");
-
-		return workingDirectory;
-	}
-
-	private int GetValidatedMaxRestarts()
-	{
-		var value = settings.BisectorMaxRestarts;
-		if (value < 0)
-			throw new InvalidOperationException($"Invalid value for {OptionBisectMaxRestarts}. Minimum is 0.");
-
-		return value;
-	}
-
-	private static string ResolveStateFilePath(string stateFile, string workingDirectory)
-	{
-		if (string.IsNullOrWhiteSpace(stateFile))
-			stateFile = MosaSettings.Constant.BisectorStateFile;
-
-		if (Path.IsPathRooted(stateFile))
-			return stateFile;
-
-		return Path.GetFullPath(Path.Combine(workingDirectory, stateFile));
 	}
 
 	private StateSnapshot ReadStateSnapshot(string stateFile, string context)
@@ -306,13 +232,12 @@ internal sealed class ProcessSupervisor
 		return 0;
 	}
 
-	private Process StartTarget(string targetPath, string targetArguments, string workingDirectory)
+	private Process StartTarget(string targetPath, string targetArguments)
 	{
 		var startInfo = new ProcessStartInfo
 		{
 			FileName = targetPath,
 			Arguments = targetArguments,
-			WorkingDirectory = workingDirectory,
 			UseShellExecute = false,
 		};
 
@@ -348,6 +273,6 @@ internal sealed class ProcessSupervisor
 
 	private void OutputStatus(string status)
 	{
-		Console.WriteLine($"{stopwatch.Elapsed.TotalSeconds:00.00} | [Supervisor] {status}");
+		Console.WriteLine($"{Stopwatch.Elapsed.TotalSeconds:00.00} | [Supervisor] {status}");
 	}
 }

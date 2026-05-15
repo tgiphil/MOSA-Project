@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Common;
+
 namespace Mosa.Utility.UnitTestBisector;
 
 internal sealed class BisectorState
@@ -67,7 +69,7 @@ internal sealed class BisectorState
 
 	public int PairwiseTestsRemaining { get; set; }
 
-	public void ApplyStatus(Mosa.Compiler.Framework.Bisector<string>.BisectorStatus status)
+	public void ApplyStatus(Bisector<string>.BisectorStatus status)
 	{
 		BisectorLevel = status.Level.ToString();
 		BisectorPhase = status.Phase.ToString();
