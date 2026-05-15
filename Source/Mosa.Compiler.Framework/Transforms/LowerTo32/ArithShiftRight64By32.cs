@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.LowerTo32;
 
 public sealed class ArithShiftRight64By32 : BaseLowerTo32Transform
 {
-	public ArithShiftRight64By32() : base(IR.ArithShiftRight64, TransformType.Manual | TransformType.Optimization)
+	public static readonly ArithShiftRight64By32 Instance = new();
+
+	private ArithShiftRight64By32() : base(IR.ArithShiftRight64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

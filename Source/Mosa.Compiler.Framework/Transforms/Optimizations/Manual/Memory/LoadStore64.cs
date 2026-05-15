@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Memory;
 
 public sealed class LoadStore64 : BaseTransform
 {
-	public LoadStore64() : base(IR.Load64, TransformType.Manual | TransformType.Optimization)
+	public static readonly LoadStore64 Instance = new();
+
+	private LoadStore64() : base(IR.Load64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 
@@ -40,6 +44,6 @@ public sealed class LoadStore64 : BaseTransform
 	{
 		var previous = GetPreviousNodeUntil(context, IR.Store64, transform.Window, context.Operand1);
 
-		context.SetInstruction(IR.Move32, context.Result, previous.Operand3);
+		context.SetInstruction(IR.Move64, context.Result, previous.Operand3);
 	}
 }

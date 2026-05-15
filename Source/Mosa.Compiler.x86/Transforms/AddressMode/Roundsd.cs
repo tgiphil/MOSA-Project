@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.AddressMode;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.AddressMode;
 /// </summary>
 public sealed class Roundsd : BaseAddressModeTransform
 {
-	public Roundsd() : base(X86.Roundsd, TransformType.Manual | TransformType.Transform)
+	public static readonly Roundsd Instance = new();
+
+	private Roundsd() : base(X86.Roundsd, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

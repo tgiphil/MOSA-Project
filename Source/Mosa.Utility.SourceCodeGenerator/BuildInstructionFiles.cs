@@ -59,7 +59,7 @@ public class BuildInstructionFiles : BuildBaseTemplate
 	{
 		//int id = Identifiers.GetInstructionID();
 
-		Lines.AppendLine("using Mosa.Compiler.Framework;");
+		Lines.AppendLine("using Mosa.Compiler.Framework.Core;");
 
 		if (node.ResultType != null || node.ResultType2 != null)
 		{

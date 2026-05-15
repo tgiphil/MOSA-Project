@@ -1,12 +1,14 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.Optimizations.Manual.Rewrite;
 
 public sealed class Lea32ToInc32 : BaseTransform
 {
-	public Lea32ToInc32() : base(X64.Lea32, TransformType.Manual | TransformType.Optimization)
+	public static readonly Lea32ToInc32 Instance = new();
+
+	private Lea32ToInc32() : base(X64.Lea32, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class Compare64x64 : BaseIRTransform
 {
-	public Compare64x64() : base(IR.Compare64x64, TransformType.Manual | TransformType.Transform)
+	public static readonly Compare64x64 Instance = new();
+
+	private Compare64x64() : base(IR.Compare64x64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

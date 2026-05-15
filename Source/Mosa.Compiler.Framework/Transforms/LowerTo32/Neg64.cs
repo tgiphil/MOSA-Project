@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.LowerTo32;
 
 public sealed class Neg64 : BaseLowerTo32Transform
 {
-	public Neg64() : base(IR.Neg64, TransformType.Manual | TransformType.Optimization)
+	public static readonly Neg64 Instance = new();
+
+	private Neg64() : base(IR.Neg64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

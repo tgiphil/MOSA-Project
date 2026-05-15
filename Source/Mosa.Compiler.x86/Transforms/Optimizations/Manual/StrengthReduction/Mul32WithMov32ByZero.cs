@@ -1,12 +1,14 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.Optimizations.Manual.StrengthReduction;
 
 public sealed class Mul32WithMov32ByZero : BaseTransform
 {
-	public Mul32WithMov32ByZero() : base(X86.Mul32, TransformType.Manual | TransformType.Optimization, true)
+	public static readonly Mul32WithMov32ByZero Instance = new();
+
+	private Mul32WithMov32ByZero() : base(X86.Mul32, TransformType.Manual | TransformType.Optimization, true)
 	{
 	}
 

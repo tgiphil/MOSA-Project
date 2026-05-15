@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Runtime;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Runtime;
 /// </summary>
 public sealed class Box64 : BaseRuntimeTransform
 {
-	public Box64() : base(IR.Box64, TransformType.Manual | TransformType.Transform)
+	public static readonly Box64 Instance = new();
+
+	private Box64() : base(IR.Box64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.CheckedConversion;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.CheckedConversion;
 /// </summary>
 public sealed class CheckedConversionI32ToU64 : BaseCheckedConversionTransform
 {
-	public CheckedConversionI32ToU64() : base(IR.CheckedConversionI32ToU64, TransformType.Manual | TransformType.Transform)
+	public static readonly CheckedConversionI32ToU64 Instance = new();
+
+	private CheckedConversionI32ToU64() : base(IR.CheckedConversionI32ToU64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

@@ -1,13 +1,13 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework.Common;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Managers;
 
 /// <summary>
 /// Exception Handler Operand Manager
 /// </summary>
-/// <seealso cref="Mosa.Compiler.Framework.BaseTransformManager" />
+/// <seealso cref="Core.BaseTransformManager" />
 public class ExceptionHandlerOperandManager : BaseTransformManager
 {
 	private readonly HashSet<Operand> HandlerOperands = new();
@@ -20,7 +20,7 @@ public class ExceptionHandlerOperandManager : BaseTransformManager
 
 	private bool HasProtectedRegions;
 
-	public override void Initialize(Compiler compiler)
+	public override void Initialize(Core.Compiler compiler)
 	{
 	}
 
@@ -79,7 +79,6 @@ public class ExceptionHandlerOperandManager : BaseTransformManager
 				EvaluatedOperands.Add(operand);
 			}
 		}
-
 
 		foreach (var def in operand.Definitions)
 		{

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Text;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.RegisterAllocator;
 

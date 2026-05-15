@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Useless;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Useless;
 /// </summary>
 public sealed class ZeroExtend8x64Compare64x64 : BaseTransform
 {
-	public ZeroExtend8x64Compare64x64() : base(IR.ZeroExtend8x64, TransformType.Manual | TransformType.Optimization, 85)
+	public static readonly ZeroExtend8x64Compare64x64 Instance = new();
+
+	private ZeroExtend8x64Compare64x64() : base(IR.ZeroExtend8x64, TransformType.Manual | TransformType.Optimization, 85)
 	{
 	}
 

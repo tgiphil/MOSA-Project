@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Runtime;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Runtime;
 /// </summary>
 public sealed class GetVirtualFunctionPtr : BaseRuntimeTransform
 {
-	public GetVirtualFunctionPtr() : base(IR.GetVirtualFunctionPtr, TransformType.Manual | TransformType.Transform)
+	public static readonly GetVirtualFunctionPtr Instance = new();
+
+	private GetVirtualFunctionPtr() : base(IR.GetVirtualFunctionPtr, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

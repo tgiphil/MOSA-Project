@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class LoadZeroExtend32x64 : BaseIRTransform
 {
-	public LoadZeroExtend32x64() : base(IR.LoadZeroExtend32x64, TransformType.Manual | TransformType.Transform)
+	public static readonly LoadZeroExtend32x64 Instance = new();
+
+	private LoadZeroExtend32x64() : base(IR.LoadZeroExtend32x64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

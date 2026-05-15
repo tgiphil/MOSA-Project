@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.AddressMode;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.AddressMode;
 /// </summary>
 public sealed class Subss : BaseAddressModeTransform
 {
-	public Subss() : base(X86.Subss, TransformType.Manual | TransformType.Transform)
+	public static readonly Subss Instance = new();
+
+	private Subss() : base(X86.Subss, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

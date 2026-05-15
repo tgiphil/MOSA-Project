@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class ConvertR4ToU64 : BaseIRTransform
 {
-	public ConvertR4ToU64() : base(IR.ConvertR4ToI64, TransformType.Manual | TransformType.Transform)
+	public static readonly ConvertR4ToU64 Instance = new();
+
+	private ConvertR4ToU64() : base(IR.ConvertR4ToI64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

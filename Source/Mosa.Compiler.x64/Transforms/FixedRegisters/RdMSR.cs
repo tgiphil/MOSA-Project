@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.FixedRegisters;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.FixedRegisters;
 /// </summary>
 public sealed class RdMSR : BaseTransform
 {
-	public RdMSR() : base(X64.RdMSR, TransformType.Manual | TransformType.Transform)
+	public static readonly RdMSR Instance = new();
+
+	private RdMSR() : base(X64.RdMSR, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

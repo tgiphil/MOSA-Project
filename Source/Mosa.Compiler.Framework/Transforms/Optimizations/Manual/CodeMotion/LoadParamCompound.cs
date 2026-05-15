@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.CodeMotion;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.CodeMotion;
 /// </summary>
 public sealed class LoadParamCompound : BaseCodeMotionTransform
 {
-	public LoadParamCompound() : base(IR.LoadParamCompound, TransformType.Manual | TransformType.Optimization)
+	public static readonly LoadParamCompound Instance = new();
+
+	private LoadParamCompound() : base(IR.LoadParamCompound, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 }

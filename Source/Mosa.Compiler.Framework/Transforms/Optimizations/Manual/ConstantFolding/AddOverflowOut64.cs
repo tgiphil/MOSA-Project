@@ -1,6 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Compiler.Common;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.ConstantFolding;
 
@@ -9,7 +10,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.ConstantFoldin
 /// </summary>
 public sealed class AddOverflowOut64 : BaseTransform
 {
-	public AddOverflowOut64() : base(IR.AddOverflowOut64, TransformType.Manual | TransformType.Optimization, 100)
+	public static readonly AddOverflowOut64 Instance = new();
+
+	private AddOverflowOut64() : base(IR.AddOverflowOut64, TransformType.Manual | TransformType.Optimization, 100)
 	{
 	}
 

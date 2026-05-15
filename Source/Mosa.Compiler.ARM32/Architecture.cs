@@ -1,10 +1,11 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Compiler.ARM32.CompilerStages;
 using Mosa.Compiler.ARM32.Stages;
 using Mosa.Compiler.Common.Exceptions;
-using Mosa.Compiler.Framework;
+
 using Mosa.Compiler.Framework.CompilerStages;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Framework.Linker.Elf;
 using Mosa.Compiler.Framework.Stages;
 using Mosa.Utility.Configuration;

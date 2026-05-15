@@ -1,6 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Call;
 
@@ -9,7 +10,9 @@ namespace Mosa.Compiler.Framework.Transforms.Call;
 /// </summary>
 public sealed class CallInterface : BasePlugTransform
 {
-	public CallInterface() : base(IR.CallInterface, TransformType.Manual | TransformType.Transform)
+	public static readonly CallInterface Instance = new();
+
+	private CallInterface() : base(IR.CallInterface, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

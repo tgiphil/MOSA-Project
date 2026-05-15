@@ -1,7 +1,7 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using System.Text;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Analysis;
 
@@ -10,219 +10,9 @@ namespace Mosa.Compiler.Framework.Analysis;
 /// </summary>
 public sealed class SparseConditionalConstantPropagation
 {
-	private sealed class VariableState
-	{
-		private enum VariableStatusType
-		{ Unknown, OverDefined, SingleConstant, MultipleConstants }
-
-		private enum ReferenceStatusType
-		{ Unknown, DefinedNotNull, OverDefined }
-
-		private const int MaxConstants = 4;
-
-		private VariableStatusType Status;
-
-		private ReferenceStatusType ReferenceStatus;
-
-		private int ConstantCount;
-
-		private readonly ulong[] ConstantValues = new ulong[MaxConstants];
-
-		public IEnumerable<ulong> GetConstants()
-		{
-			if (ConstantCount == 0)
-				yield break;
-
-			for (var i = 0; i < ConstantCount && i < ConstantValues.Length; i++)
-			{
-				yield return ConstantValues[i];
-			}
-		}
-
-		public ulong ConstantUnsignedLongInteger => ConstantValues[0];
-
-		public long ConstantSignedLongInteger => (long)ConstantValues[0];
-
-		public bool ConstantsContainZero
-		{
-			get
-			{
-				if (ConstantCount == 0)
-					return false;
-				for (var i = 0; i < ConstantCount && i < ConstantValues.Length; i++)
-				{
-					if (ConstantValues[i] == 0)
-						return true;
-				}
-				return false;
-			}
-		}
-
-		public Operand Operand { get; }
-
-		public bool IsOverDefined
-		{
-			get => Status == VariableStatusType.OverDefined;
-			set { Status = VariableStatusType.OverDefined; Debug.Assert(value); }
-		}
-
-		public bool IsUnknown => Status == VariableStatusType.Unknown;
-
-		public bool IsSingleConstant
-		{
-			get => Status == VariableStatusType.SingleConstant;
-			set { Status = VariableStatusType.SingleConstant; Debug.Assert(value); }
-		}
-
-		public bool HasMultipleConstants => Status == VariableStatusType.MultipleConstants;
-
-		public bool HasOnlyConstants => Status is VariableStatusType.SingleConstant or VariableStatusType.MultipleConstants;
-
-		public bool IsVirtualRegister { get; set; }
-
-		public bool IsReferenceType { get; set; }
-
-		public bool IsReferenceDefinedUnknown => ReferenceStatus == ReferenceStatusType.Unknown;
-
-		public bool IsReferenceDefinedNotNull
-		{
-			get => ReferenceStatus == ReferenceStatusType.DefinedNotNull;
-			set
-			{
-				Debug.Assert(value);
-				ReferenceStatus = ReferenceStatusType.DefinedNotNull;
-			}
-		}
-
-		public bool IsReferenceOverDefined
-		{
-			get => ReferenceStatus == ReferenceStatusType.OverDefined;
-			set
-			{
-				Debug.Assert(value);
-				ReferenceStatus = ReferenceStatusType.OverDefined;
-			}
-		}
-
-		public VariableState(Operand operand)
-		{
-			Operand = operand;
-
-			IsVirtualRegister = operand.IsVirtualRegister;
-			IsReferenceType = operand.IsObject;
-
-			if (IsVirtualRegister)
-			{
-				Status = VariableStatusType.Unknown;
-				IsVirtualRegister = true;
-			}
-			else if (operand.IsUnresolvedConstant)
-			{
-				IsOverDefined = true;
-			}
-			else if (operand.IsConstant && operand.IsInteger)
-			{
-				AddConstant(operand.ConstantUnsigned64);
-			}
-			else if (operand.IsNull)
-			{
-				AddConstant(0);
-			}
-			else
-			{
-				IsOverDefined = true;
-			}
-
-			if (!IsReferenceType || !IsVirtualRegister)
-			{
-				ReferenceStatus = ReferenceStatusType.OverDefined;
-			}
-			else
-			{
-				ReferenceStatus = ReferenceStatusType.Unknown;
-			}
-		}
-
-		public bool AddConstant(ulong value)
-		{
-			if (Status == VariableStatusType.OverDefined)
-				return false;
-
-			for (var i = 0; i < ConstantCount && i < ConstantValues.Length; i++)
-			{
-				if (ConstantValues[i] == value)
-					return false;
-			}
-
-			if (ConstantCount == 0)
-			{
-				ConstantValues[0] = value;
-				ConstantCount = 1;
-				Status = VariableStatusType.SingleConstant;
-				return true;
-			}
-			else if (ConstantCount < MaxConstants)
-			{
-				ConstantValues[ConstantCount] = value;
-				ConstantCount++;
-				Status = VariableStatusType.MultipleConstants;
-				return true;
-			}
-
-			ConstantCount = 0;
-			Status = VariableStatusType.OverDefined;
-			return true;
-		}
-
-		public void AddConstant(long value)
-		{
-			AddConstant((ulong)value);
-		}
-
-		public bool AreConstantsEqual(VariableState other)
-		{
-			if (!other.IsSingleConstant || !IsSingleConstant)
-				return false;
-
-			return other.ConstantUnsignedLongInteger == ConstantUnsignedLongInteger;
-		}
-
-		public override string ToString()
-		{
-			var sb = new StringBuilder();
-			sb.Append($"{Operand} : {Status}");
-
-			if (IsSingleConstant)
-			{
-				sb.Append($" = {ConstantUnsignedLongInteger}");
-			}
-			else if (HasMultipleConstants)
-			{
-				sb.Append($" ({ConstantCount}) =");
-				for (var i = 0; i < ConstantCount && i < ConstantValues.Length; i++)
-				{
-					sb.Append($" {ConstantValues[i]},");
-				}
-				if (sb.Length > 0 && sb[sb.Length - 1] == ',')
-					sb.Length--;
-			}
-
-			sb.Append(" [null: ");
-			if (IsReferenceOverDefined)
-				sb.Append("OverDefined");
-			else if (IsReferenceDefinedNotNull)
-				sb.Append("NotNull");
-			else if (IsReferenceDefinedUnknown)
-				sb.Append("Unknown");
-			sb.Append(']');
-
-			return sb.ToString();
-		}
-	}
-
 	private readonly bool[] blockStates;
 
-	private readonly Dictionary<Operand, VariableState> variableStates;
+	private readonly Dictionary<Operand, LatticeValue> variableStates;
 
 	private readonly Stack<Node> instructionWorkList;
 	private readonly Stack<BasicBlock> blockWorklist;
@@ -247,7 +37,7 @@ public sealed class SparseConditionalConstantPropagation
 		BasicBlocks = basicBlocks;
 		Is32BitPlatform = is32BitPlatform;
 
-		variableStates = new Dictionary<Operand, VariableState>();
+		variableStates = new Dictionary<Operand, LatticeValue>();
 		phiStatements = new HashSet<Node>();
 		instructionWorkList = new Stack<Node>();
 		blockWorklist = new Stack<BasicBlock>();
@@ -313,11 +103,11 @@ public sealed class SparseConditionalConstantPropagation
 		return list;
 	}
 
-	private VariableState GetVariableState(Operand operand)
+	private LatticeValue GetVariableState(Operand operand)
 	{
-		if (!variableStates.TryGetValue(operand, out VariableState variable))
+		if (!variableStates.TryGetValue(operand, out LatticeValue variable))
 		{
-			variable = new VariableState(operand);
+			variable = new LatticeValue(operand);
 			variableStates.Add(operand, variable);
 		}
 
@@ -370,7 +160,7 @@ public sealed class SparseConditionalConstantPropagation
 		instructionWorkList.Push(node);
 	}
 
-	private void QueueInstruction(VariableState variable)
+	private void QueueInstruction(LatticeValue variable)
 	{
 		foreach (var use in variable.Operand.Uses)
 		{
@@ -616,7 +406,7 @@ public sealed class SparseConditionalConstantPropagation
 		return true;
 	}
 
-	private static bool? NullComparisionCheck(ConditionCode condition, VariableState operand1, VariableState operand2)
+	private static bool? NullComparisionCheck(ConditionCode condition, LatticeValue operand1, LatticeValue operand2)
 	{
 		// not null check
 		if (condition == ConditionCode.Equal)
@@ -675,7 +465,7 @@ public sealed class SparseConditionalConstantPropagation
 		IntegerOperation2(node);
 	}
 
-	private void UpdateToConstant(VariableState variable, ulong value)
+	private void UpdateToConstant(LatticeValue variable, ulong value)
 	{
 		Debug.Assert(!variable.IsOverDefined);
 
@@ -687,7 +477,7 @@ public sealed class SparseConditionalConstantPropagation
 		}
 	}
 
-	private void UpdateToOverDefined(VariableState variable)
+	private void UpdateToOverDefined(LatticeValue variable)
 	{
 		if (variable.IsOverDefined)
 			return;
@@ -699,17 +489,17 @@ public sealed class SparseConditionalConstantPropagation
 		QueueInstruction(variable);
 	}
 
-	private void AssignedNewObject(VariableState variable)
+	private void AssignedNewObject(LatticeValue variable)
 	{
 		SetReferenceNotNull(variable);
 	}
 
-	private void SetReferenceOverdefined(VariableState variable)
+	private void SetReferenceOverdefined(LatticeValue variable)
 	{
 		SetReferenceNull(variable);
 	}
 
-	private void SetReferenceNull(VariableState variable)
+	private void SetReferenceNull(LatticeValue variable)
 	{
 		if (variable.IsReferenceOverDefined)
 			return;
@@ -721,7 +511,7 @@ public sealed class SparseConditionalConstantPropagation
 		QueueInstruction(variable);
 	}
 
-	private void SetReferenceNotNull(VariableState variable)
+	private void SetReferenceNotNull(LatticeValue variable)
 	{
 		if (variable.IsReferenceOverDefined || variable.IsReferenceDefinedNotNull)
 			return;
@@ -774,7 +564,7 @@ public sealed class SparseConditionalConstantPropagation
 		}
 	}
 
-	private void CheckAndUpdateNullAssignment(VariableState result, VariableState operand)
+	private void CheckAndUpdateNullAssignment(LatticeValue result, LatticeValue operand)
 	{
 		if (result.IsReferenceDefinedUnknown || result.IsReferenceDefinedNotNull)
 		{
@@ -945,7 +735,7 @@ public sealed class SparseConditionalConstantPropagation
 	{
 		if (instruction == IR.Neg32)
 		{
-			result = (uint)-((int)operand1);
+			result = (ulong)(uint)-((int)operand1);
 			return true;
 		}
 		else if (instruction == IR.Neg64)
@@ -953,7 +743,12 @@ public sealed class SparseConditionalConstantPropagation
 			result = (ulong)-((long)operand1);
 			return true;
 		}
-		else if (instruction == IR.Not32 || instruction == IR.Not64)
+		else if (instruction == IR.Not32)
+		{
+			result = (ulong)(uint)~operand1;
+			return true;
+		}
+		else if (instruction == IR.Not64)
 		{
 			result = ~operand1;
 			return true;
@@ -1021,59 +816,104 @@ public sealed class SparseConditionalConstantPropagation
 
 	private static bool IntegerOperation(BaseInstruction instruction, ulong operand1, ulong operand2, ConditionCode conditionCode, out ulong result)
 	{
-		if (instruction == IR.Add32
-			|| instruction == IR.Add64)
+		if (instruction == IR.Add32)
+		{
+			result = (ulong)(uint)(operand1 + operand2);
+			return true;
+		}
+		else if (instruction == IR.Add64)
 		{
 			result = operand1 + operand2;
 			return true;
 		}
-		else if (instruction == IR.Sub32
-				 || instruction == IR.Sub64)
+		else if (instruction == IR.Sub32)
+		{
+			result = (ulong)(uint)(operand1 - operand2);
+			return true;
+		}
+		else if (instruction == IR.Sub64)
 		{
 			result = operand1 - operand2;
 			return true;
 		}
-		else if (instruction == IR.MulUnsigned32
-				 || instruction == IR.MulSigned32
-				 || instruction == IR.MulUnsigned64
-				 || instruction == IR.MulSigned64)
+		else if (instruction == IR.MulUnsigned32 || instruction == IR.MulSigned32)
+		{
+			result = (ulong)(uint)(operand1 * operand2);
+			return true;
+		}
+		else if (instruction == IR.MulUnsigned64 || instruction == IR.MulSigned64)
 		{
 			result = operand1 * operand2;
 			return true;
 		}
-		else if ((instruction == IR.DivUnsigned32 || instruction == IR.DivUnsigned64) && operand2 != 0)
+		else if (instruction == IR.DivUnsigned32 && operand2 != 0)
+		{
+			result = (ulong)((uint)operand1 / (uint)operand2);
+			return true;
+		}
+		else if (instruction == IR.DivUnsigned64 && operand2 != 0)
 		{
 			result = operand1 / operand2;
 			return true;
 		}
-		else if ((instruction == IR.DivSigned32 || instruction == IR.DivSigned64) && operand2 != 0)
+		else if (instruction == IR.DivSigned32 && operand2 != 0)
+		{
+			result = (ulong)(uint)((int)operand1 / (int)operand2);
+			return true;
+		}
+		else if (instruction == IR.DivSigned64 && operand2 != 0)
 		{
 			result = (ulong)((long)operand1 / (long)operand2);
 			return true;
 		}
-		else if ((instruction == IR.RemUnsigned32 || instruction == IR.RemUnsigned64) && operand2 != 0)
+		else if (instruction == IR.RemUnsigned32 && operand2 != 0)
+		{
+			result = (ulong)((uint)operand1 % (uint)operand2);
+			return true;
+		}
+		else if (instruction == IR.RemUnsigned64 && operand2 != 0)
 		{
 			result = operand1 % operand2;
 			return true;
 		}
-		else if ((instruction == IR.RemSigned32 || instruction == IR.RemSigned64) && operand2 != 0)
+		else if (instruction == IR.RemSigned32 && operand2 != 0)
+		{
+			result = (ulong)(uint)((int)operand1 % (int)operand2);
+			return true;
+		}
+		else if (instruction == IR.RemSigned64 && operand2 != 0)
 		{
 			result = (ulong)((long)operand1 % (long)operand2);
 			return true;
 		}
-		else if (instruction == IR.ArithShiftRight32 || instruction == IR.ArithShiftRight64)
+		else if (instruction == IR.ArithShiftRight32)
 		{
-			result = (ulong)((long)operand1 >> (int)operand2);
+			result = (ulong)(uint)((int)operand1 >> ((int)operand2 & 31));
 			return true;
 		}
-		else if (instruction == IR.ShiftRight32 || instruction == IR.ShiftRight64)
+		else if (instruction == IR.ArithShiftRight64)
 		{
-			result = operand1 >> (int)operand2;
+			result = (ulong)((long)operand1 >> ((int)operand2 & 63));
 			return true;
 		}
-		else if (instruction == IR.ShiftLeft32 || instruction == IR.ShiftLeft64)
+		else if (instruction == IR.ShiftRight32)
 		{
-			result = operand1 << (int)operand2;
+			result = (ulong)((uint)operand1 >> ((int)operand2 & 31));
+			return true;
+		}
+		else if (instruction == IR.ShiftRight64)
+		{
+			result = operand1 >> ((int)operand2 & 63);
+			return true;
+		}
+		else if (instruction == IR.ShiftLeft32)
+		{
+			result = (ulong)(uint)((uint)operand1 << ((int)operand2 & 31));
+			return true;
+		}
+		else if (instruction == IR.ShiftLeft64)
+		{
+			result = operand1 << ((int)operand2 & 63);
 			return true;
 		}
 		else if (instruction == IR.Compare32x32)

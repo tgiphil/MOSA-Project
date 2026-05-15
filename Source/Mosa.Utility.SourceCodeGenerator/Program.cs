@@ -13,7 +13,7 @@ public static class Program
 
 		new BuildInstructionList(
 			Path.Combine(dataPath, @"IR-Instructions.json"),
-			Path.Combine(targetPath, @"Mosa.Compiler.Framework/"),
+			Path.Combine(targetPath, @"Mosa.Compiler.Framework.Core/"),
 			"IR.cs",
 			"IR",
 			"Framework"

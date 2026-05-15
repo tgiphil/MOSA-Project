@@ -6,6 +6,7 @@ using System.Text;
 using Mosa.Compiler.Common;
 using Mosa.Compiler.Common.Exceptions;
 using Mosa.Compiler.Framework.Analysis;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Framework.Linker;
 using Mosa.Compiler.MosaTypeSystem;
 
@@ -98,7 +99,7 @@ public sealed class CILDecoderStage : BaseMethodCompilerStage
 
 	private readonly Dictionary<MosaMethod, IntrinsicMethodDelegate> InstrinsicMap = new();
 
-	private TraceLog trace;
+	private TraceLog Trace;
 
 	private Operand ReturnOperand;
 
@@ -121,7 +122,7 @@ public sealed class CILDecoderStage : BaseMethodCompilerStage
 		if (!MethodCompiler.HasCILStream)
 			return;
 
-		trace = CreateTraceLog(5);
+		Trace = CreateTraceLog(9);
 
 		var prologueBlock = BasicBlocks.CreatePrologueBlock();
 		var startBlock = BasicBlocks.CreateStartBlock();
@@ -158,7 +159,7 @@ public sealed class CILDecoderStage : BaseMethodCompilerStage
 	protected override void Finish()
 	{
 		Targets = null;
-		trace = null;
+		Trace = null;
 		ReturnOperand = null;
 	}
 
@@ -515,7 +516,7 @@ public sealed class CILDecoderStage : BaseMethodCompilerStage
 		var totalCode = code.Count;
 		InstructionCount.Set(totalCode);
 
-		trace?.Log($"Block => {block}");
+		Trace?.Log($"Block => {block}");
 
 		for (var index = 0; index < totalCode; index++)
 		{
@@ -531,8 +532,8 @@ public sealed class CILDecoderStage : BaseMethodCompilerStage
 				context.Node = block.AfterFirst;
 				endNode = block.First;
 
-				trace?.Log($"Block => {block}");
-				trace?.Log($" Start Stack Size: {stack.Count}");
+				Trace?.Log($"Block => {block}");
+				Trace?.Log($" Start Stack Size: {stack.Count}");
 			}
 
 			var processed = Translate(stack, context, instruction, opcode, block, prefixValues, label);
@@ -577,9 +578,9 @@ public sealed class CILDecoderStage : BaseMethodCompilerStage
 
 				OutgoingStacks.Add(block, arrayStack);
 
-				trace?.Log($" End Stack Size: {stack.Count}");
+				Trace?.Log($" End Stack Size: {stack.Count}");
 
-				trace?.Log($"");
+				Trace?.Log($"");
 
 				stack = null;
 				block = null;
@@ -648,7 +649,7 @@ public sealed class CILDecoderStage : BaseMethodCompilerStage
 	{
 		prefixValues.Reset = true;
 
-		trace?.Log($"   {label:X5}: {opcode}");
+		//Trace?.Log($"   {label:X5}: {opcode}");
 
 		switch (opcode)
 		{
@@ -1038,14 +1039,14 @@ public sealed class CILDecoderStage : BaseMethodCompilerStage
 	{
 		var entry = stack.Pop();
 
-		trace?.Log($"     Pop  #{stack.Count}: {entry}");
+		Trace?.Log($"     Pop  #{stack.Count}: {entry}");
 
 		return entry;
 	}
 
 	private void PushStack(Stack<StackEntry> stack, StackEntry entry)
 	{
-		trace?.Log($"     Push #{stack.Count}: {entry}");
+		Trace?.Log($"     Push #{stack.Count}: {entry}");
 
 		stack.Push(entry);
 	}

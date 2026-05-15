@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.FixedRegisters;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.FixedRegisters;
 /// </summary>
 public sealed class Cdq64 : BaseTransform
 {
-	public Cdq64() : base(X64.Cdq64, TransformType.Manual | TransformType.Transform)
+	public static readonly Cdq64 Instance = new();
+
+	private Cdq64() : base(X64.Cdq64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

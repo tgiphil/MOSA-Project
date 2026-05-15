@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Expand;
 
 public sealed class ThrowOverflow : BaseTransform
 {
-	public ThrowOverflow() : base(IR.ThrowOverflow, TransformType.Manual | TransformType.Transform)
+	public static readonly ThrowOverflow Instance = new();
+
+	private ThrowOverflow() : base(IR.ThrowOverflow, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

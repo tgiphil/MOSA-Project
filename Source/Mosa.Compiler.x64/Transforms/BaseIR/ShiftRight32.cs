@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class ShiftRight32 : BaseIRTransform
 {
-	public ShiftRight32() : base(IR.ShiftRight32, TransformType.Manual | TransformType.Transform)
+	public static readonly ShiftRight32 Instance = new();
+
+	private ShiftRight32() : base(IR.ShiftRight32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

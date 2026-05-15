@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.FixedRegisters;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.FixedRegisters;
 /// </summary>
 public sealed class Cdq32 : BaseTransform
 {
-	public Cdq32() : base(X86.Cdq32, TransformType.Manual | TransformType.Transform)
+	public static readonly Cdq32 Instance = new();
+
+	private Cdq32() : base(X86.Cdq32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

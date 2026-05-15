@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.BaseIR;
 /// </summary>
 public sealed class Not64 : BaseIRTransform
 {
-	public Not64() : base(IR.Not64, TransformType.Manual | TransformType.Transform)
+	public static readonly Not64 Instance = new();
+
+	private Not64() : base(IR.Not64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

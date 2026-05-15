@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.Tweak;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.Tweak;
 /// </summary>
 public sealed class Blsr64 : BaseTransform
 {
-	public Blsr64() : base(X64.Blsr64, TransformType.Manual | TransformType.Transform)
+	public static readonly Blsr64 Instance = new();
+
+	private Blsr64() : base(X64.Blsr64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

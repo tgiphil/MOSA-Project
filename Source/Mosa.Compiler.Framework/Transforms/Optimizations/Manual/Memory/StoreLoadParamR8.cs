@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Memory;
 
 public sealed class StoreLoadParamR8 : BaseTransform
 {
-	public StoreLoadParamR8() : base(IR.StoreParamR8, TransformType.Manual | TransformType.Optimization)
+	public static readonly StoreLoadParamR8 Instance = new();
+
+	private StoreLoadParamR8() : base(IR.StoreParamR8, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

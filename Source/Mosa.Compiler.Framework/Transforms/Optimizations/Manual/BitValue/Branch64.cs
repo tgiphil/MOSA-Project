@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.BitValue;
 
 public sealed class Branch64 : BaseTransform
 {
-	public Branch64() : base(IR.Branch64, TransformType.Manual | TransformType.Optimization, 100)
+	public static readonly Branch64 Instance = new();
+
+	private Branch64() : base(IR.Branch64, TransformType.Manual | TransformType.Optimization, 100)
 	{
 	}
 
@@ -32,7 +36,7 @@ public sealed class Branch64 : BaseTransform
 		{
 			context.SetNop();
 
-			Framework.Transform.UpdatePhiBlock(target);
+			Core.Transform.UpdatePhiBlock(target);
 		}
 		else
 		{
@@ -42,7 +46,7 @@ public sealed class Branch64 : BaseTransform
 
 			RemoveRemainingInstructionInBlock(context);
 
-			Framework.Transform.UpdatePhiBlock(phiBlock);
+			Core.Transform.UpdatePhiBlock(phiBlock);
 		}
 	}
 }

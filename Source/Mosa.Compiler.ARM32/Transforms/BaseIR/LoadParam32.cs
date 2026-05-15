@@ -1,7 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 
@@ -10,7 +10,9 @@ namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 /// </summary>
 public sealed class LoadParam32 : BaseIRTransform
 {
-	public LoadParam32() : base(IR.LoadParam32, TransformType.Manual | TransformType.Transform)
+	public static readonly LoadParam32 Instance = new();
+
+	private LoadParam32() : base(IR.LoadParam32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

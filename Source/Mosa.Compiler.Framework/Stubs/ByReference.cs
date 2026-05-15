@@ -1,5 +1,6 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Framework.Stages;
 
 namespace Mosa.Compiler.Framework.Intrinsics;

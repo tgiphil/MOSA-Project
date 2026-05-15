@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 
@@ -9,13 +9,15 @@ namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 /// </summary>
 public sealed class MulR4 : BaseIRTransform
 {
-	public MulR4() : base(IR.MulR4, TransformType.Manual | TransformType.Transform)
+	public static readonly MulR4 Instance = new();
+
+	private MulR4() : base(IR.MulR4, TransformType.Manual | TransformType.Transform)
 	{
 	}
 
 	public override void Transform(Context context, Transform transform)
 	{
-		Framework.Transform.MoveConstantRight(context);
+		Framework.Core.Transform.MoveConstantRight(context);
 
 		Translate(transform, context, ARM32.VMul, false);
 	}

@@ -1,7 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.FixedRegisters;
 
@@ -10,7 +10,9 @@ namespace Mosa.Compiler.x86.Transforms.FixedRegisters;
 /// </summary>
 public sealed class IMul32o1 : BaseTransform
 {
-	public IMul32o1() : base(X86.IMul32o1, TransformType.Manual | TransformType.Transform)
+	public static readonly IMul32o1 Instance = new();
+
+	private IMul32o1() : base(X86.IMul32o1, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

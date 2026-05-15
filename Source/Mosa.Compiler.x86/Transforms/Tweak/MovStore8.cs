@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.Tweak;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.Tweak;
 /// </summary>
 public sealed class MovStore8 : BaseTransform
 {
-	public MovStore8() : base(X86.MovStore8, TransformType.Manual | TransformType.Transform)
+	public static readonly MovStore8 Instance = new();
+
+	private MovStore8() : base(X86.MovStore8, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.LowerTo32;
 
 public sealed class LoadSignExtend8x64 : BaseLowerTo32Transform
 {
-	public LoadSignExtend8x64() : base(IR.LoadSignExtend8x64, TransformType.Manual | TransformType.Optimization)
+	public static readonly LoadSignExtend8x64 Instance = new();
+
+	private LoadSignExtend8x64() : base(IR.LoadSignExtend8x64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

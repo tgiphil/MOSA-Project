@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.BaseIR;
 /// </summary>
 public sealed class Branch64 : BaseIRTransform
 {
-	public Branch64() : base(IR.Branch64, TransformType.Manual | TransformType.Transform)
+	public static readonly Branch64 Instance = new();
+
+	private Branch64() : base(IR.Branch64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

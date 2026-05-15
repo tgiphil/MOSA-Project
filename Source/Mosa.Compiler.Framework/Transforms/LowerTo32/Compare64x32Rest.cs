@@ -1,12 +1,15 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.LowerTo32;
 
 public sealed class Compare64x32Rest : BaseLowerTo32Transform
 {
-	public Compare64x32Rest() : base(IR.Compare64x32, TransformType.Manual | TransformType.Optimization)
+	public static readonly Compare64x32Rest Instance = new();
+
+	private Compare64x32Rest() : base(IR.Compare64x32, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 
@@ -38,7 +41,7 @@ public sealed class Compare64x32Rest : BaseLowerTo32Transform
 		var nextBlock = transform.Split(context);
 		var newBlocks = transform.CreateNewBlockContexts(5, context.Label);
 
-		Framework.Transform.UpdatePhiTargets(nextBlock.Block.NextBlocks, context.Block, nextBlock.Block);
+		Core.Transform.UpdatePhiTargets(nextBlock.Block.NextBlocks, context.Block, nextBlock.Block);
 
 		var op0Low = transform.VirtualRegisters.Allocate32();
 		var op0High = transform.VirtualRegisters.Allocate32();

@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.ConstantFolding;
 
 public sealed class Compare64x64 : BaseTransform
 {
-	public Compare64x64() : base(IR.Compare64x64, TransformType.Manual | TransformType.Optimization, 100)
+	public static readonly Compare64x64 Instance = new();
+
+	private Compare64x64() : base(IR.Compare64x64, TransformType.Manual | TransformType.Optimization, 100)
 	{
 	}
 

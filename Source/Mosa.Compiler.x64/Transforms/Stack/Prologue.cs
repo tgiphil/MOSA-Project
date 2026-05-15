@@ -1,12 +1,14 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.Stack;
 
 public sealed class Prologue : BaseTransform
 {
-	public Prologue() : base(IR.Prologue, TransformType.Manual | TransformType.Transform)
+	public static readonly Prologue Instance = new();
+
+	private Prologue() : base(IR.Prologue, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

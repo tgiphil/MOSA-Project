@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.RuntimeCall;
 
@@ -8,7 +8,9 @@ namespace Mosa.Compiler.x86.Transforms.RuntimeCall;
 /// ConvertR8ToU32
 public sealed class ConvertR8ToU32 : BaseTransform
 {
-	public ConvertR8ToU32() : base(IR.ConvertR8ToU32, TransformType.Manual | TransformType.Transform, -100)
+	public static readonly ConvertR8ToU32 Instance = new();
+
+	private ConvertR8ToU32() : base(IR.ConvertR8ToU32, TransformType.Manual | TransformType.Transform, -100)
 	{
 	}
 

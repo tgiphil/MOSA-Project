@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Call;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Call;
 /// </summary>
 public sealed class SetReturn64 : BaseTransform
 {
-	public SetReturn64() : base(IR.SetReturn64, TransformType.Manual | TransformType.Transform)
+	public static readonly SetReturn64 Instance = new();
+
+	private SetReturn64() : base(IR.SetReturn64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

@@ -1,7 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -10,7 +10,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class AddressOf : BaseIRTransform
 {
-	public AddressOf() : base(IR.AddressOf, TransformType.Manual | TransformType.Transform)
+	public static readonly AddressOf Instance = new();
+
+	private AddressOf() : base(IR.AddressOf, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

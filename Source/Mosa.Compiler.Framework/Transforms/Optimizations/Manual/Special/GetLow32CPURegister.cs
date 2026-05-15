@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Special;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Special;
 /// </summary>
 public sealed class GetLow32CPURegister : BaseTransform
 {
-	public GetLow32CPURegister() : base(IR.GetLow32, TransformType.Manual | TransformType.Optimization)
+	public static readonly GetLow32CPURegister Instance = new();
+
+	private GetLow32CPURegister() : base(IR.GetLow32, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

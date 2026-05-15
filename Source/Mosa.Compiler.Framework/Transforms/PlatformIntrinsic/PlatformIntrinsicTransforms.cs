@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.PlatformIntrinsic;
 
 /// <summary>
@@ -9,6 +11,6 @@ public static class PlatformIntrinsicTransforms
 {
 	public static readonly List<BaseTransform> List = new()
 	{
-		new IntrinsicMethodCall(),
+		IntrinsicMethodCall.Instance,
 	};
 }

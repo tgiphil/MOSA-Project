@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class Xor32 : BaseIRTransform
 {
-	public Xor32() : base(IR.Xor32, TransformType.Manual | TransformType.Transform)
+	public static readonly Xor32 Instance = new();
+
+	private Xor32() : base(IR.Xor32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

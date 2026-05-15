@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.BaseIR;
 /// </summary>
 public sealed class BitCopy64ToR8 : BaseIRTransform
 {
-	public BitCopy64ToR8() : base(IR.BitCopy64ToR8, TransformType.Manual | TransformType.Transform)
+	public static readonly BitCopy64ToR8 Instance = new();
+
+	private BitCopy64ToR8() : base(IR.BitCopy64ToR8, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

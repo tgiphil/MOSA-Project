@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.ConstantFolding;
 
 public sealed class BranchObject : BaseTransform
 {
-	public BranchObject() : base(IR.BranchObject, TransformType.Manual | TransformType.Optimization, 100)
+	public static readonly BranchObject Instance = new();
+
+	private BranchObject() : base(IR.BranchObject, TransformType.Manual | TransformType.Optimization, 100)
 	{
 	}
 
@@ -30,7 +34,7 @@ public sealed class BranchObject : BaseTransform
 		{
 			context.SetNop();
 
-			Framework.Transform.UpdatePhiBlock(target);
+			Core.Transform.UpdatePhiBlock(target);
 		}
 		else
 		{
@@ -40,7 +44,7 @@ public sealed class BranchObject : BaseTransform
 
 			RemoveRemainingInstructionInBlock(context);
 
-			Framework.Transform.UpdatePhiBlock(phiBlock);
+			Core.Transform.UpdatePhiBlock(phiBlock);
 		}
 	}
 }

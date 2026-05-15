@@ -1,7 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.Tweak;
 
@@ -10,7 +10,9 @@ namespace Mosa.Compiler.x64.Transforms.Tweak;
 /// </summary>
 public sealed class Movsd : BaseTransform
 {
-	public Movsd() : base(X64.Movsd, TransformType.Manual | TransformType.Transform)
+	public static readonly Movsd Instance = new();
+
+	private Movsd() : base(X64.Movsd, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

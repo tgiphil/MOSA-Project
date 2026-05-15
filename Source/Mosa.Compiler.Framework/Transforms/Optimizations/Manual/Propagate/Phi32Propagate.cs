@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Propagate;
 
 public sealed class Phi32Propagate : BaseTransform
 {
-	public Phi32Propagate() : base(IR.Phi32, TransformType.Manual | TransformType.Optimization, 40)
+	public static readonly Phi32Propagate Instance = new();
+
+	private Phi32Propagate() : base(IR.Phi32, TransformType.Manual | TransformType.Optimization, 40)
 	{
 	}
 

@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.AddressMode;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.AddressMode;
 /// </summary>
 public sealed class Adc32 : BaseAddressModeTransform
 {
-	public Adc32() : base(X86.Adc32, TransformType.Manual | TransformType.Transform)
+	public static readonly Adc32 Instance = new();
+
+	private Adc32() : base(X86.Adc32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

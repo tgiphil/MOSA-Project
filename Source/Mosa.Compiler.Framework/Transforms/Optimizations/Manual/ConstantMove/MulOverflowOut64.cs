@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.ConstantMove;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.ConstantMove;
 /// </summary>
 public sealed class MulOverflowOut64 : BaseTransform
 {
-	public MulOverflowOut64() : base(IR.MulOverflowOut64, TransformType.Manual | TransformType.Optimization)
+	public static readonly MulOverflowOut64 Instance = new();
+
+	private MulOverflowOut64() : base(IR.MulOverflowOut64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

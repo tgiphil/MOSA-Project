@@ -19,7 +19,7 @@ public class BuildInstructionList : BuildBaseTemplate
 	{
 		if ($"Mosa.Compiler.{Namespace}" != "Mosa.Compiler.Framework")
 		{
-			Lines.AppendLine("using Mosa.Compiler.Framework;");
+			Lines.AppendLine("using Mosa.Compiler.Framework.Core;");
 		}
 
 		Lines.AppendLine($"using Mosa.Compiler.{Namespace}.Instructions;");

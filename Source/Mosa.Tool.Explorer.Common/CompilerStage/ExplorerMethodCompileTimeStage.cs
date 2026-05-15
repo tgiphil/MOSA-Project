@@ -1,7 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
 using Mosa.Compiler.Framework.CompilerStages;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Tool.Explorer.Common.CompilerStage;
 
@@ -14,12 +14,15 @@ public sealed class ExplorerMethodCompileTimeStage : MethodCompileTimeStage
 	protected override void Finalization()
 	{
 		var methods = GetAndSortMethodData();
-		var log = new TraceLog(TraceType.GlobalDebug, null, null, "Compiler Time");
+		var trace = new TraceLog(TraceType.GlobalDebug, null, null, "Compiler Time");
 
-		log.Log("Milliseconds\tTotal Milliseconds\tCompiler Count\tMethod");
+		trace.Log("Milliseconds\tTotal Milliseconds\tCompiler Count\tMethod");
+
 		foreach (var data in methods)
-			log.Log($"{data.ElapsedTicks / TimeSpan.TicksPerMillisecond}{'\t'}{data.TotalElapsedTicks / TimeSpan.TicksPerMillisecond}{'\t'}{data.Version}{'\t'}{data.Method.FullName}");
+		{
+			trace.Log($"{data.ElapsedTicks / TimeSpan.TicksPerMillisecond}{'\t'}{data.TotalElapsedTicks / TimeSpan.TicksPerMillisecond}{'\t'}{data.Version}{'\t'}{data.Method.FullName}");
+		}
 
-		PostTraceLog(log);
+		PostTraceLog(trace);
 	}
 }

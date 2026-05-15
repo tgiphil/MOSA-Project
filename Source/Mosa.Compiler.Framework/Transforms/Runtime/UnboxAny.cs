@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Runtime;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Runtime;
 /// </summary>
 public sealed class UnboxAny : BaseRuntimeTransform
 {
-	public UnboxAny() : base(IR.UnboxAny, TransformType.Manual | TransformType.Transform)
+	public static readonly UnboxAny Instance = new();
+
+	private UnboxAny() : base(IR.UnboxAny, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

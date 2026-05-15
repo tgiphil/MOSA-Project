@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.BaseIR;
 /// </summary>
 public sealed class RemSigned32 : BaseIRTransform
 {
-	public RemSigned32() : base(IR.RemSigned32, TransformType.Manual | TransformType.Transform)
+	public static readonly RemSigned32 Instance = new();
+
+	private RemSigned32() : base(IR.RemSigned32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

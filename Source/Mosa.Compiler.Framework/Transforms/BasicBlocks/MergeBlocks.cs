@@ -1,17 +1,20 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.BasicBlocks;
 
 public class MergeBlocks : BaseBlockTransform
 {
+	public static readonly MergeBlocks Instance = new();
+
 	public override int Process(Transform transform)
 	{
 		var basicBlocks = transform.BasicBlocks;
 		var hasProtectedRegions = transform.MethodCompiler.HasProtectedRegions;
 		var isInSSAForm = transform.MethodCompiler.IsInSSAForm;
-		var trace = transform.TraceLog;
+		var trace = transform.Trace;
 
 		var emptied = 0;
 		var changed = true;
@@ -45,6 +48,9 @@ public class MergeBlocks : BaseBlockTransform
 					|| next.IsPrologue
 					|| next.IsTryHeadBlock
 					|| next.IsHandlerHeadBlock)
+					continue;
+
+				if (next.HasPhiInstruction())
 					continue;
 
 				trace?.Log($"Merge Blocking: {block} with: {next}");

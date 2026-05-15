@@ -1,6 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Compiler.Common;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.ConstantFolding;
 
@@ -9,7 +10,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.ConstantFoldin
 /// </summary>
 public sealed class SubCarryOut32 : BaseTransform
 {
-	public SubCarryOut32() : base(IR.SubCarryOut32, TransformType.Manual | TransformType.Optimization, 100)
+	public static readonly SubCarryOut32 Instance = new();
+
+	private SubCarryOut32() : base(IR.SubCarryOut32, TransformType.Manual | TransformType.Optimization, 100)
 	{
 	}
 

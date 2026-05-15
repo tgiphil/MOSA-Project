@@ -1,12 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.Optimizations.Manual.Special;
 
 public sealed class Mov32ConstantReuse : BaseTransform
 {
-	public Mov32ConstantReuse() : base(X64.Mov32, TransformType.Manual | TransformType.Optimization)
+	public static readonly Mov32ConstantReuse Instance = new();
+
+	private Mov32ConstantReuse() : base(X64.Mov32, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

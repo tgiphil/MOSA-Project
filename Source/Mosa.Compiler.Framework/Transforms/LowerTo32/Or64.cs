@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.LowerTo32;
 
 public sealed class Or64 : BaseLowerTo32Transform
 {
-	public Or64() : base(IR.Or64, TransformType.Manual | TransformType.Optimization)
+	public static readonly Or64 Instance = new();
+
+	private Or64() : base(IR.Or64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

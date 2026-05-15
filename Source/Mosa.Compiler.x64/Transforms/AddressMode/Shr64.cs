@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.AddressMode;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.AddressMode;
 /// </summary>
 public sealed class Shr64 : BaseAddressModeTransform
 {
-	public Shr64() : base(X64.Shr64, TransformType.Manual | TransformType.Transform)
+	public static readonly Shr64 Instance = new();
+
+	private Shr64() : base(X64.Shr64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Simplification;
 
 public sealed class Branch64OnlyOneExit : BaseTransform
 {
-	public Branch64OnlyOneExit() : base(IR.Branch64, TransformType.Manual | TransformType.Optimization)
+	public static readonly Branch64OnlyOneExit Instance = new();
+
+	private Branch64OnlyOneExit() : base(IR.Branch64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 
@@ -22,6 +26,6 @@ public sealed class Branch64OnlyOneExit : BaseTransform
 
 		context.SetNop();
 
-		Framework.Transform.UpdatePhiBlock(target);
+		Core.Transform.UpdatePhiBlock(target);
 	}
 }

@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Compound;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Compound;
 /// </summary>
 public sealed class StoreCompound : BaseCompoundTransform
 {
-	public StoreCompound() : base(IR.StoreCompound, TransformType.Manual | TransformType.Transform)
+	public static readonly StoreCompound Instance = new();
+
+	private StoreCompound() : base(IR.StoreCompound, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

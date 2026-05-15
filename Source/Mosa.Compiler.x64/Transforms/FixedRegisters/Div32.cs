@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.FixedRegisters;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.FixedRegisters;
 /// </summary>
 public sealed class Div32 : BaseTransform
 {
-	public Div32() : base(X64.Div32, TransformType.Manual | TransformType.Transform)
+	public static readonly Div32 Instance = new();
+
+	private Div32() : base(X64.Div32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

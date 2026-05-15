@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Useless;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Useless;
 /// </summary>
 public sealed class LoadParamZeroExtend32x64Double : BaseTransform
 {
-	public LoadParamZeroExtend32x64Double() : base(IR.ZeroExtend32x64, TransformType.Manual | TransformType.Optimization, 85)
+	public static readonly LoadParamZeroExtend32x64Double Instance = new();
+
+	private LoadParamZeroExtend32x64Double() : base(IR.ZeroExtend32x64, TransformType.Manual | TransformType.Optimization, 85)
 	{
 	}
 

@@ -2,7 +2,7 @@
 
 using System.Text;
 using Mosa.Compiler.Framework.Analysis;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 public class DominanceAnalysisStage : BaseMethodCompilerStage
 {

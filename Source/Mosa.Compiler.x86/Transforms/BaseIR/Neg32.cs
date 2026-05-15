@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.BaseIR;
 /// </summary>
 public sealed class Neg32 : BaseIRTransform
 {
-	public Neg32() : base(IR.Neg32, TransformType.Manual | TransformType.Transform)
+	public static readonly Neg32 Instance = new();
+
+	private Neg32() : base(IR.Neg32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

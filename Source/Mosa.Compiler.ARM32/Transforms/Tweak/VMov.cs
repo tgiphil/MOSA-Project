@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.Tweak;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.ARM32.Transforms.Tweak;
 /// </summary>
 public sealed class VMov : BaseTransform
 {
-	public VMov() : base(ARM32.VMov, TransformType.Manual | TransformType.Transform)
+	public static readonly VMov Instance = new();
+
+	private VMov() : base(ARM32.VMov, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

@@ -136,12 +136,14 @@ public class BuildTransformations : BuildBaseTemplate
 		DestinationFile = $"{type}/{name}{subName}.cs";
 		AddSourceHeader();
 
+		Lines.AppendLine($"using Mosa.Compiler.Framework.Core;");
+
 		if (!Path.Contains("Framework"))
 		{
-			Lines.AppendLine($"using Mosa.Compiler.Framework;");
+			Lines.AppendLine($"");
 			Lines.AppendLine();
 		}
-
+		Lines.AppendLine();
 		Lines.AppendLine($"namespace {Path}.{type};");
 		Lines.AppendLine();
 
@@ -230,10 +232,12 @@ public class BuildTransformations : BuildBaseTemplate
 
 		Lines.AppendLine($"public sealed class {name}{subName} : BaseTransform");
 		Lines.AppendLine("{");
+		Lines.AppendLine($"\tpublic static readonly {name}{subName} Instance = new();");
+		Lines.AppendLine("");
 
 		var typestring = $"TransformType.Auto{(optimization ? " | TransformType.Optimization" : string.Empty)}";
 
-		Lines.Append($"\tpublic {name}{subName}() : base({instructionName}, {typestring}");
+		Lines.Append($"\tprivate {name}{subName}() : base({instructionName}, {typestring}");
 
 		if (priority != 0)
 			Lines.Append($", {priority}");

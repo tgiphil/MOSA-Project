@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 /// </summary>
 public sealed class MoveObject : BaseIRTransform
 {
-	public MoveObject() : base(IR.MoveObject, TransformType.Manual | TransformType.Transform)
+	public static readonly MoveObject Instance = new();
+
+	private MoveObject() : base(IR.MoveObject, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

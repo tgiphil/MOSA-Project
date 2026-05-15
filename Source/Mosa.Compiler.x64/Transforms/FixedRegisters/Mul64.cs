@@ -1,7 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.FixedRegisters;
 
@@ -10,7 +10,9 @@ namespace Mosa.Compiler.x64.Transforms.FixedRegisters;
 /// </summary>
 public sealed class Mul64 : BaseTransform
 {
-	public Mul64() : base(X64.Mul64, TransformType.Manual | TransformType.Transform)
+	public static readonly Mul64 Instance = new();
+
+	private Mul64() : base(X64.Mul64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

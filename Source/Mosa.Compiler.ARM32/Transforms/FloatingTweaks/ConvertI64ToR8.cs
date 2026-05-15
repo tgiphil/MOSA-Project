@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.FloatingTweaks;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.ARM32.Transforms.FloatingTweaks;
 /// </summary>
 public sealed class ConvertI64ToR8 : BaseTransform
 {
-	public ConvertI64ToR8() : base(IR.ConvertI64ToR8, TransformType.Manual | TransformType.Transform)
+	public static readonly ConvertI64ToR8 Instance = new();
+
+	private ConvertI64ToR8() : base(IR.ConvertI64ToR8, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

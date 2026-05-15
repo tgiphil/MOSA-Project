@@ -1,15 +1,19 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.BasicBlocks;
 
 public class SkipEmptyBlocks : BaseBlockTransform
 {
+	public static readonly SkipEmptyBlocks Instance = new();
+
 	public override int Process(Transform transform)
 	{
 		var basicBlocks = transform.BasicBlocks;
 		var hasProtectedRegions = transform.MethodCompiler.HasProtectedRegions;
 		var isInSSAForm = transform.IsInSSAForm;
-		var trace = transform.TraceLog;
+		var trace = transform.Trace;
 
 		var emptied = 0;
 

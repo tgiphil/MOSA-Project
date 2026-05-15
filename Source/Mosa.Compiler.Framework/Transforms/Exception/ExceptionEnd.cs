@@ -1,6 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.MosaTypeSystem;
 
 namespace Mosa.Compiler.Framework.Transforms.Exception;
@@ -10,7 +11,9 @@ namespace Mosa.Compiler.Framework.Transforms.Exception;
 /// </summary>
 public sealed class ExceptionEnd : BaseExceptionTransform
 {
-	public ExceptionEnd() : base(IR.ExceptionEnd, TransformType.Manual | TransformType.Transform)
+	public static readonly ExceptionEnd Instance = new();
+
+	private ExceptionEnd() : base(IR.ExceptionEnd, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

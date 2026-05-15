@@ -2,6 +2,8 @@
 
 namespace Mosa.Compiler.Framework.Platform;
 
+using Mosa.Compiler.Framework.Core;
+
 /// <summary>
 /// Base Platform Instruction
 /// </summary>

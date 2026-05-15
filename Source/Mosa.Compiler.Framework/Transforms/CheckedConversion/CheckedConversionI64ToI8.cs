@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.CheckedConversion;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.CheckedConversion;
 /// </summary>
 public sealed class CheckedConversionI64ToI8 : BaseCheckedConversionTransform
 {
-	public CheckedConversionI64ToI8() : base(IR.CheckedConversionI64ToI8, TransformType.Manual | TransformType.Transform)
+	public static readonly CheckedConversionI64ToI8 Instance = new();
+
+	private CheckedConversionI64ToI8() : base(IR.CheckedConversionI64ToI8, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

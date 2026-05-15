@@ -2,6 +2,8 @@
 
 namespace Mosa.Compiler.Framework.Stages.Diagnostic;
 
+using Mosa.Compiler.Framework.Core;
+
 public class ControlFlowGraphStage : BaseMethodCompilerStage
 {
 	protected override void Run()

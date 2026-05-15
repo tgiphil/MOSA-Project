@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 /// </summary>
 public sealed class Jmp : BaseIRTransform
 {
-	public Jmp() : base(IR.Jmp, TransformType.Manual | TransformType.Transform)
+	public static readonly Jmp Instance = new();
+
+	private Jmp() : base(IR.Jmp, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

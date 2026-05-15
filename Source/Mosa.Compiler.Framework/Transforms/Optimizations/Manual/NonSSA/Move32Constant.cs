@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.NonSSA;
 
 public sealed class Move32Constant : BaseNonSA
 {
-	public Move32Constant() : base(IR.Move32, TransformType.Manual | TransformType.Optimization, true)
+	public static readonly Move32Constant Instance = new();
+
+	private Move32Constant() : base(IR.Move32, TransformType.Manual | TransformType.Optimization, true)
 	{
 	}
 

@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Call;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Call;
 /// </summary>
 public sealed class CallDynamic : BasePlugTransform
 {
-	public CallDynamic() : base(IR.CallDynamic, TransformType.Manual | TransformType.Transform)
+	public static readonly CallDynamic Instance = new();
+
+	private CallDynamic() : base(IR.CallDynamic, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

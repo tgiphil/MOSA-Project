@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Rewrite;
 
 public sealed class Branch64GreaterOrEqualThanZero : BaseTransform
 {
-	public Branch64GreaterOrEqualThanZero() : base(IR.Branch64, TransformType.Manual | TransformType.Optimization)
+	public static readonly Branch64GreaterOrEqualThanZero Instance = new();
+
+	private Branch64GreaterOrEqualThanZero() : base(IR.Branch64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 
@@ -29,6 +33,6 @@ public sealed class Branch64GreaterOrEqualThanZero : BaseTransform
 
 		RemoveRemainingInstructionInBlock(context);
 
-		Framework.Transform.UpdatePhiBlock(phiBlock);
+		Core.Transform.UpdatePhiBlock(phiBlock);
 	}
 }

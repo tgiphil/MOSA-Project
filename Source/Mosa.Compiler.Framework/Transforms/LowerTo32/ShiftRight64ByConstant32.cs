@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.LowerTo32;
 
 public sealed class ShiftRight64ByConstant32 : BaseLowerTo32Transform
 {
-	public ShiftRight64ByConstant32() : base(IR.ShiftRight64, TransformType.Manual | TransformType.Optimization)
+	public static readonly ShiftRight64ByConstant32 Instance = new();
+
+	private ShiftRight64ByConstant32() : base(IR.ShiftRight64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

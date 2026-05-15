@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Propagate;
 
 public sealed class MoveCompoundPropagate : BaseTransform
 {
-	public MoveCompoundPropagate() : base(IR.MoveCompound, TransformType.Manual | TransformType.Optimization, 40)
+	public static readonly MoveCompoundPropagate Instance = new();
+
+	private MoveCompoundPropagate() : base(IR.MoveCompound, TransformType.Manual | TransformType.Optimization, 40)
 	{
 	}
 

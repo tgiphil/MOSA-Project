@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Exception;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Exception;
 /// </summary>
 public sealed class Flow : BaseExceptionTransform
 {
-	public Flow() : base(IR.Flow, TransformType.Manual | TransformType.Transform)
+	public static readonly Flow Instance = new();
+
+	private Flow() : base(IR.Flow, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

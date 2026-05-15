@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 /// </summary>
 public sealed class IfThenElse32 : BaseIRTransform
 {
-	public IfThenElse32() : base(IR.IfThenElse32, TransformType.Manual | TransformType.Transform)
+	public static readonly IfThenElse32 Instance = new();
+
+	private IfThenElse32() : base(IR.IfThenElse32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

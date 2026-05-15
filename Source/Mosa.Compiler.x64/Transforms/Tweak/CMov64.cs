@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.Tweak;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.Tweak;
 /// </summary>
 public sealed class CMov64 : BaseTransform
 {
-	public CMov64() : base(X64.CMov64, TransformType.Manual | TransformType.Transform)
+	public static readonly CMov64 Instance = new();
+
+	private CMov64() : base(X64.CMov64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

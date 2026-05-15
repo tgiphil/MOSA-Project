@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class DivUnsigned32 : BaseIRTransform
 {
-	public DivUnsigned32() : base(IR.DivUnsigned32, TransformType.Manual | TransformType.Transform)
+	public static readonly DivUnsigned32 Instance = new();
+
+	private DivUnsigned32() : base(IR.DivUnsigned32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

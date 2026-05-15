@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.Tweak;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.Tweak;
 /// </summary>
 public sealed class Cmp64 : BaseTransform
 {
-	public Cmp64() : base(X64.Cmp64, TransformType.Manual | TransformType.Transform)
+	public static readonly Cmp64 Instance = new();
+
+	private Cmp64() : base(X64.Cmp64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

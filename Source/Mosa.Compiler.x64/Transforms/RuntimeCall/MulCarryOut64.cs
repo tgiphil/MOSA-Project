@@ -1,7 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.RuntimeCall;
 
@@ -10,7 +10,9 @@ namespace Mosa.Compiler.x64.Transforms.RuntimeCall;
 /// </summary>
 public sealed class MulCarryOut64 : BaseTransform
 {
-	public MulCarryOut64() : base(IR.MulCarryOut64, TransformType.Manual | TransformType.Transform, -100)
+	public static readonly MulCarryOut64 Instance = new();
+
+	private MulCarryOut64() : base(IR.MulCarryOut64, TransformType.Manual | TransformType.Transform, -100)
 	{
 	}
 

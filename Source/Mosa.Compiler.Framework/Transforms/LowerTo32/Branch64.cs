@@ -1,12 +1,16 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.LowerTo32;
 
 public sealed class Branch64 : BaseLowerTo32Transform
 {
-	private readonly Branch64Extends branch64Extends = new Branch64Extends(); // BUG?
+	public static readonly Branch64 Instance = new();
 
-	public Branch64() : base(IR.Branch64, TransformType.Manual | TransformType.Optimization)
+	private readonly Branch64Extends branch64Extends = Branch64Extends.Instance; // BUG?
+
+	private Branch64() : base(IR.Branch64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 
@@ -36,10 +40,10 @@ public sealed class Branch64 : BaseLowerTo32Transform
 		var newBlocks = transform.CreateNewBlockContexts(4, context.Label);
 
 		// no branch
-		Framework.Transform.UpdatePhiTargets(nextBlock.Block.NextBlocks, context.Block, nextBlock.Block);
+		Core.Transform.UpdatePhiTargets(nextBlock.Block.NextBlocks, context.Block, nextBlock.Block);
 
 		// Branch
-		Framework.Transform.UpdatePhiTarget(target, context.Block, newBlocks[3].Block);
+		Core.Transform.UpdatePhiTarget(target, context.Block, newBlocks[3].Block);
 
 		var op0Low = transform.VirtualRegisters.Allocate32();
 		var op0High = transform.VirtualRegisters.Allocate32();

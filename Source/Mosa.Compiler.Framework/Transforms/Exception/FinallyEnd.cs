@@ -1,5 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Framework.Stages;
 
 namespace Mosa.Compiler.Framework.Transforms.Exception;
@@ -9,7 +10,9 @@ namespace Mosa.Compiler.Framework.Transforms.Exception;
 /// </summary>
 public sealed class FinallyEnd : BaseExceptionTransform
 {
-	public FinallyEnd() : base(IR.FinallyEnd, TransformType.Manual | TransformType.Transform)
+	public static readonly FinallyEnd Instance = new();
+
+	private FinallyEnd() : base(IR.FinallyEnd, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

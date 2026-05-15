@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM64.Transforms.Tweak;
 
@@ -11,7 +11,7 @@ public static class TweakTransforms
 {
 	public static readonly List<BaseTransform> List = new()
 	{
-		//new Mov(),
-		//new Mvf(),
+		//Mov.Instance,
+		//Mvf.Instance,
 	};
 }

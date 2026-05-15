@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Plug;
 
 /// <summary>
@@ -9,8 +11,8 @@ public static class PlugTransforms
 {
 	public static readonly List<BaseTransform> List = new()
 	{
-		new CallDirect(),
-		new CallStatic(),
-		new CallVirtual(),
+		CallDirect.Instance,
+		CallStatic.Instance,
+		CallVirtual.Instance,
 	};
 }

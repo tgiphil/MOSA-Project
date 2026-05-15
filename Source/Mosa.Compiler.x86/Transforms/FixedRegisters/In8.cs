@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.FixedRegisters;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.FixedRegisters;
 /// </summary>
 public sealed class In8 : BaseTransform
 {
-	public In8() : base(X86.In8, TransformType.Manual | TransformType.Transform)
+	public static readonly In8 Instance = new();
+
+	private In8() : base(X86.In8, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

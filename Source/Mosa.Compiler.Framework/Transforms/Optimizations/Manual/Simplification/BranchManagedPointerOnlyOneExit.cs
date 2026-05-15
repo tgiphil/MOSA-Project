@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Simplification;
 
 public sealed class BranchManagedPointerOnlyOneExit : BaseTransform
 {
-	public BranchManagedPointerOnlyOneExit() : base(IR.BranchManagedPointer, TransformType.Manual | TransformType.Optimization)
+	public static readonly BranchManagedPointerOnlyOneExit Instance = new();
+
+	private BranchManagedPointerOnlyOneExit() : base(IR.BranchManagedPointer, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 
@@ -22,6 +26,6 @@ public sealed class BranchManagedPointerOnlyOneExit : BaseTransform
 
 		context.SetNop();
 
-		Framework.Transform.UpdatePhiBlock(target);
+		Core.Transform.UpdatePhiBlock(target);
 	}
 }

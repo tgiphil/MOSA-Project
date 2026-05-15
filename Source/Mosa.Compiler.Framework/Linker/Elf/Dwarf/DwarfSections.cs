@@ -1,7 +1,7 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using Mosa.Compiler.Common;
-using Mosa.Compiler.Framework.Source;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.MosaTypeSystem;
 
 namespace Mosa.Compiler.Framework.Linker.Elf.Dwarf;
@@ -21,13 +21,13 @@ internal sealed class DwarfSections
 		public uint DirectoryNum;
 	}
 
-	private Compiler Compiler { get; }
+	private Core.Compiler Compiler { get; }
 
 	private MosaLinker Linker { get; }
 
 	private TypeSystem TypeSystem { get; }
 
-	public DwarfSections(Compiler compiler, ElfLinker elfLinker)
+	public DwarfSections(Core.Compiler compiler, ElfLinker elfLinker)
 	{
 		Compiler = compiler;
 		Linker = compiler.Linker;

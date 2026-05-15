@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class SubOverflowOut32 : BaseIRTransform
 {
-	public SubOverflowOut32() : base(IR.SubOverflowOut32, TransformType.Manual | TransformType.Transform)
+	public static readonly SubOverflowOut32 Instance = new();
+
+	private SubOverflowOut32() : base(IR.SubOverflowOut32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

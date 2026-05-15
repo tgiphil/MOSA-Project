@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.BaseIR;
 /// </summary>
 public sealed class SignExtend32x64 : BaseIRTransform
 {
-	public SignExtend32x64() : base(IR.SignExtend32x64, TransformType.Manual | TransformType.Transform)
+	public static readonly SignExtend32x64 Instance = new();
+
+	private SignExtend32x64() : base(IR.SignExtend32x64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

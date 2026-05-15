@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.RuntimeCall;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.ARM32.Transforms.RuntimeCall;
 /// </summary>
 public sealed class RemSigned64 : BaseTransform
 {
-	public RemSigned64() : base(IR.RemSigned64, TransformType.Manual | TransformType.Transform)
+	public static readonly RemSigned64 Instance = new();
+
+	private RemSigned64() : base(IR.RemSigned64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

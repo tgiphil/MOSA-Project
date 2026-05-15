@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.CodeMotion;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.CodeMotion;
 /// </summary>
 public sealed class Load64 : BaseCodeMotionTransform
 {
-	public Load64() : base(IR.Load64, TransformType.Manual | TransformType.Optimization)
+	public static readonly Load64 Instance = new();
+
+	private Load64() : base(IR.Load64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 }

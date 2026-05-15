@@ -24,12 +24,14 @@ public class BuildIRInstructionFiles : BuildBaseTemplate
 
 	protected override void Body(dynamic node = null)
 	{
+		Lines.AppendLine("using Mosa.Compiler.Framework.Core;");
+
 		if (node.ResultType != null || node.ResultType2 != null)
 		{
 			Lines.AppendLine("using Mosa.Compiler.MosaTypeSystem;");
-			Lines.AppendLine();
 		}
 
+		Lines.AppendLine();
 		Lines.AppendLine("namespace Mosa.Compiler.Framework.Instructions;");
 		Lines.AppendLine();
 		Lines.AppendLine("/// <summary>");

@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.CodeMotion;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.CodeMotion;
 /// </summary>
 public sealed class LoadR4 : BaseCodeMotionTransform
 {
-	public LoadR4() : base(IR.LoadR4, TransformType.Manual | TransformType.Optimization)
+	public static readonly LoadR4 Instance = new();
+
+	private LoadR4() : base(IR.LoadR4, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 }

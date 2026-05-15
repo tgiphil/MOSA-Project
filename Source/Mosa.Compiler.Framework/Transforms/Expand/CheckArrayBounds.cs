@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Expand;
 
 public sealed class CheckArrayBounds : BaseTransform
 {
-	public CheckArrayBounds() : base(IR.CheckArrayBounds, TransformType.Manual | TransformType.Transform)
+	public static readonly CheckArrayBounds Instance = new();
+
+	private CheckArrayBounds() : base(IR.CheckArrayBounds, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

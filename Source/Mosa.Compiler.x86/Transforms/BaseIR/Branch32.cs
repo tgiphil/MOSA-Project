@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.BaseIR;
 
@@ -9,13 +9,15 @@ namespace Mosa.Compiler.x86.Transforms.BaseIR;
 /// </summary>
 public sealed class Branch32 : BaseIRTransform
 {
-	public Branch32() : base(IR.Branch32, TransformType.Manual | TransformType.Transform)
+	public static readonly Branch32 Instance = new();
+
+	private Branch32() : base(IR.Branch32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 
 	public override void Transform(Context context, Transform transform)
 	{
-		Framework.Transform.MoveConstantRight(context);
+		Framework.Core.Transform.MoveConstantRight(context);
 
 		var target = context.BranchTarget1;
 		var condition = context.ConditionCode;

@@ -3,7 +3,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Resources;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 using Mosa.Utility.Configuration;
 
 namespace Mosa.Utility.Launcher;
@@ -46,8 +46,11 @@ public class BaseLauncher
 
 	protected Process CreateApplicationProcess(string app, string args)
 	{
-		OutputStatus($"Starting Application: {app}");
-		OutputStatus($"Arguments: {args}");
+		if (MosaSettings.Diagnostic)
+		{
+			OutputStatus($"Starting Application: {app}");
+			OutputStatus($"Arguments: {args}");
+		}
 
 		var startInfo = new ProcessStartInfo
 		{

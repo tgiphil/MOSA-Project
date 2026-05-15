@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.BaseIR;
 /// </summary>
 public sealed class GetLow32 : BaseIRTransform
 {
-	public GetLow32() : base(IR.GetLow32, TransformType.Manual | TransformType.Transform)
+	public static readonly GetLow32 Instance = new();
+
+	private GetLow32() : base(IR.GetLow32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

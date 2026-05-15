@@ -1,12 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.Special;
 
 public sealed class GetLow32Register : BaseTransform
 {
-	public GetLow32Register() : base(IR.GetLow32, TransformType.Manual | TransformType.Optimization)
+	public static readonly GetLow32Register Instance = new();
+
+	private GetLow32Register() : base(IR.GetLow32, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

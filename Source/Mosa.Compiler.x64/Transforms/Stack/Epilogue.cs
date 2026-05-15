@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.Stack;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.Stack;
 /// </summary>
 public sealed class Epilogue : BaseTransform
 {
-	public Epilogue() : base(IR.Epilogue, TransformType.Manual | TransformType.Transform)
+	public static readonly Epilogue Instance = new();
+
+	private Epilogue() : base(IR.Epilogue, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

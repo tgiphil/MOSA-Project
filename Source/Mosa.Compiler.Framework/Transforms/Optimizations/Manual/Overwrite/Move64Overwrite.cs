@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Overwrite;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Overwrite;
 /// </summary>
 public sealed class Move64Overwrite : BaseTransform
 {
-	public Move64Overwrite() : base(IR.Move64, TransformType.Manual | TransformType.Optimization | TransformType.Search)
+	public static readonly Move64Overwrite Instance = new();
+
+	private Move64Overwrite() : base(IR.Move64, TransformType.Manual | TransformType.Optimization | TransformType.Search)
 	{
 	}
 

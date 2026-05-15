@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Rewrite;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Rewrite;
 /// </summary>
 public sealed class Compare64x32SignExtended : BaseTransform
 {
-	public Compare64x32SignExtended() : base(IR.Compare64x32, TransformType.Manual | TransformType.Optimization)
+	public static readonly Compare64x32SignExtended Instance = new();
+
+	private Compare64x32SignExtended() : base(IR.Compare64x32, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

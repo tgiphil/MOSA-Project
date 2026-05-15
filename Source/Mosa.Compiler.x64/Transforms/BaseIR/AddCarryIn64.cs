@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class AddCarryIn64 : BaseIRTransform
 {
-	public AddCarryIn64() : base(IR.AddCarryIn64, TransformType.Manual | TransformType.Transform)
+	public static readonly AddCarryIn64 Instance = new();
+
+	private AddCarryIn64() : base(IR.AddCarryIn64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

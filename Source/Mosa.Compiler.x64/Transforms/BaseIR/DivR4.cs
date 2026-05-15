@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class DivR4 : BaseIRTransform
 {
-	public DivR4() : base(IR.DivR4, TransformType.Manual | TransformType.Transform)
+	public static readonly DivR4 Instance = new();
+
+	private DivR4() : base(IR.DivR4, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

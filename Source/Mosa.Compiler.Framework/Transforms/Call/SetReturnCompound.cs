@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Call;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Call;
 /// </summary>
 public sealed class SetReturnCompound : BaseTransform
 {
-	public SetReturnCompound() : base(IR.SetReturnCompound, TransformType.Manual | TransformType.Transform)
+	public static readonly SetReturnCompound Instance = new();
+
+	private SetReturnCompound() : base(IR.SetReturnCompound, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.FloatingTweaks;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.ARM32.Transforms.FloatingTweaks;
 /// </summary>
 public sealed class RemR4NotSupported : BaseTransform
 {
-	public RemR4NotSupported() : base(IR.RemR4, TransformType.Manual | TransformType.Transform)
+	public static readonly RemR4NotSupported Instance = new();
+
+	private RemR4NotSupported() : base(IR.RemR4, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

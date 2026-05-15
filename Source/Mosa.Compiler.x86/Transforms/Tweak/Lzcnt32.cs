@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.Tweak;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.Tweak;
 /// </summary>
 public sealed class Lzcnt32 : BaseTransform
 {
-	public Lzcnt32() : base(X86.Lzcnt32, TransformType.Manual | TransformType.Transform)
+	public static readonly Lzcnt32 Instance = new();
+
+	private Lzcnt32() : base(X86.Lzcnt32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

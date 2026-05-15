@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 /// </summary>
 public sealed class MulUnsigned64 : BaseIRTransform
 {
-	public MulUnsigned64() : base(IR.MulUnsigned64, TransformType.Manual | TransformType.Transform)
+	public static readonly MulUnsigned64 Instance = new();
+
+	private MulUnsigned64() : base(IR.MulUnsigned64, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

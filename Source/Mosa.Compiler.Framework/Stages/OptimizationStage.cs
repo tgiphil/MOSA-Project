@@ -1,5 +1,6 @@
 ﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
 using Mosa.Compiler.Framework.Managers;
 using Mosa.Compiler.Framework.Transforms.LowerTo32;
 using Mosa.Compiler.Framework.Transforms.Optimizations.Auto;
@@ -12,6 +13,8 @@ namespace Mosa.Compiler.Framework.Stages;
 /// </summary>
 public class OptimizationStage : BaseTransformStage
 {
+	protected override bool AllowTransformHooks => true;
+
 	private readonly CodeMotionManager CodeMotion = new();
 	private readonly ExceptionHandlerOperandManager ExceptionHandlerOperands = new();
 

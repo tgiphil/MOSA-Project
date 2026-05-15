@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.AddressMode;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.AddressMode;
 /// </summary>
 public sealed class Sbb32 : BaseAddressModeTransform
 {
-	public Sbb32() : base(X64.Sbb32, TransformType.Manual | TransformType.Transform)
+	public static readonly Sbb32 Instance = new();
+
+	private Sbb32() : base(X64.Sbb32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

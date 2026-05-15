@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using Mosa.Compiler.Common.Exceptions;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Stages;
 
@@ -90,22 +91,15 @@ public class ExitSSAStage : BaseMethodCompilerStage
 			}
 		}
 
-		var node = predecessor.BeforeLast;
+		var context = predecessor.ContextBeforeBranch;
 
-		while (node.Instruction != IR.Jmp)
-		{
-			node = node.Previous;
-		}
-
-		node = node.Previous;
-
-		Debug.Assert(node.Instruction != IR.Branch32);
-		Debug.Assert(node.Instruction != IR.Branch64);
-		Debug.Assert(node.Instruction != IR.BranchObject);
-
-		var context = new Context(node);
+		Debug.Assert(context.Instruction != IR.Branch32);
+		Debug.Assert(context.Instruction != IR.Branch64);
+		Debug.Assert(context.Instruction != IR.BranchObject);
+		Debug.Assert(context.Instruction != IR.BranchManagedPointer);
 
 		var moveInstruction = MethodCompiler.GetMoveInstruction(destination.Primitive);
+
 		context.AppendInstruction(moveInstruction, destination, source);
 	}
 

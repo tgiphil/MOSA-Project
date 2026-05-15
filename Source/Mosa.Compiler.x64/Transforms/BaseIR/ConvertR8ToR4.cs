@@ -1,7 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -10,7 +10,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class ConvertR8ToR4 : BaseIRTransform
 {
-	public ConvertR8ToR4() : base(IR.ConvertR8ToR4, TransformType.Manual | TransformType.Transform)
+	public static readonly ConvertR8ToR4 Instance = new();
+
+	private ConvertR8ToR4() : base(IR.ConvertR8ToR4, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

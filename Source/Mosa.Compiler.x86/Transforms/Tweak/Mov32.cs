@@ -1,7 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.Tweak;
 
@@ -10,7 +10,9 @@ namespace Mosa.Compiler.x86.Transforms.Tweak;
 /// </summary>
 public sealed class Mov32 : BaseTransform
 {
-	public Mov32() : base(X86.Mov32, TransformType.Manual | TransformType.Optimization)
+	public static readonly Mov32 Instance = new();
+
+	private Mov32() : base(X86.Mov32, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

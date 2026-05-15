@@ -1,6 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
 using System.Diagnostics;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Call;
 
@@ -9,7 +10,9 @@ namespace Mosa.Compiler.Framework.Transforms.Call;
 /// </summary>
 public sealed class CallVirtual : BasePlugTransform
 {
-	public CallVirtual() : base(IR.CallVirtual, TransformType.Manual | TransformType.Transform)
+	public static readonly CallVirtual Instance = new();
+
+	private CallVirtual() : base(IR.CallVirtual, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

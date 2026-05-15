@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Useless;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Useless;
 /// </summary>
 public sealed class LoadParamSignExtend8x64Double : BaseTransform
 {
-	public LoadParamSignExtend8x64Double() : base(IR.SignExtend8x64, TransformType.Manual | TransformType.Optimization, 85)
+	public static readonly LoadParamSignExtend8x64Double Instance = new();
+
+	private LoadParamSignExtend8x64Double() : base(IR.SignExtend8x64, TransformType.Manual | TransformType.Optimization, 85)
 	{
 	}
 

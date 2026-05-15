@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.LowerTo32;
 
 public sealed class Compare64x64EqualOrNotEqual : BaseLowerTo32Transform
 {
-	public Compare64x64EqualOrNotEqual() : base(IR.Compare64x64, TransformType.Manual | TransformType.Optimization)
+	public static readonly Compare64x64EqualOrNotEqual Instance = new();
+
+	private Compare64x64EqualOrNotEqual() : base(IR.Compare64x64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

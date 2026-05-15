@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Expand;
 
 public sealed class ThrowIndexOutOfRange : BaseTransform
 {
-	public ThrowIndexOutOfRange() : base(IR.ThrowIndexOutOfRange, TransformType.Manual | TransformType.Transform)
+	public static readonly ThrowIndexOutOfRange Instance = new();
+
+	private ThrowIndexOutOfRange() : base(IR.ThrowIndexOutOfRange, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

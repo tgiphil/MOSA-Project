@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.StaticLoad;
 
 /// <summary>
@@ -9,7 +11,7 @@ public static class StaticLoadTransforms
 {
 	public static readonly List<BaseTransform> List = new()
 	{
-		new Load32(),
-		new Load64(),
+		Load32.Instance,
+		Load64.Instance,
 	};
 }

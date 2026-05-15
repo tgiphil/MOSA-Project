@@ -17,9 +17,17 @@ public partial class MosaSettings
 		public const int MaxErrors = 20;
 		public const int ConnectionTimeOut = 15000; // in milliseconds
 		public const int TimeOut = 5000; // in milliseconds
-		public const int MaxAttempts = 20;
+
+		public const int MaxAttempts = 4;
 		public const int Port = 11110;
+
 		public const int EmulatorMaxRuntime = 20; // in seconds
+
+		public const string BisectorPlan = "disable-one";
+		public const string BisectorOrder = "original";
+		public const int BisectorIterations = 20;
+		public const int BisectorRandomSeed = 0;
+		public const int BisectorMaxRestarts = 5;
 
 		public const int X86StackLocation = 0x30000;
 		public const int X64StackLocation = 0x30000;
@@ -177,6 +185,12 @@ public partial class MosaSettings
 		set => Settings.SetValue(Name.AppLocation_GDB, value);
 	}
 
+	public string BisectorApp
+	{
+		get => Settings.GetValue(Name.AppLocation_UnitTestBisector, null);
+		set => Settings.SetValue(Name.AppLocation_UnitTestBisector, value);
+	}
+
 	public string GDBHost
 	{
 		get => Settings.GetValue(Name.GDB_Host, "localhost");
@@ -332,6 +346,12 @@ public partial class MosaSettings
 	{
 		get => Settings.GetValue(Name.AppLocation_Ndisasm, null);
 		set => Settings.SetValue(Name.AppLocation_Ndisasm, value);
+	}
+
+	public string FilePostfix
+	{
+		get => Settings.GetValue(Name.FilePostfix, null);
+		set => Settings.SetValue(Name.FilePostfix, value);
 	}
 
 	public string OutputFile
@@ -512,6 +532,72 @@ public partial class MosaSettings
 		set => Settings.SetValue(Name.UnitTest_Filter, value);
 	}
 
+	public string BisectorStage
+	{
+		get => Settings.GetValue(Name.UnitTest_Bisector_Stage, null);
+		set => Settings.SetValue(Name.UnitTest_Bisector_Stage, value);
+	}
+
+	public bool BisectorPairwise
+	{
+		get => Settings.GetValue(Name.UnitTest_Bisector_Pairwise, false);
+		set => Settings.SetValue(Name.UnitTest_Bisector_Pairwise, value);
+	}
+
+	public string BisectorStateFile
+	{
+		get => Settings.GetValue(Name.UnitTest_Bisector_StateFile, null);
+		set => Settings.SetValue(Name.UnitTest_Bisector_StateFile, value);
+	}
+
+	public string BisectorPlan
+	{
+		get => Settings.GetValue(Name.UnitTest_Bisector_Plan, Constant.BisectorPlan);
+		set => Settings.SetValue(Name.UnitTest_Bisector_Plan, value);
+	}
+
+	public bool BisectorResetState
+	{
+		get => Settings.GetValue(Name.UnitTest_Bisector_ResetState, false);
+		set => Settings.SetValue(Name.UnitTest_Bisector_ResetState, value);
+	}
+
+	public string BisectorOrder
+	{
+		get => Settings.GetValue(Name.UnitTest_Bisector_Order, Constant.BisectorOrder);
+		set => Settings.SetValue(Name.UnitTest_Bisector_Order, value);
+	}
+
+	public int BisectorIterations
+	{
+		get => Settings.GetValue(Name.UnitTest_Bisector_Iterations, Constant.BisectorIterations);
+		set => Settings.SetValue(Name.UnitTest_Bisector_Iterations, value);
+	}
+
+	public int BisectorRandomSeed
+	{
+		get => Settings.GetValue(Name.UnitTest_Bisector_RandomSeed, Constant.BisectorRandomSeed);
+		set => Settings.SetValue(Name.UnitTest_Bisector_RandomSeed, value);
+	}
+
+	public bool BisectorWorkerIteration
+	{
+		get => Settings.GetValue(Name.UnitTest_Bisector_WorkerIteration, false);
+		set => Settings.SetValue(Name.UnitTest_Bisector_WorkerIteration, value);
+	}
+
+	public int BisectorMaxRestarts
+	{
+		get => Settings.GetValue(Name.UnitTest_Bisector_Supervisor_MaxRestarts, Constant.BisectorMaxRestarts);
+		set => Settings.SetValue(Name.UnitTest_Bisector_Supervisor_MaxRestarts, value);
+	}
+
+	public bool UnitTestFailFast
+	{
+		get => Settings.GetValue(Name.UnitTest_FailFast, false);
+		set => Settings.SetValue(Name.UnitTest_FailFast, value);
+	}
+
 	public string ExplorerFilter
 	{
 		get => Settings.GetValue(Name.Explorer_Filter, null);
@@ -632,7 +718,7 @@ public partial class MosaSettings
 		set => Settings.SetValue(Name.Compiler_Diagnostic, value);
 	}
 
-	public bool EmitStatistics
+	public bool Statistics
 	{
 		get => Settings.GetValue(Name.CompilerDebug_Statistics, true);
 		set => Settings.SetValue(Name.CompilerDebug_Statistics, value);
@@ -666,10 +752,10 @@ public partial class MosaSettings
 		get => Settings.GetValueList(Name.Optimizations_Inline_Exclude);
 	}
 
-	public bool FullCheckMode
+	public bool CheckMode
 	{
-		get => Settings.GetValue(Name.Compiler_FullCheckMode, false);
-		set => Settings.SetValue(Name.Compiler_FullCheckMode, value);
+		get => Settings.GetValue(Name.Compiler_CheckMode, false);
+		set => Settings.SetValue(Name.Compiler_CheckMode, value);
 	}
 
 	public string BreakpointFile
@@ -760,7 +846,7 @@ public partial class MosaSettings
 
 	public void LoadAppLocations()
 	{
-		AppLocationsSettings.GetAppLocations(this);
+		AppLocations.GetAppLocations(this);
 	}
 
 	public void LoadArguments(string[] args)
@@ -781,17 +867,12 @@ public partial class MosaSettings
 		EmitBinary = true;
 		TraceLevel = 0;
 
-		ImageFile = "%DEFAULT%";
-
 		DebugFile = null;
 		AsmFile = null;
 		MapFile = null;
 		CounterFile = null;
 		NasmFile = null;
 		InlinedFile = null;
-
-		MethodScanner = false;
-
 		SSA = true;
 		BasicOptimizations = true;
 		ValueNumbering = true;
@@ -803,16 +884,16 @@ public partial class MosaSettings
 		LongExpansion = true;
 		TwoPassOptimization = true;
 		PlatformOptimizations = true;
+		ReduceCodeSize = false;
 		InlineMethods = true;
 		InlineExplicit = true;
+		Emulator = "qemu";
+		EmulatorDisplay = false;
+		EmulatorCores = 1;
+
 		InlineMaximum = Constant.Optimizations_Inline_Maximum;
 		InlineAggressiveMaximum = Constant.Optimizations_Inline_AggressiveMaximum;
 		OptimizationScanWindow = Constant.Optimizations_ScanWindow;
-		ReduceCodeSize = false;
-
-		Emulator = "Qemu";
-		EmulatorDisplay = false;
-		EmulatorCores = 1;
 
 		EmulatorSerial = "TCPServer";
 		EmulatorSerialHost = "127.0.0.1";
@@ -856,9 +937,12 @@ public partial class MosaSettings
 
 		InitialStackLocation = 0;
 		Diagnostic = false;
-		EmitStatistics = false;
+		Statistics = false;
 
-		MaxThreads = Multithreading ? (int)(Environment.ProcessorCount * Constant.MultithreadingProcessorMultiplier) : 0;
+		UnitTestFailFast = false;
+		BisectorPairwise = false;
+
+		MaxThreads = Multithreading ? (int)Math.Ceiling(Environment.ProcessorCount * Constant.MultithreadingProcessorMultiplier) : 0;
 	}
 
 	public void NormalizeSettings()
@@ -952,7 +1036,12 @@ public partial class MosaSettings
 		}
 		else
 		{
-			baseFilename = "_mosa_";
+			baseFilename = "MOSA";
+		}
+
+		if (!string.IsNullOrWhiteSpace(FilePostfix))
+		{
+			baseFilename = $"{baseFilename}-{FilePostfix}";
 		}
 
 		if (OutputFile is null or "%DEFAULT%")
@@ -998,6 +1087,11 @@ public partial class MosaSettings
 		if (PostLinkHashFile == "%DEFAULT%")
 		{
 			PostLinkHashFile = Path.Combine(DefaultFolder, $"{baseFilename}-postlink-hash.txt");
+		}
+
+		if (BisectorStateFile == "%DEFAULT%")
+		{
+			BisectorStateFile = Path.Combine(DefaultFolder, $"{baseFilename}-bisector-state.json");
 		}
 
 		if (AsmFile == "%DEFAULT%")

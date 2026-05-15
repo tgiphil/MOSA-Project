@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x86.Transforms.Tweak;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x86.Transforms.Tweak;
 /// </summary>
 public sealed class Test32 : BaseTransform
 {
-	public Test32() : base(X86.Test32, TransformType.Manual | TransformType.Transform)
+	public static readonly Test32 Instance = new();
+
+	private Test32() : base(X86.Test32, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.x64.Transforms.BaseIR;
 /// </summary>
 public sealed class StoreR8 : BaseIRTransform
 {
-	public StoreR8() : base(IR.StoreR8, TransformType.Manual | TransformType.Transform)
+	public static readonly StoreR8 Instance = new();
+
+	private StoreR8() : base(IR.StoreR8, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

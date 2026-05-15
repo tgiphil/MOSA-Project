@@ -3,6 +3,7 @@
 using Mosa.Compiler.Common;
 using Mosa.Compiler.Common.Exceptions;
 using Mosa.Compiler.Framework.Analysis;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Stages;
 
@@ -22,7 +23,7 @@ public sealed class EnterSSAStage : BaseMethodCompilerStage
 	private Dictionary<BasicBlock, HashSet<Operand>> liveIn;
 	private HashSet<(BasicBlock block, Operand operand)> placedPhi;
 
-	private TraceLog trace;
+	private TraceLog Trace;
 
 	#region Overrides
 
@@ -45,7 +46,7 @@ public sealed class EnterSSAStage : BaseMethodCompilerStage
 		if (HasProtectedRegions)
 			return;
 
-		trace = CreateTraceLog(8);
+		Trace = CreateTraceLog(8);
 
 		foreach (var headBlock in BasicBlocks.HeadBlocks)
 		{
@@ -69,7 +70,7 @@ public sealed class EnterSSAStage : BaseMethodCompilerStage
 	{
 		// Clean up
 		phiInstructions.Clear();
-		trace = null;
+		Trace = null;
 		stack = null;
 		counters = null;
 		ssaOperands = null;
@@ -272,7 +273,7 @@ public sealed class EnterSSAStage : BaseMethodCompilerStage
 
 			if (block != null)
 			{
-				trace?.Log($"Processing: {block}");
+				Trace?.Log($"Processing: {block}");
 
 				UpdateOperands(block);
 				UpdatePHIsOnNextBlocks(block);
@@ -280,7 +281,7 @@ public sealed class EnterSSAStage : BaseMethodCompilerStage
 				worklist.Push(block);
 				worklist.Push(null);
 
-				trace?.Log($"  >Pushed: {block} (Return)");
+				Trace?.Log($"  >Pushed: {block} (Return)");
 
 				// Repeat for all children of the dominance block, if any
 				var children = dominanceAnalysis.GetChildren(block);
@@ -291,14 +292,14 @@ public sealed class EnterSSAStage : BaseMethodCompilerStage
 				foreach (var s in children)
 				{
 					worklist.Push(s);
-					trace?.Log($"  >Pushed: {s}");
+					Trace?.Log($"  >Pushed: {s}");
 				}
 			}
 			else
 			{
 				block = worklist.Pop();
 
-				trace?.Log($"Processing: {block} (Back)");
+				Trace?.Log($"Processing: {block} (Back)");
 				CaptureResultOperands(block);
 			}
 		}
@@ -414,7 +415,7 @@ public sealed class EnterSSAStage : BaseMethodCompilerStage
 			var operand = t.Key;
 			var blocks = t.Value;
 
-			trace?.Log($"Operand {operand}");
+			Trace?.Log($"Operand {operand}");
 
 			var definitionBlocks = new HashSet<BasicBlock>();
 			foreach (var block in blocks)
@@ -470,7 +471,7 @@ public sealed class EnterSSAStage : BaseMethodCompilerStage
 		if (!placedPhi.Add((block, variable)))
 			return null;
 
-		trace?.Log($"     Phi: {variable} into {block}");
+		Trace?.Log($"     Phi: {variable} into {block}");
 
 		var instruction = GetPhiInstruction(variable.Primitive);
 

@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.BasicBlocks;
 
 /// <summary>
@@ -9,8 +11,8 @@ public static class BasicBlocksTransforms
 {
 	public static readonly List<BaseBlockTransform> List = new List<BaseBlockTransform>
 	{
-		new MergeBlocks(),
-		new RemoveUnreachableBlocks(),
-		new SkipEmptyBlocks(),
+		MergeBlocks.Instance,
+		RemoveUnreachableBlocks.Instance,
+		SkipEmptyBlocks.Instance,
 	};
 }

@@ -1,10 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
+
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.Phi;
 
 public sealed class PhiObjectUpdate : BasePhiTransform
 {
-	public PhiObjectUpdate() : base(IR.PhiObject, TransformType.Manual | TransformType.Optimization)
+	public static readonly PhiObjectUpdate Instance = new();
+
+	private PhiObjectUpdate() : base(IR.PhiObject, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

@@ -1,12 +1,14 @@
-﻿// Copyright (c) MOSA Project. Licensed under the New BSD License.
+// Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.Optimizations.Manual.Special;
 
 public sealed class Mov64Coalescing : BaseTransform
 {
-	public Mov64Coalescing() : base(X64.Mov64, TransformType.Manual | TransformType.Optimization)
+	public static readonly Mov64Coalescing Instance = new();
+
+	private Mov64Coalescing() : base(X64.Mov64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

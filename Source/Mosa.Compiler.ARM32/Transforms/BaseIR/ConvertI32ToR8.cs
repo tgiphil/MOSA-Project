@@ -1,6 +1,6 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 
@@ -9,7 +9,9 @@ namespace Mosa.Compiler.ARM32.Transforms.BaseIR;
 /// </summary>
 public sealed class ConvertI32ToR8 : BaseIRTransform
 {
-	public ConvertI32ToR8() : base(IR.ConvertI32ToR8, TransformType.Manual | TransformType.Transform)
+	public static readonly ConvertI32ToR8 Instance = new();
+
+	private ConvertI32ToR8() : base(IR.ConvertI32ToR8, TransformType.Manual | TransformType.Transform)
 	{
 	}
 

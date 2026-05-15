@@ -1,12 +1,14 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
-using Mosa.Compiler.Framework;
+using Mosa.Compiler.Framework.Core;
 
 namespace Mosa.Compiler.x64.Transforms.Optimizations.Manual.Rewrite;
 
 public sealed class Lea64ToDec64 : BaseTransform
 {
-	public Lea64ToDec64() : base(X64.Lea64, TransformType.Manual | TransformType.Optimization)
+	public static readonly Lea64ToDec64 Instance = new();
+
+	private Lea64ToDec64() : base(X64.Lea64, TransformType.Manual | TransformType.Optimization)
 	{
 	}
 

@@ -1,5 +1,7 @@
 // Copyright (c) MOSA Project. Licensed under the New BSD License.
 
+using Mosa.Compiler.Framework.Core;
+
 namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.StrengthReduction;
 
 /// <summary>
@@ -7,7 +9,9 @@ namespace Mosa.Compiler.Framework.Transforms.Optimizations.Manual.StrengthReduct
 /// </summary>
 public sealed class DivSigned32ByPowerOfTwo : BaseTransform
 {
-	public DivSigned32ByPowerOfTwo() : base(IR.DivSigned32, TransformType.Manual | TransformType.Optimization, true)
+	public static readonly DivSigned32ByPowerOfTwo Instance = new();
+
+	private DivSigned32ByPowerOfTwo() : base(IR.DivSigned32, TransformType.Manual | TransformType.Optimization, true)
 	{
 	}
 
